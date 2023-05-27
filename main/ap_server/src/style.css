@@ -1,0 +1,266 @@
+button,
+input {
+    font-size: larger;
+    padding: 0.4rem;
+}
+
+button,
+input[type="button"],
+input[type="submit"] {
+    user-select: none;
+    color: #fff;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    height: min-content;
+    margin-left: 2rem;
+    border-radius: 5px;
+    background-color: rgb(26, 86, 158);
+    border: none;
+    font-size: 1.5rem;
+}
+
+button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover {
+    background-color: rgb(7, 119, 255);
+}
+
+nav {
+    user-select: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    min-width: 100%;
+    margin: 0;
+    left: 0;
+    top: 0;
+    background-color: rgb(26, 86, 158);
+    padding: 0.5rem 0;
+    margin-bottom: 1rem;
+}
+
+body {
+    font-size: larger;
+    font-family: sans-serif;
+    padding: 0px;
+    margin: 0px;
+    width: 100%;
+    height: fit-content;
+}
+
+aside {
+    display: flex;
+    height: max-content;
+    margin: 0;
+    padding: 0;
+    margin-left: 1rem;
+    margin-top: 1rem;
+    color: white;
+    max-width: 35%;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 500px;
+    align-items: center;
+}
+
+nav span {
+    margin: 1rem;
+    font-size: 2rem;
+    width: content;
+    color: #00f0f9
+}
+
+nav a {
+    color: #fff;
+    display: box;
+    width: fit-content;
+    font-size: 1.5rem;
+    margin: 1rem;
+}
+
+nav a:visited {
+    color: #fff;
+}
+
+input.danger:hover {
+    background-color: red;
+}
+
+nav a:hover {
+    color: red
+}
+
+nav a:first-of-type {
+    margin-left: 2rem;
+}
+
+nav a:last-of-type {
+    margin-right: auto;
+}
+
+.content {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    min-height: 100vh;
+    max-width: 100%;
+}
+
+nav form {
+    width: fit-content;
+    display: block;
+}
+
+footer {
+    text-align: center;
+    padding: 1rem 0;
+    background-color: rgb(84, 84, 84);
+    color: #fff;
+    max-width: 100%;
+    margin-top: auto;
+}
+
+
+.hide {
+    display: none;
+}
+
+.show {
+    position: absolute;
+    color: white;
+    font-size: 2rem;
+    padding: 2rem;
+    width: max-content;
+    height: max-content;
+    opacity: 0.9;
+    border-radius: 0.5rem;
+    transition: margin linear 0.5s 3s;
+    display: block;
+    z-index: 10;
+}
+
+a:visited {
+    color: white
+}
+
+a:visited {
+    color: white
+}
+
+
+.input_number,
+.selected {
+    color: white;
+    background-color: rgb(64, 101, 111);
+    outline: 2px inset black;
+}
+
+th {
+    font-size: 1.5rem;
+}
+
+label {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 1rem 0;
+    height: fit-content;
+}
+
+td {
+    font-size: 1.1rem;
+    text-align: start;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    min-height: fit-content;
+}
+
+.uploader {
+    height: min-content;
+    background-color: rgb(22, 66, 78);
+    border-radius: 7px;
+    padding: 1rem;
+}
+
+input[type="color"],
+input[type="file"] {
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    background-color: #0662a8;
+    color: #0662a8;
+}
+
+input[type="file"] {
+    width: 8rem;
+    margin: 1rem;
+    border: 0;
+    padding: 5px;
+}
+
+#titles {
+    width: fit-content;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    align-items: center;
+    outline: none;
+}
+
+.title_head {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    opacity: 0.5;
+}
+
+#exit {
+    margin-right: 2rem;
+}
+
+#color_in_background {
+    margin-left: 1rem;
+}
+
+p {
+    text-align: center;
+    max-width: fit-content;
+}
+
+h2,
+h3 {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.wrap {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    margin: 0;
+    margin-bottom: 5rem;
+    padding: 0;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.input_number {
+    width: 3rem;
+    outline: none;
+    color: #fff;
+    background-color: rgb(22, 66, 78);
+}
+
+.input_number:focus {
+    background-color: rgb(64, 101, 111);
+}
+
+.danger {
+    background-color: #791515;
+}

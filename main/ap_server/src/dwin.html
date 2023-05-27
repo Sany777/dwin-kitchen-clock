@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8\" />
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="stylesheet" href="style.css" type="text/css" />
+  <link rel="stylesheet" href="dwin.css" type="text/css" />
+  <head>
+    <title>Remote assistant</title>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <span>DWIN</span>
+        <a href="index.html">Portal ESP32</a>
+        <a href="aqua.html">Fun</a>
+        <input type="button" onclick="sendHello()" value="Handshake" />
+        <input type="button" onclick="reloadPage()" value="Reset" />
+        <button id="exit" onclick="serverExit()">Quit</button>
+      </nav>
+    </header>
+    <div id="modal" hidden></div>
+    <div class="wrap">
+      <aside>
+        <form class="uploader" hidden id="uploader_2" name="updatedwin">
+          <h2>Update</h2>
+          <input id="Firmware" type="file" accept=".bin" />
+          <input type="button" onclick="sendBoot()" value="Send boot" />
+        </form>
+        <div
+          class="uploader"
+          hidden
+          id="uploader_3"
+        >
+          <h2>Set screen</h2>
+          <label>background <input type="color" id="color_in_background" /></label>
+          <label>foreground  <input type="color" id="color_in_foreground" /></label>
+          <label>Set palet
+            <input type="button" onclick="sendColor()" value="Send" />
+          </label>
+          <laben>Clear screen
+            <input type="button" onclick="sendClear()" value="Send" />
+          </laben>
+          <label>Position pic
+            <input class="input_number" type="number" value="0" max="255" min="0" id="pos_pic" />
+          </label>
+          <label>Save screen
+            <input type="button" onclick="sendSavePic()" value="Send" />
+          </label>
+        </div>
+        <div class="uploader" id="uploader_1">
+          <h2>New image</h2>
+          <input
+            id="new_image"
+            type="file"
+            accept=".png, .jpg, .bmp"
+            onchange="setNewImg()"
+            name="screen_pic"
+          />
+          <input
+            type="button"
+            class="danger"
+            onclick="removeItem()"
+            id="remove_img"
+            value="Delete"
+          />
+          <input type="button" onclick="sendImg()" value="Send img" />
+          <table id="list_names">
+            <tbody id="table_title" hidden>
+              <tr>
+                <th>Position</th>
+                <th>Name</th>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </aside>
+      <main>
+        <div id="titles">
+          <h2 id="head_1" class="title_head">Screen</h2>
+          <h2 id="head_2" class="title_head">Firmware</h2>
+          <h2 id="head_3" class="title_head">Set color screen</h2>
+        </div>
+        <p id="img_inform"></p>
+        <div class="content">
+          <img id="cur_picture" src="" alt="" hidden />
+        </div>
+      </main>
+    </div>
+    <footer>2023</footer>
+  </body>
+  <script src="script.js"></script>
+  <script src="dwin.js"></script>
+</html>

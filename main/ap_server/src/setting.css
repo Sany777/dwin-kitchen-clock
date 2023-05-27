@@ -1,0 +1,35 @@
+div {
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+form {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: min-content;
+    flex-wrap: wrap;
+}
+
+
+#settings_forms {
+    margin-top: -2rem;
+    display: flex;
+    flex-direction: row;
+    margin-left: 3rem;
+    gap: 7rem;
+    flex-wrap: wrap;
+}
+
+.setting_page {
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 4rem;
+    font-size: larger;
+    flex-wrap: wrap;
+}

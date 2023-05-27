@@ -1,0 +1,4 @@
+0000000000000000000000000000000000000000 4ddd7b1b7a4c2e557d7a1e0f98dd163aeca6c22b Sich Oleksandr <s.sich@ukr.net> 1684991659 +0300	commit (initial): modules wifi/espnow/server/drivers/uart/time-function
+4ddd7b1b7a4c2e557d7a1e0f98dd163aeca6c22b e37b7b0401debe0c2ab5097f3a497a983c62f75c Sich Oleksandr <s.sich@ukr.net> 1685005785 +0300	commit: mend
+e37b7b0401debe0c2ab5097f3a497a983c62f75c 4c01ed4fb58d9fef82e5f7384ae4b4de655fded9 Sich Oleksandr <s.sich@ukr.net> 1685005897 +0300	commit (amend): add Dwin Screen control function
+4c01ed4fb58d9fef82e5f7384ae4b4de655fded9 db7b69ff4e2f33a4185f93df0b9f8f97aa7cd4d9 Oleksandr Sich <s.sich@ukr.net> 1685122090 +0300	commit: work server, set wifi, uart

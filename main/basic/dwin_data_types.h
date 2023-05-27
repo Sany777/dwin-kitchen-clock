@@ -1,0 +1,254 @@
+#pragma once
+
+#include <stdint.h>
+#include <sys/queue.h>
+#include "esp_event_base.h"
+
+#include "screen_keys.h"
+#include "dwin_config.h"
+
+
+typedef void dwin_handler_t (void*, esp_event_base_t, int32_t, void*);
+
+typedef int temperature_t;
+
+typedef enum espnow_action{
+    NOPE,
+    GIVE_NOT,
+    GIVE_TIME,
+    GIVE_TIMERS,
+    GIVE_DIVICE_INFO,
+    GIVE_NETWORK,
+    RESPONSE_ADD_NEW,
+    REQUEST_ADD_NEW,
+    NEED_TIME,
+    NEED_NETWORK,
+    NEED_DEVICE_INFO,
+} espnow_action_t;
+
+typedef enum type_devic{
+    SENSOR_TEMP_DEVICE,
+    TIMER_DEVICE,
+    DWIN_SCREEN_DEVICE,
+}type_device_t;
+
+/* time function */
+typedef enum mode_time_fun{
+    WITH_REMOVING,
+    WITHOUT_RELOAD,
+    RELOAD_COUNT,
+} mode_time_func_t;
+
+typedef enum action_timer_func{
+    PAUSE_TIMER_FUNC,
+    START_TIMER_FUNC,
+    STOP_TIMER_FUNC,
+}action_timer_func_t;
+
+typedef enum command_wifi{
+    INIT_STA, 
+    INIT_AP,
+    CLOSE_CUR_CON,
+    INIT_SCAN_NETWORKS,
+    DEINIT_SCAN_NETWORKS,
+    START_SCAN_NETWORKS,
+    START_ESPNOW,
+    PAUSE_ESPNOW,
+    STOP_ESPNOW,
+    UPDATE_TIME,
+    INIT_SNTP,
+    INIT_ESPNOW,
+    STOP_WIFI,
+    SEND_RESULT,
+    SET_CONFIG,
+    SET_MODE_STA,
+    END_COMMAND_WIFI
+}command_wifi_t;
+
+typedef enum flag_state_device{
+    SOUNDS_ALLOW,
+    SYNC_TIME,
+    ESPNOW_ALLOW,
+    ESPNOW_CONECT,
+    DATA_PREPARING,
+    CLOCK_RUN,
+    TIMER_RUN,
+    INTERNET_OK,
+    WIFI_STA,
+    SNTP_WORK,
+    SENSOR_1_OK,
+    SENSOR_2_OK,
+    RESPONSE_OK,
+    RESPONSE_UPDATE,
+    PROCESS_STA,
+    PROCESS_DWIN,
+    PROCESS_SERVER,
+    SERVER_OK,
+
+    ESPNOW_RUN,
+
+
+}flag_state_device_t;
+
+/*events bit*/
+#define BIT_SERVER_RUN          ( 1 << SERVER_OK )
+#define BIT_DWIN_RESPONSE_OK    ( 1 << RESPONSE_OK )
+#define BIT_PROCESS_STA         ( 1 << PROCESS_STA )
+#define BIT_PROCESS_SERVER      ( 1 << PROCESS_SERVER )
+#define BIT_PROCESS_DWIN        ( 1 << PROCESS_DWIN )
+#define BIT_SYNC_TIME           ( 1 << SYNC_TIME )
+#define BIT_ESPNOW_ALLOW        ( 1 << ESPNOW_ALLOW )
+#define BIT_ESPNOW_RUN          ( 1 << ESPNOW_RUN )
+#define BIT_INIT_ESPNOW         ( 1 << INIT_ESPNOW )
+#define BIT_DATA_PREPARING      ( 1 << DATA_PREPARING )
+#define BIT_CLOCK_RUN           ( 1 << CLOCK_RUN )
+#define BIT_TIMER_RUN           ( 1 << TIMER_RUN )
+#define BIT_WIFI_STA            ( 1 << WIFI_STA  )
+#define BIT_INTERNET            ( 1 << INTERNET_OK )
+#define BIT_ESPNOW_CONECT       ( 1 << ESPNOW_CONECT )
+#define BIT_SNTP                ( 1 << SNTP_WORK )
+#define BIT_SEN_1               ( 1 << SENSOR_1_OK )
+#define BIT_SEN_2               ( 1 << SENSOR_2_OK )
+#define BIT_SOUNDS_ALLOW        ( 1 << SOUNDS_ALLOW )
+
+#define STORED_FLAGS       (BIT_SOUNDS_ALLOW|BIT_SYNC_TIME|BIT_ESPNOW_ALLOW)
+
+typedef enum index_clock {
+    INDEX_YEAR,
+    INDEX_MONTH,
+    INDEX_DAY,
+    INDEX_WEEK_DAY,
+    INDEX_HOUR,
+    INDEX_MIN,
+    INDEX_SEC,
+    END_INDEX_CLOCK,
+}index_clock_t;
+
+typedef enum index_timer {
+    INDEX_HOUR_T,
+    INDEX_MIN_T,
+    INDEX_SEC_T, 
+}index_timer_t;
+
+typedef enum data_identification{
+	DATA_PWD,
+	DATA_API,
+	DATA_COLOUR,
+	DATA_CITY,
+	DATA_SSID,
+	DATA_NOTIF,
+	DATA_FLAGS,
+	END_DATA_IDENTEFIER
+} data_identification_t;
+
+/*package espnow*/
+typedef struct sensor_package{
+    uint16_t crc;
+    temperature_t temperature;
+    int humidity;
+    time_t wakeup;
+}__attribute__((packed))sensor_package_t;
+
+typedef struct{
+    uint16_t crc;
+    uint8_t timers[0];
+}__attribute__((packed))timer_package_t;
+
+typedef struct network_package{
+    uint16_t crc;
+    uint8_t ssid[SIZE_BUF];
+    uint8_t pwd[SIZE_BUF];
+} __attribute__((packed))network_package_t;
+
+typedef struct time_package{
+    uint16_t crc;
+    time_t time;
+} __attribute__((packed))time_package_t;
+
+typedef struct  action_packag{
+    uint16_t crc;
+    uint8_t action;             
+} __attribute__((packed)) action_package_t;
+
+typedef struct hello_package{
+    uint8_t action;
+} __attribute__((packed)) hello_package_t;
+
+typedef struct device_espnow {
+    uint16_t crc;
+    uint8_t type;
+    uint8_t mac[8];
+    char name[MAX_NAME_DEVICE+1];
+} __attribute__((packed)) device_info_package_t;
+
+typedef struct weather_data{
+    char *description;
+    uint8_t weather_pic;
+    uint8_t sunrise_hour;
+    uint8_t sunrise_min;
+    uint8_t sunset_hour;
+    uint8_t sunset_min;
+    uint8_t clouds;
+    uint8_t pop;
+    uint8_t timezone;
+    temperature_t feels_like;
+    temperature_t outdoor;
+    temperature_t indoor;
+} weather_data_t;
+
+/* data struct timer func*/
+typedef struct time_func {
+    SLIST_ENTRY(time_func)next;
+    size_t time;
+    size_t time_init;
+    uint32_t event_id;
+    mode_time_func_t mode;
+    void *pv;
+}time_func_t;
+
+typedef struct espnow_rx_data{
+    uint8_t mac[SIZE_MAC];
+    bool is_brodcast_dst;
+    uint8_t rssi;
+    uint8_t *parcel;
+    uint32_t parcel_len;
+}espnow_rx_data_t;
+
+
+typedef struct espnow_send{
+    uint8_t mac[SIZE_MAC];
+    uint8_t action;
+} espnow_send_t;
+
+typedef struct cur_device_espnow {
+    uint8_t mac[SIZE_MAC];
+    char *name;
+    type_device_t type;
+}cur_device_inf_t;
+
+typedef struct device_inf {
+    SLIST_ENTRY(device_inf)next;
+    uint8_t mac[SIZE_MAC];
+    uint8_t type;
+    char name[0];
+} __attribute__((packed))device_inf_t;
+
+typedef struct sensor_data{
+    temperature_t temperature;
+    int humidity;
+    uint8_t mac[SIZE_MAC];
+    char name[0];
+} __attribute__((packed))sensor_data_t;
+
+typedef struct main_data{
+    uint8_t area;
+    char pwd_wifi[SIZE_BUF];
+    char ssid_name[SIZE_BUF];
+    char city_name[SIZE_BUF];
+    char buf_api[SIZE_BUF];
+    uint8_t colors_interface[SIZE_COLOURS_INTERFACE];
+    uint8_t cur_time[SIZE_TIME];
+    uint8_t notif[SIZE_NOTIFICATION];
+    sensor_data_t *sensor_data[NUMBER_SENSOR];
+} main_data_t;
+

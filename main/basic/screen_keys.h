@@ -1,0 +1,176 @@
+#pragma once
+
+// #include <stdint.h>
+
+#include "dwin_config.h"
+
+
+/*COLOURS*/
+#define WHITE  0xFFFF
+#define BLACK  0x0000
+#define CAEN   0x0410
+#define BLUE   0x001F
+#define GREY   0xC618
+#define VIOLET 0x841F
+#define LEMON  0x07E0
+#define RED    0xF800
+
+#define NUMBER_COLOURS END_AREA_COLOURS
+
+#define SIZE_USED_COLOURS 7
+static const uint16_t USED_COLOURS[SIZE_USED_COLOURS] = {WHITE, CAEN, BLUE, GREY, VIOLET, LEMON, RED};
+
+#define COLOUR_ENABLE RED 
+#define COLOUR_DISABLE WHITE
+
+
+/*AREAS ON THE SCREEN*/
+typedef enum area_clock{
+    AREA_YEAR,
+    AREA_MONTH,
+    AREA_DAY,
+    AREA_HOUR,
+    AREA_MIN,
+    AREA_SEC,
+    END_AREA_CLOCK,
+} area_clock_t;
+
+typedef enum area_stop_timers{ 
+    AREA_HOUR_ON_1,
+    AREA_HOUR_OFF_1,
+    AREA_HOUR_ON_2,
+    AREA_HOUR_OFF_2,
+    AREA_MIN_ON_1,
+    AREA_MIN_OFF_1,
+    AREA_MIN_ON_2,
+    AREA_MIN_OFF_2,
+    END_AREA_TIMERS
+} area_stop_timers_t;
+
+typedef enum area_run_timer{
+    AREA_TOGLE,
+    AREA_STOP,
+    END_AREA_RUN_TIMER
+} area_run_timer_t;
+
+typedef enum area_stop_timer{
+    AREA_TIMER_HOUR,
+    AREA_TIMER_MIN,
+    AREA_TIMER_SEC,
+    AREA_TIMER_TOGLE,
+    END_AREA_STOP_TIMER
+} area_stop_timer_t;
+
+typedef enum area_notifications{
+    AREA_HOUR_1,
+    AREA_HOUR_2,
+    AREA_HOUR_3,
+    AREA_HOUR_4,
+    AREA_MIN_1,
+    AREA_MIN_2,
+    AREA_MIN_3,
+    AREA_MIN_4,
+    END_AREA_NOTIFICATIONS
+} area_notifications_t;
+
+typedef enum area_devices{
+    AREA_SENSOR_1_OK,
+    AREA_SENSOR_2_OK,
+    AREA_SENSOR_3_OK,
+    AREA_SENSOR_4_OK,
+    AREA_TIMER_DEVICE_1,
+    AREA_TIMER_DEVICE_2,
+    AREA_TIMER_DEVICE_3,
+    AREA_TIMER_DEVICE_4,
+    END_AREA_DEVICES
+} area_devices_t;
+
+typedef enum area_custom{
+    AREA_DESC_COLOUR,
+    AREA_CLOCK_COLOUR,
+    AREA_INFO_COLOUR,
+    END_AREA_COLOURS
+} area_custom_t;
+
+typedef enum area_settings{
+    AREA_SSID,
+    AREA_PASSWORD,
+    AREA_CITY,
+    AREA_API,
+    END_AREA_SETTINGS
+} area_settings_t;
+
+/* KEY BUTTON */
+typedef enum Main_buttons{
+    KEY_DELETE = 0x7F,
+    KEY_ENTER,
+    KEY_BACSPACE,
+    KEY_SYNC,
+    KEY_MAIN_SCREEN,
+    KEY_CLOCK_SCREEN,
+    KEY_MENU_SCREEN,
+    KEY_DEVICE_SCREEN,
+    KEY_TIMER_SCREEN,
+    KEY_SETTING_SCREEN,
+    KEY_SEARCH_SSID_SCREEN,
+    KEY_CUSTOM_SCREEN,
+    KEY_NOTIF_SCREEN,
+    KEY_SETING_SERVER_SCREEN,
+    KEY_BRIGHT,
+    KEY_DELETE_DATA,
+    KEY_INIT,
+    KEY_UPDATE_SCREEN,
+    KEY_END_BUTTONS
+}key_btn_t;
+
+/*additional keys*/
+#define KEY_INIT KEY_DELETE
+#define KEY_PAUSA KEY_BACSPACE
+#define KEY_CLOSE KEY_MAIN_SCREEN
+#define DELETE_DATA REMOVE_TAS
+
+#define START_SCREEN_TASKS_KEYS KEY_MAIN_SCREEN
+#define END_SCREEN_TASKS_KEYS KEY_SETING_SERVER_SCREEN
+
+
+/* CHAINING KEYS FOR CHOICE DISPLAY UNIT */
+#define MAX_TOGGLE_UNIT_ON_SCREEN 10
+#define MAX_AREA_UNIT_ON_SCREEN 20
+
+#define KEY_START_AREA 1
+// start x15
+#define KEY_START_TOGGLE_AREA KEY_START_AREA + MAX_AREA_UNIT_ON_SCREEN
+// start x91
+#define KEY_START_DAY KEY_END_BUTTONS
+// start x98
+#define KEY_START_TOGLE_DAY (KEY_START_DAY + SIZE_WEEK)
+
+/* PIC INDEX */
+
+typedef enum{
+    NO_WEATHER_PIC,
+    SETTING_LOW_LETTER_PIC,
+    SETTING_UP_LETTER_PIC,
+    SETTING_SYMBOL_PIC,
+    CLOCK_PIC,
+    TIMER_STOP_PIC,
+    TIMER_RUN_PIC,
+    WEAT_CLOUD_MEDIUM_PIC,
+    WEAT_CLOUD_SMALL_NIGHT_PIC,
+    WEAT_CLOUD_SMALL_DAY_PIC,
+    WEAT_CLOUD_HEAVY_PIC,
+    WEAT_FOG_PIC,
+    WEAT_RAIN_PIC,
+    WEAT_RAIN_MOON_PIC,
+    WEAT_RAIN_SUN_PIC,
+    WEAT_SNOW_PIC,
+    WEAT_THUNDER_PIC,
+    WEAT_CLEAR_NIGHT_PIC,
+    WEAT_CLEAR_DAY_PIC,
+    SEARCH_PIC,
+    NOTIF_PIC,
+    CUSTOM_COLOURS_PIC,
+    MENU_PIC,
+    DEVICE_PIC,
+    END_LIST_PIC
+} picture_t;
