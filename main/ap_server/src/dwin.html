@@ -24,7 +24,7 @@
         <form class="uploader" hidden id="uploader_2" name="updatedwin">
           <h2>Update</h2>
           <input id="Firmware" type="file" accept=".bin" />
-          <input type="button" onclick="sendBoot()" value="Send boot" />
+          <input type="submit" value="Send boot" />
         </form>
         <div
           class="uploader"
@@ -32,7 +32,7 @@
           id="uploader_3"
         >
           <h2>Set screen</h2>
-          <form action="" name="setcolor" onsubmit="sendData('setcolor')">
+          <form action="" name="color">
             <label>background <input type="color" name="b" /></label>
             <label>foreground <input type="color" name="f" /></label> 
             <input type="submit" value="Send" />

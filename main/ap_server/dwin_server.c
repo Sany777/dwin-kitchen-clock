@@ -249,11 +249,11 @@ static esp_err_t handler_set_color(httpd_req_t *req)
     const char *bcolor = NULL, *fcolor = NULL;
     size_t fcolor_len = 0, bcolor_len = 0;
     if(cJSON_IsString(bcolor_j) && (bcolor_j->valuestring != NULL)){
-        bcolor = bcolor_j->valuestring;
+        bcolor = bcolor_j->valueint;
         bcolor_len = strnlen(bcolor, SIZE_BUF);
     }
     if(cJSON_IsString(fcolor_j) && (fcolor_j->valuestring != NULL)){
-        fcolor = fcolor_j->valuestring;
+        fcolor = fcolor_j->valueint;
         fcolor_len = strnlen(fcolor, SIZE_BUF);
     }
     if(!bcolor_len || !fcolor_len){
@@ -261,8 +261,8 @@ static esp_err_t handler_set_color(httpd_req_t *req)
         cJSON_Delete(root);
         return ESP_FAIL;
     }
-    ESP_LOGI(TAG, "set color : %d , %d", atoi(bcolor), atoi(fcolor));
-    uint16_t bc_u = (uint16_t) GET_NUMBER(bcolor[0])<<8;
+    ESP_LOGI(TAG, "set color : %s , %s", bcolor, fcolor);
+    uint16_t bc_u = bcolor[0]<<8;
     bc_u |= GET_NUMBER(bcolor[1]);
     uint16_t fc_u = (uint16_t) GET_NUMBER(fcolor[0])<<8;
     fc_u |= GET_NUMBER(fcolor[1]);
@@ -406,15 +406,14 @@ static esp_err_t handler_set_api(httpd_req_t *req)
         key_len = strnlen(key, SIZE_BUF);
     }
     if((city_len == 0 && key_len == 0) 
-        || city_len > MAX_STR_LEN 
-        || (key_len && key_len != SIZE_API))
+        || city_len > MAX_STR_LEN)
     {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Wrong format input");
         cJSON_Delete(root);
         free(server_buf);
         return ESP_FAIL;
     }
-    if(key_len){
+    if(key_len == SIZE_API){
         memcpy(api_KEY, key, key_len);
         api_KEY[key_len] = 0;
         write_memory(data_dwin, DATA_API);
@@ -473,13 +472,11 @@ static esp_err_t handler_set_time(httpd_req_t *req)
     return ESP_OK;
 }
 
-#define NOTIF_SEND_EXAMPLE "16:00,16:00,16:00,16:00,16:00,10:00,10:00"
-#define SIZE_NOTIF_SEND sizeof(NOTIF_SEND_EXAMPLE)
 
 static esp_err_t handler_get_data(httpd_req_t *req)
 {
     main_data_t * data_dwin = (main_data_t *)req->user_ctx;
-    char *notif_send = malloc(SIZE_NOTIF_SEND+1);
+    char *notif_send = malloc(SIZE_NOTIFICATION*2+1);
     if(notif_send == NULL){
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "not enough storage");
         return ESP_FAIL;
@@ -490,18 +487,11 @@ static esp_err_t handler_get_data(httpd_req_t *req)
     cJSON_AddStringToObject(root, "Password", pwd_WIFI);
     cJSON_AddStringToObject(root, "Key", api_KEY);
     cJSON_AddStringToObject(root, "City", name_CITY);
-    for(size_t day=0, s_i=0; day<SIZE_WEEK; day++){
-        notif_send[s_i++] = (GET_NOTIF_HOUR(0, day)%100)/10+'0';
-        notif_send[s_i++] = GET_NOTIF_HOUR(0, day)%10+'0';
-        notif_send[s_i++] = ':';
-        notif_send[s_i++] = (GET_NOTIF_MIN(0, day)%100)/10+'0';
-        notif_send[s_i++] = GET_NOTIF_MIN(0, day)%10+'0';
-        if(s_i == SIZE_NOTIF_SEND){
-            notif_send[s_i] = '\0';
-        } else {
-            notif_send[s_i++] = ',';
-        }   
+    for(size_t i=0, i_s=0; i<SIZE_NOTIFICATION; i++){
+        notif_send[i_s++] = notification_DATA[i]/10+'0';
+        notif_send[i_s++] = notification_DATA[i]%10+'0';
     }
+    notif_send[SIZE_NOTIFICATION] = 0;
     cJSON_AddStringToObject(root, "Notification", notif_send);
     const char *data_info = cJSON_Print(root);
     httpd_resp_sendstr(req, data_info);
@@ -514,21 +504,31 @@ static esp_err_t handler_get_data(httpd_req_t *req)
 static esp_err_t notif_handler(httpd_req_t *req)
 {
     const int total_len = req->content_len;
-    if(total_len > SCRATCH_SIZE){
+    if(total_len > SIZE_NOTIFICATION+1){
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "content too long");
         return ESP_FAIL;
     }
     char * const server_buf = malloc(total_len+1);
+        if(server_buf == NULL){
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "not enough storage");
+        return ESP_FAIL;
+    }
+    main_data_t * data_dwin = (main_data_t *)req->user_ctx;
     const int received = httpd_req_recv(req, server_buf, total_len);
     if (received != total_len) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "semething went wrong");
         return ESP_FAIL;
     }
-    server_buf[total_len] = '\0';
-    httpd_resp_sendstr(req, server_buf);
+    char *buf = calloc(1, 3);
+    for(size_t i=0, i_notif = 0; i_notif<SIZE_NOTIFICATION && i<total_len; i_notif++, i+=2){
+        notification_DATA[i_notif] = GET_NUMBER(server_buf[i])*10 + GET_NUMBER(server_buf[i+1]);
+    }
+    server_buf[total_len] = 0;
+send_str_dwin(server_buf);
+    write_memory(data_dwin, DATA_NOTIF);
+    httpd_resp_sendstr(req, "update notification");
     free(server_buf);
     return ESP_OK;
-
 }
 
 

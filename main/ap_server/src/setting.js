@@ -1,5 +1,5 @@
 const LIST_DAY = ["Monday","Thusday","Wednesday","Thursday","Friday","Saturday","Sanday"]
-
+const SIZE_NOTIF = 7*2*4;
 const FORMS_LIST = [
   [["Notification", LIST_DAY],["time",]],
   [["Network",["SSID", "Password"]],["text","32"]],
@@ -18,12 +18,13 @@ function getSetting()
   .then((r) => {
     for(const key in r){
       const value = r[key];
-      if(key === "Notification") {
-        const arrVal = value.split(",");
-        LIST_DAY.forEach((nameIn,i)=>{
-          const inputNot = document.getElementById(nameIn);
-          inputNot.value = arrVal[i];
-        })
+      if(key === "Notification" && value.length == SIZE_NOTIF) {
+        const notifs = document.forms["Notification"].elements;
+        let iter=0;
+        for(const inp of notifs){
+          inp.value =  value[iter++] + value[iter++] + ":" + value[iter++]+value[iter++];
+          if(iter >= value.length)break;
+        }
        } else {
          const input = document.getElementById(key);
          if(input)input.value = value;

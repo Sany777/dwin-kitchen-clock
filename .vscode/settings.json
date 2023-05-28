@@ -31,7 +31,9 @@
     "complex": "c",
     "dwin_help.h": "c",
     "string": "c",
-    "mdns.h": "c"
+    "mdns.h": "c",
+    "chrono": "c",
+    "show_data.h": "c"
   },
   "idf.flashType": "UART",
   "idf.portWin": "COM7"

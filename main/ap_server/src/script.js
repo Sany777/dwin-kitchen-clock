@@ -50,13 +50,17 @@ function sendData(formName)
           js[child.name.slice(0, 3)] = child.value;
         } else if(child.type === "color"){
           if(!data)data = js;
-          js[child.name.slice(0, 3)] = child.value.slice(1,5);
+          js[child.name] = child.value.slice(1,5);
         } else if(child.type === "file"){
           data = child.files[0];
           break;
       } else if(child.type === "time"){
           if(!data)data = arr;
-          arr.push(child.value.split(':').filter(e=>e!=':').join(''));
+          let endHour = child.value.indexOf(':');
+          let hour = +child.value.slice(0, endHour);
+          let min = +child.value.slice(endHour+1,);
+          arr.push(Math.trunc(hour/10)+""+hour%10+"");
+          arr.push(Math.trunc(min/10)+""+min%10+"");
       }
     }
   }
@@ -66,7 +70,6 @@ function sendData(formName)
     data = arr.join('');
   }
   sendDataForm(formName, data);
-  return false;
 }
 
 
