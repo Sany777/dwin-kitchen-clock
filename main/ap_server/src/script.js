@@ -31,36 +31,44 @@ function showModal(str, success)
 }
 
 
+document.body.addEventListener("submit", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  sendData(e.target.name);
+});
 
-function getDataForm(e) 
+function sendData(formName)
 {
-  const form = e.currentTarget.parentNode;
+  const  js = {};
+  const arr = [];
   let data = null;
-  if(form.name === "Update"){
-    data = form.Firmware.files[0];
-  } else if(form.name === "Notification"){
-    const childsList = document.forms["Notification"];
-    let list = [];
+  const childsList = document.forms[formName];
+  if(childsList){
     for(const child of childsList){
-      if(child.type === "time"){
-        list.push(child.value);
-      }
-    }
-    data = list;
-  } else {
-    const  js = {};
-    const childsList = document.forms[form.name];
-    if(childsList){
-      for(const child of childsList){
         if(child.type === "text" || child.type === "number"){
-          js[child.name] = child.value;
-        }
+          if(!data)data = js;
+          js[child.name.slice(0, 3)] = child.value;
+        } else if(child.type === "color"){
+          if(!data)data = js;
+          js[child.name.slice(0, 3)] = child.value.slice(1,5);
+        } else if(child.type === "file"){
+          data = child.files[0];
+          break;
+      } else if(child.type === "time"){
+          if(!data)data = arr;
+          arr.push(child.value.split(':').filter(e=>e!=':').join(''));
       }
-      data = JSON.stringify(js);
     }
   }
-  sendDataForm(form.name, data);
+  if(data === js){
+    data = JSON.stringify(js);
+  } else if(data === arr){
+    data = arr.join('');
+  }
+  sendDataForm(formName, data);
+  return false;
 }
+
 
 async function sendDataForm(path, data) 
 {

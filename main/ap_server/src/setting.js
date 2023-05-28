@@ -44,12 +44,11 @@ function createForms()
     const wrapText = document.createElement("h3");
     wrapText.innerText = name;
     form.name = name;
-    container.appendChild(wrapText);
     form.action = "";
+    container.appendChild(wrapText);
     const submit = document.createElement("input");
     submit.value = "Submit";
-    submit.type = "button";
-    submit.onclick = getDataForm;
+    submit.type = "submit";
     listInput.forEach(inputName=>{
       const input = document.createElement("input");
       const label = document.createElement("label");

@@ -55,8 +55,8 @@
 
 
 /* UART */
-#define UART_BUF_SIZE 1024
-#define UART_DWIN           0
+#define UART_BUF_SIZE 255
+#define UART_DWIN               0
 
 #define UART_WAKEUP_THRESHOLD   3
 #define U0RXD_GPIO_NUM 1

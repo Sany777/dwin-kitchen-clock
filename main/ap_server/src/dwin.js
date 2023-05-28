@@ -1,8 +1,6 @@
 const MAX_FILE_SIZE = 200*1024;
 const MAX_FILE_SIZE_STR = "200 kb";
 
-const colorBInput = document.getElementById("color_in_background");
-const colorFInput = document.getElementById("color_in_foreground");
 const imgInform = document.getElementById("img_inform");
 const namesTable = document.getElementById("list_names");
 const curImg = document.getElementById("cur_picture");
@@ -186,15 +184,7 @@ function sendSavePic()
 {
   sendDataForm("savepic/"+posPic.value);
 }
-function sendColor() 
-{
-  const dataB = colorBInput.value.slice(1,5);
-  const dataF = colorFInput.value.slice(1,5);
-  const dataForm = new FormData();
-  dataForm.append("background", dataB);
-  dataForm.append("foreground", dataF);
-  sendDataForm("color", dataForm);
-}
+
 
 function sendBoot() 
 {
@@ -216,7 +206,7 @@ function sendImg()
     showModal("The file list is empty");
   } else if(checkDouble()){
     imgList.forEach((elm) => {
-      sendDataForm("img/" + elm.pos, elm.file);
+      // sendDataForm("img/" + elm.pos, elm.file);
     });
   }
 }

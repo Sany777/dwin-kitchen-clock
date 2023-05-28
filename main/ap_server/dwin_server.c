@@ -242,22 +242,32 @@ static esp_err_t handler_set_color(httpd_req_t *req)
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "semething went wrong");
         return ESP_FAIL;
     }
-    server_buf[total_len] = '\0';
+    server_buf[total_len] = 0;
     cJSON *root = cJSON_Parse(server_buf);
-    char *bcolor = cJSON_GetObjectItem(root, "b")->valuestring;
-    char *fcolor = cJSON_GetObjectItem(root, "f")->valuestring;
-    if(!bcolor || !fcolor 
-        || strnlen(bcolor, SIZE_COLOR_DATA) != SIZE_COLOR_DATA 
-        || strnlen(fcolor, SIZE_COLOR_DATA) != SIZE_COLOR_DATA)
-    {
+    const cJSON *bcolor_j = cJSON_GetObjectItemCaseSensitive(root, "b");
+    const cJSON *fcolor_j = cJSON_GetObjectItemCaseSensitive(root, "f");
+    const char *bcolor = NULL, *fcolor = NULL;
+    size_t fcolor_len = 0, bcolor_len = 0;
+    if(cJSON_IsString(bcolor_j) && (bcolor_j->valuestring != NULL)){
+        bcolor = bcolor_j->valuestring;
+        bcolor_len = strnlen(bcolor, SIZE_BUF);
+    }
+    if(cJSON_IsString(fcolor_j) && (fcolor_j->valuestring != NULL)){
+        fcolor = fcolor_j->valuestring;
+        fcolor_len = strnlen(fcolor, SIZE_BUF);
+    }
+    if(!bcolor_len || !fcolor_len){
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Wrong format");
+        cJSON_Delete(root);
         return ESP_FAIL;
     }
+    ESP_LOGI(TAG, "set color : %d , %d", atoi(bcolor), atoi(fcolor));
     uint16_t bc_u = (uint16_t) GET_NUMBER(bcolor[0])<<8;
     bc_u |= GET_NUMBER(bcolor[1]);
     uint16_t fc_u = (uint16_t) GET_NUMBER(fcolor[0])<<8;
     fc_u |= GET_NUMBER(fcolor[1]);
     set_color(fc_u, bc_u);
+    httpd_resp_sendstr(req, "Success");
     return ESP_OK;
 }
 
@@ -326,8 +336,8 @@ static esp_err_t handler_set_network(httpd_req_t *req)
     }
     server_buf[received] = 0;
     cJSON *root = cJSON_Parse(server_buf);
-    const cJSON *ssid_name_j = cJSON_GetObjectItemCaseSensitive(root, "SSID");
-    const cJSON *pwd_wifi_j = cJSON_GetObjectItemCaseSensitive(root, "Password");
+    const cJSON *ssid_name_j = cJSON_GetObjectItemCaseSensitive(root, "SSI");
+    const cJSON *pwd_wifi_j = cJSON_GetObjectItemCaseSensitive(root, "Pas");
     const char *ssid_name, *pwd_wifi;
     size_t pwd_len = 0, ssid_len = 0;
     if(cJSON_IsString(ssid_name_j) && (ssid_name_j->valuestring != NULL)){
@@ -383,7 +393,7 @@ static esp_err_t handler_set_api(httpd_req_t *req)
     }
     server_buf[received] = '\0';
     cJSON *root = cJSON_Parse(server_buf);
-    const cJSON *city_j = cJSON_GetObjectItemCaseSensitive(root, "City");
+    const cJSON *city_j = cJSON_GetObjectItemCaseSensitive(root, "Cit");
     const cJSON *key_j = cJSON_GetObjectItemCaseSensitive(root, "Key");
     const char *key = NULL, *city_name = NULL;
     size_t key_len = 0, city_len = 0;

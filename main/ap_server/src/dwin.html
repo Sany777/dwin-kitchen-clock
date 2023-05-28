@@ -32,11 +32,11 @@
           id="uploader_3"
         >
           <h2>Set screen</h2>
-          <label>background <input type="color" id="color_in_background" /></label>
-          <label>foreground  <input type="color" id="color_in_foreground" /></label>
-          <label>Set palet
-            <input type="button" onclick="sendColor()" value="Send" />
-          </label>
+          <form action="" name="setcolor" onsubmit="sendData('setcolor')">
+            <label>background <input type="color" name="b" /></label>
+            <label>foreground <input type="color" name="f" /></label> 
+            <input type="submit" value="Send" />
+          </form>
           <laben>Clear screen
             <input type="button" onclick="sendClear()" value="Send" />
           </laben>
