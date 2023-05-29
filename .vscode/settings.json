@@ -35,7 +35,11 @@
     "chrono": "c",
     "show_data.h": "c",
     "random": "c",
-    "stdlib.h": "c"
+    "stdlib.h": "c",
+    "stdio.h": "c",
+    "stat.h": "c",
+    "dwin_drivers.h": "c",
+    "dwin_commands.h": "c"
   },
   "idf.flashType": "UART",
   "idf.portWin": "COM7"

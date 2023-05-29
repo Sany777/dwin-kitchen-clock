@@ -28,6 +28,7 @@ extern "C" {
 #endif
 
 
+#define MAX_LEN_COMMAND_DWIN 249
 
 #define DWIN_SERVER_CHECK(a, req, goto_tag)                                                                                         \
                                             do {                                                                                    \

@@ -49,7 +49,7 @@ function sendData(formName)
         if(value){
           if(child.type === "text"||child.type === "number"){
             if(!data)data = js;
-            js[child.name.slice(0, 3)] = child.value;
+            js[child.name.slice(0, 3)] = value;
           } else if(child.type === "color"){
             if(!data)data = js;
             const red = parseInt(value.substring(1, 3), 16)>>3;
@@ -62,11 +62,14 @@ function sendData(formName)
             break;
         } else if(child.type === "time"){
             if(!data)data = arr;
-            let endHour = child.value.indexOf(':');
-            let hour = +child.value.slice(0, endHour);
-            let min = +child.value.slice(endHour+1,);
+            let endHour = value.indexOf(':');
+            let hour = +value.slice(0, endHour);
+            let min = +value.slice(endHour+1,);
             arr.push(Math.trunc(hour/10)+""+hour%10+"");
             arr.push(Math.trunc(min/10)+""+min%10+"");
+        } else if(child.type === "textarea"){
+          data = value+"";
+          break;
         }
         }
     }

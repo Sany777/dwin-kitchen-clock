@@ -2,6 +2,7 @@ button,
 input {
     font-size: larger;
     padding: 0.4rem;
+    margin-bottom: 1rem;
 }
 
 button,
@@ -55,6 +56,7 @@ aside {
     margin-left: 1rem;
     margin-top: 1rem;
     color: white;
+    flex: 1 5 200px;
     max-width: 35%;
 }
 
@@ -239,10 +241,10 @@ h3 {
 
 .wrap {
     display: flex;
+    flex: 1 1 35%;
     flex-direction: row;
     justify-content: center;
     align-items: flex-start;
-    width: 100%;
     margin: 0;
     margin-bottom: 5rem;
     padding: 0;
@@ -252,9 +254,24 @@ h3 {
 
 .input_number {
     width: 3rem;
+
+}
+
+textarea,
+.input_number {
     outline: none;
     color: #fff;
     background-color: rgb(22, 66, 78);
+}
+
+textarea:hover {
+    background-color: rgb(64, 101, 111);
+}
+
+textarea {
+    margin: 1rem 0;
+    width: 100%;
+    font-size: large;
 }
 
 .input_number:focus {

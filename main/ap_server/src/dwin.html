@@ -21,11 +21,19 @@
     <div id="modal" hidden></div>
     <div class="wrap">
       <aside>
-        <form class="uploader" hidden id="uploader_2" name="updatedwin">
+        <div hidden id="uploader_2" class="uploader">
           <h2>Update</h2>
-          <input id="Firmware" type="file" accept=".bin" />
-          <input type="submit" value="Send boot" />
-        </form>
+          <form action="" name="updatedwin">
+            <input id="Firmware" type="file" accept=".bin" />
+            <input type="submit" value="Send boot" />
+          </form>
+          <h2>Send command</h2>
+          <form action="" name="sendraw">
+            <textarea maxlength="249" id="rawcommand" rows="4" cols="50" name="raw"></textarea>
+            <input type="submit" value="Send command" />
+            <input type="reset" value="Reset" />
+          </form>
+        </div>
         <div
           class="uploader"
           hidden

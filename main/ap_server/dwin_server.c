@@ -131,27 +131,43 @@ static esp_err_t get_ico_handler(httpd_req_t *req)
 static esp_err_t handler_update_dwin(httpd_req_t *req)
 {
     int total_len = req->content_len;
-    int cur_len = 0;
-    int received = 0;
     if (total_len >= SCRATCH_SIZE) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "content too long");
-        return ESP_FAIL;
+        DWIN_RESP_ERR(req, "Content too long", err);
     }
     init_update_dwin();
     /* check response */
     char * const server_buf = (char *)req->user_ctx;
-    while (cur_len < total_len) {
-        received = httpd_req_recv(req, server_buf, SCRATCH_SIZE);
-        if (received <= 0) {
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to post control value");
-            return ESP_FAIL;
-        }
-        cur_len += received;
+    const int received = httpd_req_recv(req, server_buf, SCRATCH_SIZE);
+    if (received != total_len) {
+        DWIN_RESP_ERR(req, "Failed to post control value", err);
     }
-    uart_write_bytes(UART_NUM_0, server_buf, total_len);
+    uart_write_bytes(UART_DWIN, server_buf, total_len);
     return ESP_OK;
+err:
+    return ESP_FAIL;
 }
 
+
+
+static esp_err_t handler_set_raw_data(httpd_req_t *req)
+{
+    const int total_len = req->content_len;
+    if (total_len >= MAX_LEN_COMMAND_DWIN) {
+        DWIN_RESP_ERR(req, "Content too long", err);
+    }
+    char * const server_buf = (char *)req->user_ctx;
+    const int received = httpd_req_recv(req, server_buf, SCRATCH_SIZE);
+    if (received != total_len) {
+        DWIN_RESP_ERR(req, "Failed to post control value", err);
+    }
+    send_char(FRAME_HEADER);
+    uart_write_bytes(UART_NUM_0, server_buf, total_len);
+    print_end();
+    httpd_resp_sendstr(req, "Send ok");
+    return ESP_OK;
+err:
+    return ESP_FAIL;
+}
 
 static esp_err_t handler_update_esp(httpd_req_t *req)
 {
@@ -435,8 +451,10 @@ static esp_err_t handler_get_info(httpd_req_t *req)
     cJSON_AddStringToObject(root, "chip", get_chip(chip_info.model));
     cJSON_AddNumberToObject(root, "revision", chip_info.revision);
     const char *sys_info = cJSON_Print(root);
-    httpd_resp_sendstr(req, sys_info);
-    free((void *)sys_info);
+    if(sys_info){
+        httpd_resp_sendstr(req, sys_info);
+        free((void *)sys_info);
+    }
     cJSON_Delete(root);
     return ESP_OK;
 }
@@ -540,7 +558,7 @@ esp_err_t set_run_webserver(const bool start)
         assert(server_buf);
         read_all_memory(data_dwin);
         httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-        config.max_uri_handlers = 27;
+        config.max_uri_handlers = 28;
         config.uri_match_fn = httpd_uri_match_wildcard;
         esp_err_t e = httpd_start(&server, &config);
         if ( e != ESP_OK){
@@ -557,12 +575,20 @@ esp_err_t set_run_webserver(const bool start)
         }
         return httpd_stop(server);
     } 
+
+    httpd_uri_t send_raw = {
+        .uri      = "/sendraw",
+        .method   = HTTP_POST,
+        .handler  = handler_set_raw_data,
+        .user_ctx = server_buf
+    };
+    httpd_register_uri_handler(server, &send_raw);
      
     httpd_uri_t get_info = {
         .uri      = "/getinfo",
         .method   = HTTP_GET,
         .handler  = handler_get_info,
-        .user_ctx = NULL
+        .user_ctx = server_buf
     };
     httpd_register_uri_handler(server, &get_info);
     httpd_uri_t savepic = {
