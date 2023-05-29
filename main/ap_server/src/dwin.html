@@ -30,8 +30,12 @@
           <h2>Send command</h2>
           <form action="" name="sendraw">
             <textarea maxlength="249" id="rawcommand" rows="4" cols="50" name="raw"></textarea>
-            <input type="submit" value="Send command" />
-            <input type="reset" value="Reset" />
+            <label>
+              <input type="submit" value="Send command" />
+            </label>
+            <label>
+              <input type="reset" value="Reset" />
+            </label>
           </form>
         </div>
         <div
@@ -45,9 +49,9 @@
             <label>foreground <input type="color" name="f" /></label> 
             <input type="submit" value="Send" />
           </form>
-          <laben>Clear screen
+          <label>Clear screen
             <input type="button" onclick="sendClear()" value="Send" />
-          </laben>
+          </label>
           <label>Position pic
             <input class="input_number" type="number" value="0" max="255" min="0" id="pos_pic" />
           </label>

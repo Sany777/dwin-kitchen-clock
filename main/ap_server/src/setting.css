@@ -27,9 +27,9 @@ form {
 .setting_page {
     min-height: 100vh;
     display: flex;
-    align-items: flex-start;
-    justify-content: flex-start;
-    padding: 4rem;
+    align-items: center;
+    padding: 3rem 0;
+    justify-content: center;
     font-size: larger;
     flex-wrap: wrap;
 }

@@ -494,7 +494,7 @@ static esp_err_t handler_get_data(httpd_req_t *req)
     httpd_resp_set_type(req, "application/json");
     cJSON *root = cJSON_CreateObject();
     cJSON_AddStringToObject(root, "SSID", name_SSID);
-    cJSON_AddStringToObject(root, "Password", pwd_WIFI);
+    cJSON_AddStringToObject(root, "PWD", pwd_WIFI);
     cJSON_AddStringToObject(root, "Key", api_KEY);
     cJSON_AddStringToObject(root, "City", name_CITY);
     for(size_t i=0, i_s=0; i<SIZE_NOTIFICATION; i++){
