@@ -27,6 +27,22 @@
 extern "C" {
 #endif
 
+
+
+#define DWIN_SERVER_CHECK(a, req, goto_tag)                                                                                         \
+                                            do {                                                                                    \
+                                                if (ESP_OK != (a)) {                                                                \
+                                                    httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, esp_err_to_name(a));  \
+                                                    goto goto_tag;                                                                  \
+                                                }                                                                                   \
+                                            } while(0)
+
+#define DWIN_RESP_ERR(req, str, goto_tag)                                                                                           \
+                                            do {                                                                                    \
+                                                    httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, str);                 \
+                                                    goto goto_tag;                                                                  \
+                                                } while(0)
+
 esp_err_t set_run_webserver(const bool start);
 
 

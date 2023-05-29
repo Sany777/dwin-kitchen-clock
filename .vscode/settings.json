@@ -33,7 +33,9 @@
     "string": "c",
     "mdns.h": "c",
     "chrono": "c",
-    "show_data.h": "c"
+    "show_data.h": "c",
+    "random": "c",
+    "stdlib.h": "c"
   },
   "idf.flashType": "UART",
   "idf.portWin": "COM7"

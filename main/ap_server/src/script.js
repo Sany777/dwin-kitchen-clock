@@ -45,23 +45,30 @@ function sendData(formName)
   const childsList = document.forms[formName];
   if(childsList){
     for(const child of childsList){
-        if(child.type === "text" || child.type === "number"){
-          if(!data)data = js;
-          js[child.name.slice(0, 3)] = child.value;
-        } else if(child.type === "color"){
-          if(!data)data = js;
-          js[child.name] = child.value.slice(1,5);
-        } else if(child.type === "file"){
-          data = child.files[0];
-          break;
-      } else if(child.type === "time"){
-          if(!data)data = arr;
-          let endHour = child.value.indexOf(':');
-          let hour = +child.value.slice(0, endHour);
-          let min = +child.value.slice(endHour+1,);
-          arr.push(Math.trunc(hour/10)+""+hour%10+"");
-          arr.push(Math.trunc(min/10)+""+min%10+"");
-      }
+        let value = child.value;
+        if(value){
+          if(child.type === "text"||child.type === "number"){
+            if(!data)data = js;
+            js[child.name.slice(0, 3)] = child.value;
+          } else if(child.type === "color"){
+            if(!data)data = js;
+            const red = parseInt(value.substring(1, 3), 16)>>3;
+            const green = parseInt(value.substring(3, 5), 16)>>2;
+            const blue = parseInt(value.substring(5, 7), 16)>>3;
+            let color = red<<11 | green<<5 | blue;
+            js[child.name] = color;
+          } else if(child.type === "file"){
+            data = child.files[0];
+            break;
+        } else if(child.type === "time"){
+            if(!data)data = arr;
+            let endHour = child.value.indexOf(':');
+            let hour = +child.value.slice(0, endHour);
+            let min = +child.value.slice(endHour+1,);
+            arr.push(Math.trunc(hour/10)+""+hour%10+"");
+            arr.push(Math.trunc(min/10)+""+min%10+"");
+        }
+        }
     }
   }
   if(data === js){

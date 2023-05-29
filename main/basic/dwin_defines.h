@@ -114,14 +114,6 @@
 
 static const char *TAG = "dwin";
 
-#define DWIN_CHECK(a, str, goto_tag)                                                               \
-                                do {                                                               \
-                                    if (ESP_OK != (a)) {                                           \
-                                        ESP_LOGE(TAG, "err :%s: , %s", esp_err_to_name(a), str);   \
-                                        goto goto_tag;                                             \
-                                    }                                                              \
-                                } while (0)
-
 #define DWIN_SHOW_ERR(a)                                                                           \
                                 do {                                                               \
                                     if (ESP_OK != (a)) {                                           \

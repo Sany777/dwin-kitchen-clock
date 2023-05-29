@@ -1,6 +1,7 @@
 #include "dwin_server.h"
+#include "stdlib.h"
 
-
+#define LEN_DATA_SEND_NOTIF (SIZE_NOTIFICATION*2+1)
 #define BASE_RESPONSE_SAVE "Save image to position"
 #define LEN_RESPONSE_SAVE (sizeof(BASE_RESPONSE_SAVE))
 #define BASE_PATH_SAVE_PIC "/sevepic"
@@ -165,7 +166,7 @@ static esp_err_t handler_update_esp(httpd_req_t *req)
         return ESP_FAIL;
     };
     update_partition = esp_ota_get_next_update_partition(NULL);
-    DWIN_CHECK(esp_ota_begin(update_partition, OTA_SIZE_UNKNOWN, &update_handle), "", _err_start);
+    DWIN_SERVER_CHECK(esp_ota_begin(update_partition, OTA_SIZE_UNKNOWN, &update_handle), req, _err_start);
     while (cur_len < total_len) {
         received = httpd_req_recv(req, server_buf, SCRATCH_SIZE-1);
         if(received <= 0 ){
@@ -173,10 +174,10 @@ static esp_err_t handler_update_esp(httpd_req_t *req)
             goto _err;
         }
         cur_len += received;
-        DWIN_CHECK(esp_ota_write(update_handle, server_buf, received), "esp_ota_write", _err);
+        DWIN_SERVER_CHECK(esp_ota_write(update_handle, server_buf, received), req, _err);
     }
-    DWIN_CHECK(esp_ota_end(update_handle), "", _err);
-    DWIN_CHECK(esp_ota_set_boot_partition(update_partition), "", _err);
+    DWIN_SERVER_CHECK(esp_ota_end(update_handle), req, _err);
+    DWIN_SERVER_CHECK(esp_ota_set_boot_partition(update_partition), req, _err);
     httpd_resp_sendstr(req, "Update seccessful");
     vTaskDelay(100);
     esp_restart();
@@ -194,19 +195,15 @@ static esp_err_t handler_set_img(httpd_req_t *req)
 {
     const int total_len = req->content_len;
     if (total_len > MAX_LEN_CHUNC_IMG || !total_len) {
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "format data is wrong");
-        return ESP_FAIL;
+        DWIN_RESP_ERR(req, "Data length too long", err);
     }
-    ESP_LOGE(TAG, "str %s\n ", req->uri);
     char * const server_buf = (char *)req->user_ctx;
     int cur_len = 0;
     int received = 0;
     while (cur_len < total_len) {
         received = httpd_req_recv(req, server_buf, total_len);
         if (received <= 0) {
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to post control value");
-            send_chunc(NULL, 0);
-            return ESP_FAIL;
+            DWIN_RESP_ERR(req, "Failed to post control value", err);
         }
         cur_len += received;
     }
@@ -214,75 +211,69 @@ static esp_err_t handler_set_img(httpd_req_t *req)
     if(total_len < MAX_LEN_CHUNC_IMG){
         char *pos_pic_str = get_pos_data_str_from_uri(req->uri, BASE_PATH_SAVE_PIC);
         if(!pos_pic_str){
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Wrong value");
-            return ESP_FAIL;
+            DWIN_RESP_ERR(req, "Format data position pic is wrong", err);
         }
         int pos_pic = atoi(pos_pic_str);
         if(pos_pic > 255 || pos_pic < 0){
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Wrong value");
-            return ESP_FAIL;
+            DWIN_RESP_ERR(req, "Format data position pic is wrong", err);
         }
         save_pic(pos_pic);
     }
     httpd_resp_sendstr(req, "ok");
     return ESP_OK;
+err:
+    send_chunc(NULL, 0);
+    return ESP_FAIL;
 }
 
-#define SIZE_COLOR_DATA sizeof(uint16_t)
+
 static esp_err_t handler_set_color(httpd_req_t *req)
 {
     const int total_len = req->content_len;
     char * const server_buf = (char *)req->user_ctx;
     if(total_len > SCRATCH_SIZE){
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Wrong format");
-        return ESP_FAIL;
+        DWIN_RESP_ERR(req, "Data length too long", err);
     }
     const int received = httpd_req_recv(req, server_buf, total_len);
     if (received != total_len) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "semething went wrong");
-        return ESP_FAIL;
+        DWIN_RESP_ERR(req, "Data not read", err);
     }
     server_buf[total_len] = 0;
     cJSON *root = cJSON_Parse(server_buf);
     const cJSON *bcolor_j = cJSON_GetObjectItemCaseSensitive(root, "b");
     const cJSON *fcolor_j = cJSON_GetObjectItemCaseSensitive(root, "f");
-    const char *bcolor = NULL, *fcolor = NULL;
-    size_t fcolor_len = 0, bcolor_len = 0;
-    if(cJSON_IsString(bcolor_j) && (bcolor_j->valuestring != NULL)){
-        bcolor = bcolor_j->valueint;
-        bcolor_len = strnlen(bcolor, SIZE_BUF);
+    uint16_t bcolor = 0, fcolor = 0;
+    bool is_f = false, is_b = false;
+    if(cJSON_IsNumber(bcolor_j)){
+        bcolor = (uint16_t )bcolor_j->valueint;
+        is_b = true;
     }
-    if(cJSON_IsString(fcolor_j) && (fcolor_j->valuestring != NULL)){
-        fcolor = fcolor_j->valueint;
-        fcolor_len = strnlen(fcolor, SIZE_BUF);
+    if(cJSON_IsNumber(fcolor_j)){
+        fcolor = (uint16_t )fcolor_j->valueint;
+        is_f = true;
     }
-    if(!bcolor_len || !fcolor_len){
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Wrong format");
-        cJSON_Delete(root);
-        return ESP_FAIL;
+    if(!is_b || !is_f){
+        DWIN_RESP_ERR(req, "Data not read", _err);
     }
-    ESP_LOGI(TAG, "set color : %s , %s", bcolor, fcolor);
-    uint16_t bc_u = bcolor[0]<<8;
-    bc_u |= GET_NUMBER(bcolor[1]);
-    uint16_t fc_u = (uint16_t) GET_NUMBER(fcolor[0])<<8;
-    fc_u |= GET_NUMBER(fcolor[1]);
-    set_color(fc_u, bc_u);
+    set_color(fcolor, bcolor);
     httpd_resp_sendstr(req, "Success");
+    cJSON_Delete(root);
     return ESP_OK;
+_err:
+    cJSON_Delete(root);
+err:
+    return ESP_FAIL;
 }
 
 static esp_err_t handler_save_pic(httpd_req_t *req)
 {
-    char *pos_pic_str = get_pos_data_str_from_uri(req->uri, BASE_PATH_SAVE_PIC);
-    ESP_LOGI(TAG, "uri : %s", req->uri);
+    const char *pos_pic_str = get_pos_data_str_from_uri(req->uri, BASE_PATH_SAVE_PIC);
     if(!pos_pic_str){
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Wrong value");
-        return ESP_FAIL;
+        DWIN_RESP_ERR(req, "Data not read", err);
     }
     int pos_pic = atoi(pos_pic_str);
     if(pos_pic > 255 || pos_pic < 0){
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Wrong value");
-        return ESP_FAIL;
+        DWIN_RESP_ERR(req, "Wrong value position pic", err);
     }
     save_pic(pos_pic);
     char *buf_resp = calloc(1, LEN_RESPONSE_SAVE+5);
@@ -292,6 +283,8 @@ static esp_err_t handler_save_pic(httpd_req_t *req)
         free(buf_resp);
     }
     return ESP_OK;
+err:
+    return ESP_FAIL;
 }
 
 static esp_err_t handler_clear_screen(httpd_req_t *req)
@@ -322,17 +315,15 @@ static esp_err_t handler_set_network(httpd_req_t *req)
     const size_t total_len = req->content_len;
     main_data_t *data_dwin = (main_data_t *)req->user_ctx;
     if(total_len > SCRATCH_SIZE){
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "content too long");
-        return ESP_FAIL;
+         DWIN_RESP_ERR(req, "content too long", err);
     }
     char *server_buf = malloc(total_len+1);
     if(server_buf == NULL){
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "not enough storage");
+        DWIN_RESP_ERR(req, "Not enough storage", err);
     }
     const int received = httpd_req_recv(req, server_buf, total_len);
     if (received != total_len) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "semething went wrong");
-        return ESP_FAIL;
+        DWIN_RESP_ERR(req, "Data not read", err_b);
     }
     server_buf[received] = 0;
     cJSON *root = cJSON_Parse(server_buf);
@@ -348,15 +339,11 @@ static esp_err_t handler_set_network(httpd_req_t *req)
         pwd_wifi = pwd_wifi_j->valuestring;
         pwd_len = strnlen(pwd_wifi, SIZE_BUF);
     }
-
     if((!pwd_len && !ssid_len) 
         || ssid_len >= MAX_STR_LEN 
         || pwd_len >= MAX_STR_LEN)
     {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Wrong format data");
-        free(server_buf);
-        cJSON_Delete(root);
-        return ESP_FAIL;
+        DWIN_RESP_ERR(req, "Wrong format data", err_j);
     }
     if(ssid_len){
         memcpy(name_SSID, ssid_name, ssid_len);
@@ -372,6 +359,12 @@ static esp_err_t handler_set_network(httpd_req_t *req)
     cJSON_Delete(root);
     httpd_resp_sendstr(req, "Successful");
     return ESP_OK;
+err_j: 
+    cJSON_Delete(root);
+err_b:
+    free(server_buf);
+err:
+    return ESP_FAIL;
 }
 
 static esp_err_t handler_set_api(httpd_req_t *req)
@@ -379,17 +372,15 @@ static esp_err_t handler_set_api(httpd_req_t *req)
     const int total_len = req->content_len;
     main_data_t *data_dwin = (main_data_t *)req->user_ctx;
     if(total_len > SCRATCH_SIZE){
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "content too long");
-        return ESP_FAIL;
+        DWIN_RESP_ERR(req, "content too long", err);
     }
     char *server_buf = malloc(total_len+1);
     if(server_buf == NULL){
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "not enough storage");
+        DWIN_RESP_ERR(req, "Not enough storage", err);
     }
     const int received = httpd_req_recv(req, server_buf, total_len);
     if (received != total_len) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "semething went wrong");
-        return ESP_FAIL;
+        DWIN_RESP_ERR(req, "Data not read", _err);
     }
     server_buf[received] = '\0';
     cJSON *root = cJSON_Parse(server_buf);
@@ -408,10 +399,7 @@ static esp_err_t handler_set_api(httpd_req_t *req)
     if((city_len == 0 && key_len == 0) 
         || city_len > MAX_STR_LEN)
     {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Wrong format input");
-        cJSON_Delete(root);
-        free(server_buf);
-        return ESP_FAIL;
+        DWIN_RESP_ERR(req, "Wrong format input", __err);
     }
     if(key_len == SIZE_API){
         memcpy(api_KEY, key, key_len);
@@ -427,6 +415,12 @@ static esp_err_t handler_set_api(httpd_req_t *req)
     free(server_buf);
     httpd_resp_sendstr(req, "Successful");
     return ESP_OK;
+__err:
+    cJSON_Delete(root);
+_err:
+    free(server_buf);
+err:
+    return ESP_FAIL;
 }
 
 
@@ -452,34 +446,32 @@ static esp_err_t handler_set_time(httpd_req_t *req)
     const int total_len = req->content_len;
     char * const server_buf = (char *)req->user_ctx;
     if(total_len > SCRATCH_SIZE){
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "content too long");
-        return ESP_FAIL;
+        DWIN_RESP_ERR(req, "Content too long", err);
     }
     const int received = httpd_req_recv(req, server_buf, total_len);
     if (received != total_len) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "semething went wrong");
-        return ESP_FAIL;
+        DWIN_RESP_ERR(req, "Data not read", err);
     }
-    server_buf[total_len] = '\0';
+    server_buf[total_len] = 0;
     long *time = malloc(sizeof(long));
     if(!time){
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "not enough storage");
-        return ESP_FAIL;
+        DWIN_RESP_ERR(req, "Not enough storage", err);
     }
     *time = atol(server_buf);
     // esp_event_post_to(loop_direct, EVENTS_SET_TIME, UPDATE_TIME_FROM_MS, time, sizeof(long), TIMEOUT_SEND_EVENTS);
     httpd_resp_sendstr(req, "Set time successfully");
     return ESP_OK;
+err:
+    return ESP_FAIL;
 }
 
 
 static esp_err_t handler_get_data(httpd_req_t *req)
 {
     main_data_t * data_dwin = (main_data_t *)req->user_ctx;
-    char *notif_send = malloc(SIZE_NOTIFICATION*2+1);
+    char *notif_send = malloc(LEN_DATA_SEND_NOTIF);
     if(notif_send == NULL){
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "not enough storage");
-        return ESP_FAIL;
+        DWIN_RESP_ERR(req, "Not enough storage", err);
     }
     httpd_resp_set_type(req, "application/json");
     cJSON *root = cJSON_CreateObject();
@@ -491,44 +483,48 @@ static esp_err_t handler_get_data(httpd_req_t *req)
         notif_send[i_s++] = notification_DATA[i]/10+'0';
         notif_send[i_s++] = notification_DATA[i]%10+'0';
     }
-    notif_send[SIZE_NOTIFICATION] = 0;
+    notif_send[LEN_DATA_SEND_NOTIF-1] = 0;
     cJSON_AddStringToObject(root, "Notification", notif_send);
     const char *data_info = cJSON_Print(root);
+    if(!data_info){
+        free(notif_send);
+        DWIN_RESP_ERR(req, "Not enough storage", err);
+    }
     httpd_resp_sendstr(req, data_info);
     free((void *)data_info);
     free(notif_send);
     cJSON_Delete(root);
     return ESP_OK;
+err:
+    return ESP_FAIL;
 }
+
 
 static esp_err_t notif_handler(httpd_req_t *req)
 {
     const int total_len = req->content_len;
-    if(total_len > SIZE_NOTIFICATION+1){
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "content too long");
-        return ESP_FAIL;
+    if(total_len > LEN_DATA_SEND_NOTIF){
+        DWIN_RESP_ERR(req, "Content too long", err);
     }
-    char * const server_buf = malloc(total_len+1);
+    char * const server_buf = malloc(LEN_DATA_SEND_NOTIF);
         if(server_buf == NULL){
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "not enough storage");
-        return ESP_FAIL;
+        DWIN_RESP_ERR(req, "Not enough storage", err);
     }
     main_data_t * data_dwin = (main_data_t *)req->user_ctx;
     const int received = httpd_req_recv(req, server_buf, total_len);
     if (received != total_len) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "semething went wrong");
-        return ESP_FAIL;
+        DWIN_RESP_ERR(req, "Data not read", err);
     }
     char *buf = calloc(1, 3);
     for(size_t i=0, i_notif = 0; i_notif<SIZE_NOTIFICATION && i<total_len; i_notif++, i+=2){
         notification_DATA[i_notif] = GET_NUMBER(server_buf[i])*10 + GET_NUMBER(server_buf[i+1]);
     }
-    server_buf[total_len] = 0;
-send_str_dwin(server_buf);
     write_memory(data_dwin, DATA_NOTIF);
-    httpd_resp_sendstr(req, "update notification");
+    httpd_resp_sendstr(req, "Update notification");
     free(server_buf);
     return ESP_OK;
+err:
+    return ESP_FAIL;
 }
 
 
@@ -537,7 +533,6 @@ esp_err_t set_run_webserver(const bool start)
     static main_data_t *data_dwin;
     static char *server_buf;
     static httpd_handle_t server;
-    
     if(start){
         if(data_dwin == NULL)data_dwin = malloc(sizeof(main_data_t));
         assert(data_dwin);
@@ -584,7 +579,6 @@ esp_err_t set_run_webserver(const bool start)
         .user_ctx = NULL
     };
     httpd_register_uri_handler(server, &clear);
-
     httpd_uri_t get_setting = {
         .uri      = "/data?",
         .method   = HTTP_GET,

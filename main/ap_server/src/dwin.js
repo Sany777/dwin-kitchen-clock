@@ -6,7 +6,6 @@ const namesTable = document.getElementById("list_names");
 const curImg = document.getElementById("cur_picture");
 const imgInput = document.getElementById("new_image");
 const tbody = document.getElementById("table_title");
-const posPic = document.getElementById("pos_pic");
 let imgList = [];
 let imgCount = 0;
 
@@ -182,7 +181,7 @@ function sendClear()
 
 function sendSavePic()
 {
-  sendDataForm("savepic/"+posPic.value);
+  sendDataForm("savepic/" + document.getElementById("pos_pic").value);
 }
 
 

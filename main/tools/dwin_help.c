@@ -27,7 +27,7 @@ char *get_pos_data_str_from_uri(const char *uri_str,
         || pathlen > MAX_URI_LEN){
         return NULL;
     }
-    return uri_str+base_pathlen;
+    return uri_str+base_pathlen+1;
 }
 
 char *get_chip(int model_id)
