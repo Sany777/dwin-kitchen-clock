@@ -10,7 +10,7 @@
 #define NO_CLEAR_ENTRY     (0UL)
 #define CLEAR_EXIT         (ULONG_MAX)
 
-#define NO_DATA_DWIN  0
+#define NO_main_data  0
 #define STOP 0
 #define RUN  1
 #define ON           true
@@ -97,7 +97,7 @@
 #define TIMER_WAKEUP_SHORT_TIME_US   (10 * 1000UL)
 
 #define WINDOW_ESPNOW_MS 65000
-
+#define CLIENT_BUF_LEN 4000
 #define SIZE_IP 4
 #define SIZE_MAC 6
 #define SIZE_BUF_INFO_SEND 18
@@ -113,3 +113,10 @@
 #define NUMBER_SENSOR 2
 
 #define VARIABLE_VALUE '\0'
+
+#define AP_WIFI_SSID      "NASA"
+#define AP_WIFI_PWD      "esp32first"
+
+#define NUMBER_DATA_WEATHER 5
+#define MAX_LEN_DESCRIPTION 20
+#define LEN_BUF_DESCRIPTION (MAX_LEN_DESCRIPTION+1)

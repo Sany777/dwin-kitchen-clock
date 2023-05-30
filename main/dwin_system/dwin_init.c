@@ -7,8 +7,8 @@
 void init_uart(void);
 void esp_init()
 {
-    main_data_t *data_dwin = (main_data_t *) calloc(1, sizeof(main_data_t));
-    assert(data_dwin);
+    main_data_t *main_data = (main_data_t *) calloc(1, sizeof(main_data_t));
+    assert(main_data);
     dwin_event_group = xEventGroupCreate();
     assert(dwin_event_group);
     esp_err_t ret = nvs_flash_init();
@@ -18,7 +18,7 @@ void esp_init()
     }
 
     wifi_init();
-    init_dwin_events(data_dwin);
+    init_dwin_events(main_data);
 }
 
 

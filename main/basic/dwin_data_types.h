@@ -181,19 +181,20 @@ typedef struct device_espnow {
     char name[MAX_NAME_DEVICE+1];
 } __attribute__((packed)) device_info_package_t;
 
-typedef struct weather_data{
-    char *description;
+
+
+typedef struct {
     uint8_t weather_pic;
     uint8_t sunrise_hour;
     uint8_t sunrise_min;
     uint8_t sunset_hour;
     uint8_t sunset_min;
-    uint8_t clouds;
-    uint8_t pop;
     uint8_t timezone;
-    temperature_t feels_like;
-    temperature_t outdoor;
+    char description[LEN_BUF_DESCRIPTION];
+    uint8_t pop[NUMBER_DATA_WEATHER];
     temperature_t indoor;
+    temperature_t feels_like[NUMBER_DATA_WEATHER];
+    temperature_t outdoor[NUMBER_DATA_WEATHER];
 } weather_data_t;
 
 /* data struct timer func*/
@@ -240,7 +241,7 @@ typedef struct sensor_data{
     char name[0];
 } __attribute__((packed))sensor_data_t;
 
-typedef struct main_data{
+typedef struct {
     uint8_t area;
     char pwd_wifi[SIZE_BUF];
     char ssid_name[SIZE_BUF];
@@ -249,6 +250,7 @@ typedef struct main_data{
     uint8_t colors_interface[SIZE_COLOURS_INTERFACE];
     uint8_t cur_time[SIZE_TIME];
     uint8_t notif[SIZE_NOTIFICATION];
+    weather_data_t *weather_data;
     sensor_data_t *sensor_data[NUMBER_SENSOR];
 } main_data_t;
 

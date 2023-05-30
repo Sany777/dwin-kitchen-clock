@@ -1,33 +1,15 @@
 #include "dwin_weather.h"
 
-#define MAX_HTTP_RECV_BUFFER 2048
-#define MAX_HTTP_OUTPUT_BUFFER 4000
-
-static const char *TAG = "HTTP CLIENT dwin";
-
 esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 {
-    static char *output_buffer;  // Buffer to store response of http request from event handler
-    static int output_len;       // Stores number of bytes read
+    static char *output_buffer; 
+    static int output_len;      
     switch(evt->event_id) {
-        case HTTP_EVENT_ERROR:
-            ESP_LOGD(TAG, "HTTP_EVENT_ERROR");
-            break;
-        case HTTP_EVENT_ON_CONNECTED:
-            ESP_LOGD(TAG, "HTTP_EVENT_ON_CONNECTED");
-            break;
-        case HTTP_EVENT_HEADER_SENT:
-            ESP_LOGD(TAG, "HTTP_EVENT_HEADER_SENT");
-            break;
-        case HTTP_EVENT_ON_HEADER:
-            ESP_LOGD(TAG, "HTTP_EVENT_ON_HEADER, key=%s, value=%s", evt->header_key, evt->header_value);
-            break;
         case HTTP_EVENT_ON_DATA:
-            ESP_LOGD(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
             if (!esp_http_client_is_chunked_response(evt->client)) {
                 int copy_len = 0;
                 if (evt->user_data) {
-                    copy_len = MIN(evt->data_len, (MAX_HTTP_OUTPUT_BUFFER - output_len));
+                    copy_len = MIN(evt->data_len, (CLIENT_BUF_LEN - output_len));
                     if (copy_len) {
                         memcpy(evt->user_data + output_len, evt->data, copy_len);
                     }
@@ -37,7 +19,6 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
                         output_buffer = (char *) malloc(buffer_len);
                         output_len = 0;
                         if (output_buffer == NULL) {
-                            ESP_LOGE(TAG, "Failed to allocate memory for output buffer");
                             return ESP_FAIL;
                         }
                     }
@@ -48,10 +29,8 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
                 }
                 output_len += copy_len;
             }
-
             break;
         case HTTP_EVENT_ON_FINISH:
-            ESP_LOGD(TAG, "HTTP_EVENT_ON_FINISH");
             if (output_buffer != NULL) {
                 free(output_buffer);
                 output_buffer = NULL;
@@ -59,30 +38,32 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
             output_len = 0;
             break;
         case HTTP_EVENT_DISCONNECTED:
-            ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
             if (output_buffer != NULL) {
                 free(output_buffer);
                 output_buffer = NULL;
             }
             output_len = 0;
             break;
-        case HTTP_EVENT_REDIRECT:
-            ESP_LOGD(TAG, "HTTP_EVENT_REDIRECT");
-            break;
+        default:break;
     }
     return ESP_OK;
 }
 
-void get_weather(void)
+void get_weather(void *pv)
 {
-    char *local_response_buffer = (char *)calloc(1, MAX_HTTP_OUTPUT_BUFFER);
+    main_data_t *main_data = (main_data_t *)pv;
+    if(main_data->weather_data == NULL){
+        main_data->weather_data = calloc(1, sizeof(weather_data_t));
+        assert(main_data->weather_data);
+    }
+    char *local_response_buffer = (char *)malloc(CLIENT_BUF_LEN);
     esp_http_client_config_t config = {
         .url = "https://api.openweathermap.org/data/2.5/forecast?q=Kyiv&units=metric&cnt=5&appid=54404f71fe4cbd50e2d1068353f013e6",
         .host = "https://api.openweathermap.org",
         .event_handler = _http_event_handler,
         .user_data = (void*)local_response_buffer,        // Pass address of local buffer to get response
         .method = HTTP_METHOD_GET,
-        .buffer_size = MAX_HTTP_OUTPUT_BUFFER,
+        .buffer_size = CLIENT_BUF_LEN,
         .auth_type = HTTP_AUTH_TYPE_NONE
 
     };
@@ -98,24 +79,48 @@ void get_weather(void)
     }
     const size_t data_len = esp_http_client_get_content_length(client);
     if(data_len){
-        local_response_buffer[data_len] = 0;
-        int number_keys = 0;
-        char **temp_key = find_str_key(local_response_buffer, data_len, "\"temp\":");
+        char **pop = find_str_key(local_response_buffer, data_len, "\"pop\":");
+        char **temp = find_str_key(local_response_buffer, data_len, "\"temp\":");
         char **temp_feel = find_str_key(local_response_buffer, data_len, "\"feels_like\":");
         char **description = find_str_key(local_response_buffer, data_len, "\"description\":");
+        char **clouds = find_str_key(local_response_buffer, data_len, "\"clouds\":{\"all\":");
+        char **id = find_str_key(local_response_buffer, data_len, "\"id\":");
+        char **sunrise = find_str_key(local_response_buffer, data_len, "\"sunrise\":");
+        char **sunset = find_str_key(local_response_buffer, data_len, "\"sunset\":");
         for(int i=0; i<data_len; i++){
-            if(local_response_buffer[i] == ',')local_response_buffer[i] = 0;
+            if(local_response_buffer[i] == ',' 
+                    || local_response_buffer[i] == '}')
+            {
+                local_response_buffer[i] = 0;
+            }
         }
-        for(int i=0; temp_key && temp_key[i]; i++){
-            ESP_LOGI(TAG, "temp %s", temp_key[i]);
+        // assert(sunset && sunrise && id && clouds && description && temp_feel && temp);
+        struct tm timeinfo;
+        time_t time_now = atol(sunrise[0]);
+        localtime_r(&time_now, &timeinfo);
+        sunrise_HOUR = timeinfo.tm_hour;
+        sunrise_MIN = timeinfo.tm_min;
+        time_now = atol(sunset[0]);
+        localtime_r(&time_now, &timeinfo);
+        sunset_HOUR = timeinfo.tm_hour;
+        sunset_MIN = timeinfo.tm_min;
+
+        ESP_LOGI(TAG, "sunset  %d:%d",sunset_HOUR, sunset_MIN);
+
+        for(int i=0; temp && temp[i]; i++){
+            temp_OUTDOOR[i] = atoi(temp[i]);
+            ESP_LOGI(TAG, "temp %d", temp_OUTDOOR[i]);
+            temp_FEELS_LIKE[i] = atoi(temp_feel[i]);
+            ESP_LOGI(TAG, "temp_feel %d", temp_FEELS_LIKE[i]);
+            PoP[i] = (uint8_t) atoi(pop[i]);
         }
-        for(int i=0; temp_feel && temp_feel[i]; i++){
-            ESP_LOGI(TAG, "temp feel  %s", temp_feel[i]);
-        }
-        for(int i=0; description && description[i]; i++){
-            ESP_LOGI(TAG, "description - %s", description[i]);
-        }
-        free(temp_key);
+        // free(sunrise);
+        // free(sunset);
+
+
+        free(id);
+        free(clouds);
+        free(temp);
         free(description);
         free(temp_feel);
     }

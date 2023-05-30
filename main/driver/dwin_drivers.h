@@ -47,7 +47,7 @@ void dwin_clock_on(const uint16_t row,
 void dwin_print(uint16_t row, uint16_t column, 
 					const uint16_t text_color, 
 					const uint8_t font) ;
-void dwin_clock_set(const main_data_t *data_dwin);
+void dwin_clock_set(const main_data_t *main_data);
 void save_pic(const uint8_t pic);
 void set_text_box(const uint16_t x_s, 
                     const uint16_t y_s, 

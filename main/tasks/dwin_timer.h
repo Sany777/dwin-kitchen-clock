@@ -16,6 +16,6 @@ ESP_EVENT_DECLARE_BASE(TIMER_TURNED_ON);
 esp_err_t add_function_to_timer_loop(int32_t event_id, size_t sec, mode_time_func_t mode, void *pv);
 void periodic_timer_callback(void* arg);
 esp_err_t set_mode_timer_function(int32_t event_id, action_timer_func_t mode);
-esp_err_t init_loop_event_timer(main_data_t *data_dwin);
+esp_err_t init_loop_event_timer(main_data_t *main_data);
 void remove_event_timer(void);
 void stop_event_timer(void);

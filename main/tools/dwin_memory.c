@@ -3,7 +3,7 @@
 
 
 
-void write_memory(main_data_t *data_dwin, const int data_identificator) 
+void write_memory(main_data_t *main_data, const int data_identificator) 
 {
 	nvs_handle_t nvs_handle_dwin;
     DWIN_SHOW_ERR(nvs_open("nvs", NVS_READWRITE, &nvs_handle_dwin));
@@ -53,7 +53,7 @@ void write_memory(main_data_t *data_dwin, const int data_identificator)
 }
 
 
-void read_memory(main_data_t *data_dwin, const int data_identificator) 
+void read_memory(main_data_t *main_data, const int data_identificator) 
 {
 	nvs_handle_t nvs_handle_dwin;
 	DWIN_SHOW_ERR(nvs_open("nvs", NVS_READWRITE, &nvs_handle_dwin));
@@ -109,10 +109,10 @@ void read_memory(main_data_t *data_dwin, const int data_identificator)
 	nvs_close(nvs_handle_dwin);
 }
 
-void read_all_memory(main_data_t *data_dwin) 
+void read_all_memory(main_data_t *main_data) 
 {
 	for(uint8_t i=0; i<END_DATA_IDENTEFIER; i++) {
-		read_memory(data_dwin, i);
+		read_memory(main_data, i);
 	}
 }
 

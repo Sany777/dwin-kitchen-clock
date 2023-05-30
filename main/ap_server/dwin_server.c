@@ -329,7 +329,7 @@ static esp_err_t handler_close(httpd_req_t *req)
 static esp_err_t handler_set_network(httpd_req_t *req)
 {
     const size_t total_len = req->content_len;
-    main_data_t *data_dwin = (main_data_t *)req->user_ctx;
+    main_data_t *main_data = (main_data_t *)req->user_ctx;
     if(total_len > SCRATCH_SIZE){
          DWIN_RESP_ERR(req, "content too long", err);
     }
@@ -364,12 +364,12 @@ static esp_err_t handler_set_network(httpd_req_t *req)
     if(ssid_len){
         memcpy(name_SSID, ssid_name, ssid_len);
         name_SSID[ssid_len] = 0;
-        write_memory(data_dwin, DATA_SSID);
+        write_memory(main_data, DATA_SSID);
     }
     if(pwd_len){
         memcpy(pwd_WIFI, pwd_wifi, pwd_len);
         pwd_WIFI[pwd_len] = 0;
-        write_memory(data_dwin, DATA_PWD);
+        write_memory(main_data, DATA_PWD);
     }
     free(server_buf);
     cJSON_Delete(root);
@@ -386,7 +386,7 @@ err:
 static esp_err_t handler_set_api(httpd_req_t *req)
 {
     const int total_len = req->content_len;
-    main_data_t *data_dwin = (main_data_t *)req->user_ctx;
+    main_data_t *main_data = (main_data_t *)req->user_ctx;
     if(total_len > SCRATCH_SIZE){
         DWIN_RESP_ERR(req, "content too long", err);
     }
@@ -420,12 +420,12 @@ static esp_err_t handler_set_api(httpd_req_t *req)
     if(key_len == SIZE_API){
         memcpy(api_KEY, key, key_len);
         api_KEY[key_len] = 0;
-        write_memory(data_dwin, DATA_API);
+        write_memory(main_data, DATA_API);
     }
     if(city_len){
         memcpy(name_CITY, city_name, city_len); 
         name_CITY[city_len] = 0;
-        write_memory(data_dwin, DATA_CITY);
+        write_memory(main_data, DATA_CITY);
     }
     cJSON_Delete(root);
     free(server_buf);
@@ -486,7 +486,7 @@ err:
 
 static esp_err_t handler_get_data(httpd_req_t *req)
 {
-    main_data_t * data_dwin = (main_data_t *)req->user_ctx;
+    main_data_t * main_data = (main_data_t *)req->user_ctx;
     char *notif_send = malloc(LEN_DATA_SEND_NOTIF);
     if(notif_send == NULL){
         DWIN_RESP_ERR(req, "Not enough storage", err);
@@ -528,7 +528,7 @@ static esp_err_t notif_handler(httpd_req_t *req)
         if(server_buf == NULL){
         DWIN_RESP_ERR(req, "Not enough storage", err);
     }
-    main_data_t * data_dwin = (main_data_t *)req->user_ctx;
+    main_data_t * main_data = (main_data_t *)req->user_ctx;
     const int received = httpd_req_recv(req, server_buf, total_len);
     if (received != total_len) {
         DWIN_RESP_ERR(req, "Data not read", err);
@@ -537,7 +537,7 @@ static esp_err_t notif_handler(httpd_req_t *req)
     for(size_t i=0, i_notif = 0; i_notif<SIZE_NOTIFICATION && i<total_len; i_notif++, i+=2){
         notification_DATA[i_notif] = GET_NUMBER(server_buf[i])*10 + GET_NUMBER(server_buf[i+1]);
     }
-    write_memory(data_dwin, DATA_NOTIF);
+    write_memory(main_data, DATA_NOTIF);
     httpd_resp_sendstr(req, "Update notification");
     free(server_buf);
     return ESP_OK;
@@ -548,15 +548,15 @@ err:
 
 esp_err_t set_run_webserver(const bool start)
 { 
-    static main_data_t *data_dwin;
+    static main_data_t *main_data;
     static char *server_buf;
     static httpd_handle_t server;
     if(start){
-        if(data_dwin == NULL)data_dwin = malloc(sizeof(main_data_t));
-        assert(data_dwin);
+        if(main_data == NULL)main_data = malloc(sizeof(main_data_t));
+        assert(main_data);
         if(server_buf == NULL)server_buf = malloc(SCRATCH_SIZE);
         assert(server_buf);
-        read_all_memory(data_dwin);
+        read_all_memory(main_data);
         httpd_config_t config = HTTPD_DEFAULT_CONFIG();
         config.max_uri_handlers = 28;
         config.uri_match_fn = httpd_uri_match_wildcard;
@@ -569,9 +569,9 @@ esp_err_t set_run_webserver(const bool start)
            free(server_buf); 
            server_buf = NULL;
         }
-        if(data_dwin){
-            free(data_dwin);
-            data_dwin = NULL;
+        if(main_data){
+            free(main_data);
+            main_data = NULL;
         }
         return httpd_stop(server);
     } 
@@ -609,7 +609,7 @@ esp_err_t set_run_webserver(const bool start)
         .uri      = "/data?",
         .method   = HTTP_GET,
         .handler  = handler_get_data,
-        .user_ctx = data_dwin
+        .user_ctx = main_data
     };
     httpd_register_uri_handler(server, &get_setting);
      httpd_uri_t dwin_uri = {
@@ -651,14 +651,14 @@ esp_err_t set_run_webserver(const bool start)
         .uri      = "/Network",
         .method   = HTTP_POST,
         .handler  = handler_set_network,
-        .user_ctx = data_dwin
+        .user_ctx = main_data
     };
     httpd_register_uri_handler(server, &net_uri);
      httpd_uri_t api_uri = {
         .uri      = "/API",
         .method   = HTTP_POST,
         .handler  = handler_set_api,
-        .user_ctx = data_dwin
+        .user_ctx = main_data
     };
     httpd_register_uri_handler(server, &api_uri);
      httpd_uri_t time_uri = {
@@ -770,7 +770,7 @@ esp_err_t set_run_webserver(const bool start)
         .uri      = "/Notification",
         .method   = HTTP_POST,
         .handler  = notif_handler,
-        .user_ctx = data_dwin
+        .user_ctx = main_data
     };
     httpd_register_uri_handler(server, &notif_uri);
      httpd_uri_t redir_uri = {

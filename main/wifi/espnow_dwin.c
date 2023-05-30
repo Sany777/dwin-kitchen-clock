@@ -43,7 +43,7 @@
 
 // void espnow_task_tx(void *pv)
 // {
-//     main_data_t * const data_dwin = (main_data_t *)pv;
+//     main_data_t * const main_data = (main_data_t *)pv;
 //     const uint8_t *parcel = NULL, *mac;
 //     uint8_t max_atempt;
 //     size_t parcel_len = 0;
@@ -183,7 +183,7 @@
 
 // void espnow_task_rx(void *pv)
 // {
-//     main_data_t * const data_dwin = (main_data_t *)pv;
+//     main_data_t * const main_data = (main_data_t *)pv;
 //     /*parcel data*/
 //     uint8_t rssi;
 //     uint16_t crc;

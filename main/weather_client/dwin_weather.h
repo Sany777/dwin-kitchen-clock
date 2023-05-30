@@ -14,8 +14,9 @@
 #include "esp_system.h"
 #include "cJSON.h"
 #include "esp_http_client.h"
+#include "dwin_common.h"
 
 
 
-void get_weather(void);
+void get_weather(void *pv);
 char** find_str_key(char *buf, const size_t buf_len, const char *key);

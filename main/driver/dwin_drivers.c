@@ -49,7 +49,7 @@ void dwin_print(uint16_t row, uint16_t column, const uint16_t text_color, const 
 	uart_write_bytes(UART_DWIN, PRINT, sizeof(PRINT));
 }
 
-void dwin_clock_set(const main_data_t *data_dwin) 
+void dwin_clock_set(const main_data_t *main_data) 
 {
     uint8_t time_to_send[SIZE_SENDING_TIME];
 	uart_write_bytes(UART_DWIN, HEADER_CLOCK_SET, sizeof(HEADER_CLOCK_SET));

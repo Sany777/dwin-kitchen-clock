@@ -50,7 +50,11 @@
     "unordered_map": "c",
     "cstring": "c",
     "cjson.h": "c",
-    "task.h": "c"
+    "task.h": "c",
+    "thread": "c",
+    "ctype.h": "c",
+    "esp_netif.h": "c",
+    "esp_http_client.h": "c"
   },
   "idf.flashType": "UART",
   "idf.portWin": "COM7",

@@ -84,11 +84,11 @@ esp_err_t set_mode_timer_function(int32_t event_id, action_timer_func_t mode)
     return ESP_ERR_NOT_FOUND;
 }
 
-esp_err_t init_loop_event_timer(main_data_t *data_dwin)
+esp_err_t init_loop_event_timer(main_data_t *main_data)
 {
     const esp_timer_create_args_t periodic_timer_args = {
         .callback = &periodic_timer_callback,
-        .arg = (void*) data_dwin,
+        .arg = (void*) main_data,
         .name = "periodic"
     };
     return esp_timer_create(&periodic_timer_args, &periodic_timer);

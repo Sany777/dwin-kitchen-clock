@@ -3,11 +3,6 @@
 static QueueHandle_t queue_espnow_tx, queue_espnow_rx;
 
 
-#define DEFAULT_STA_SSID "realme"
-#define DEFAULT_PWD "NASa0909"
-#define ESP_WIFI_SSID      "NASA"
-#define ESP_WIFI_PASS      "esp32first"
-
 void wifi_set_mode_handler(void* arg, esp_event_base_t event_base,
                                 int32_t action, void* event_data)
 {
@@ -15,11 +10,10 @@ void wifi_set_mode_handler(void* arg, esp_event_base_t event_base,
     static esp_netif_t *netif = NULL;
     static wifi_mode_t mode = WIFI_MODE_NULL;
     static TaskHandle_t rx_espnow, tx_espnow;
-    main_data_t *data_dwin = (main_data_t *)arg;
+    main_data_t *main_data = (main_data_t *)arg;
 switch(action){
     case INIT_AP :
     {
-        ESP_LOGI(TAG, "Init AP");
         if(mode == WIFI_MODE_AP)break;
         esp_wifi_stop();
         if(mode == WIFI_MODE_STA){
@@ -33,8 +27,8 @@ switch(action){
         wifi_config.ap.authmode = WIFI_AUTH_WPA_WPA2_PSK;
         wifi_config.ap.channel = ESP_WIFI_CHANNEL;
         wifi_config.ap.pmf_cfg.required = false;
-        strcpy((char *)wifi_config.ap.ssid, ESP_WIFI_SSID);
-        strcpy((char *)wifi_config.ap.password, ESP_WIFI_PASS);
+        strcpy((char *)wifi_config.ap.ssid, AP_WIFI_SSID);
+        strcpy((char *)wifi_config.ap.password, AP_WIFI_PWD);
         netif = esp_netif_create_default_wifi_ap();
         assert(netif);
         esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &server_handler, NULL);
@@ -51,23 +45,21 @@ switch(action){
         strncpy((char *)wifi_config.sta.ssid, name_SSID, MAX_STR_LEN);
         strncpy((char *)wifi_config.sta.password, pwd_WIFI, MAX_STR_LEN);
         wifi_config.sta.sae_pwe_h2e = WIFI_AUTH_WPA2_PSK;
-        // if(mode != WIFI_MODE_STA){
-            if(mode == WIFI_MODE_AP){
-                memset(&wifi_config, 0, sizeof(wifi_config));
-                esp_netif_destroy_default_wifi(netif);
-                esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &server_handler);
-                esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &server_handler);
-            }
-            mode = WIFI_MODE_STA;
-            esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_CONNECTED, &wifi_sta_handler, NULL);
-            esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &wifi_sta_handler, NULL);
-            netif = esp_netif_create_default_wifi_sta();
-            assert(netif);
-            ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+        if(mode == WIFI_MODE_AP){
+            memset(&wifi_config, 0, sizeof(wifi_config));
+            esp_netif_destroy_default_wifi(netif);
+            esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &server_handler);
+            esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &server_handler);
+        }
+        mode = WIFI_MODE_STA;
+        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_CONNECTED, &wifi_sta_handler, NULL);
+        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &wifi_sta_handler, NULL);
+        netif = esp_netif_create_default_wifi_sta();
+        assert(netif);
+        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
         #if CONFIG_ESPNOW_ENABLE_LONG_RANGE
             ESP_ERROR_CHECK(esp_wifi_set_protocol(ESP_IF_WIFI_STA, WIFI_PROTOCOL_11B|WIFI_PROTOCOL_11G|WIFI_PROTOCOL_11N|WIFI_PROTOCOL_LR));
         #endif
-        // }
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
         ESP_ERROR_CHECK(esp_wifi_start());
         esp_wifi_connect();
@@ -107,8 +99,8 @@ switch(action){
             queue_espnow_rx = xQueueCreate(ESPNOW_QUEUE_SIZE, sizeof(espnow_rx_data_t*));
             assert(queue_espnow_tx);
             assert(queue_espnow_rx);
-            xTaskCreate(espnow_task_rx, "espnow_task_rx", 4000, data_dwin, 2, rx_espnow);
-            xTaskCreate(espnow_task_tx, "espnow_task_tx", 4000, data_dwin, 2, tx_espnow);
+            xTaskCreate(espnow_task_rx, "espnow_task_rx", 4000, main_data, 2, rx_espnow);
+            xTaskCreate(espnow_task_tx, "espnow_task_tx", 4000, main_data, 2, tx_espnow);
             // xEventGroupSetBits(dwin_event_group, BIT_INIT_ESPNOW);
         }
         break;
@@ -273,7 +265,7 @@ void remove_espnow_device(const uint8_t *mac_addr)
 
 void espnow_task_tx(void *pv)
 {
-    main_data_t * const data_dwin = (main_data_t *)pv;
+    main_data_t * const main_data = (main_data_t *)pv;
     const uint8_t *parcel = NULL, *mac;
     uint8_t max_atempt;
     size_t parcel_len = 0;
@@ -413,7 +405,7 @@ for(;;){
 
 void espnow_task_rx(void *pv)
 {
-    main_data_t * const data_dwin = (main_data_t *)pv;
+    main_data_t * const main_data = (main_data_t *)pv;
     /*parcel data*/
     uint8_t rssi;
     uint16_t crc;

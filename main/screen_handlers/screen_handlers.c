@@ -3,8 +3,8 @@
 
 // void search_screen_handler(void* handler_args, esp_event_base_t base, int32_t key, void* event_data)
 // {
-//     static main_data_t *data_dwin = NULL; 
-//     if(data_dwin == NULL)data_dwin = (main_data_t *)handler_args;	
+//     static main_data_t *main_data = NULL; 
+//     if(main_data == NULL)main_data = (main_data_t *)handler_args;	
 //     static wifi_ap_record_t* ap_info = NULL; 
 //     static uint16_t ap_count;
 //     static bool not_init = true;
@@ -52,8 +52,8 @@
 // void server_handler(void* handler_args, esp_event_base_t base, int32_t key, void* event_data)
 // {
 
-//     static main_data_t *data_dwin = NULL; 
-//     if(data_dwin == NULL)  data_dwin = (main_data_t *)handler_args;
+//     static main_data_t *main_data = NULL; 
+//     if(main_data == NULL)  main_data = (main_data_t *)handler_args;
 
 //     if(key == KEY_DELETE_DATA) {
 
@@ -71,7 +71,7 @@
 
 // void device_screen_handler(void* handler_args, esp_event_base_t base, int32_t key, void* event_data)
 // {
-//     main_data_t *data_dwin = (main_data_t *)handler_args;	
+//     main_data_t *main_data = (main_data_t *)handler_args;	
 //     device_inf_t *device_show = NULL;
     
 //     if(key == KEY_DELETE_DATA && device_show) {
@@ -88,8 +88,8 @@
 
 // void setting_handler(void* handler_args, esp_event_base_t base, int32_t key, void* event_data)
 // {
-//     static  main_data_t *data_dwin = NULL; 
-//     if(data_dwin == NULL) data_dwin = (main_data_t *)handler_args;	
+//     static  main_data_t *main_data = NULL; 
+//     if(main_data == NULL) main_data = (main_data_t *)handler_args;	
 //     static uint8_t pos, max;
 //     static char *selected_buf = NULL;
     
@@ -121,10 +121,10 @@
 //     } else if(key == KEY_DELETE) {
 //         bzero(selected_buf, pos+1);
 //     } else if(key == KEY_ENTER) {
-//         write_memory(data_dwin, DATA_API);
-//         write_memory(data_dwin, DATA_CITY);
-//         write_memory(data_dwin, DATA_PWD);
-//         write_memory(data_dwin, DATA_SSID);
+//         write_memory(main_data, DATA_API);
+//         write_memory(main_data, DATA_CITY);
+//         write_memory(main_data, DATA_PWD);
+//         write_memory(main_data, DATA_SSID);
 //     } else if(key == KEY_SYNC && strlen(name_SSID) && strlen(pwd_WIFI) > 7) {
 //             set_OFF_STATE(DATA_PREPARING);
 //             // xTaskNotify(task_service_wifi, INIT_STA, eSetBits);
@@ -141,8 +141,8 @@
 
 // void main_screen_handler(void* handler_args, esp_event_base_t base, int32_t key, void* event_data)
 // {
-// 	static main_data_t *data_dwin = NULL; 
-//     if(data_dwin == NULL)  data_dwin = (main_data_t *)handler_args;	
+// 	static main_data_t *main_data = NULL; 
+//     if(main_data == NULL)  main_data = (main_data_t *)handler_args;	
 //     static weather_t *data_weather = NULL;
 //     static temperature_t temperature_indoor = NO_TEMP_SENSOR;
 //     static bool menu_active = false;
@@ -178,8 +178,8 @@
 
 // void clock_handler(void* handler_args, esp_event_base_t base, int32_t key, void* event_data)
 // {
-//     static main_data_t *data_dwin = NULL; 
-//     if(data_dwin == NULL)  data_dwin = (main_data_t *)handler_args;	
+//     static main_data_t *main_data = NULL; 
+//     if(main_data == NULL)  main_data = (main_data_t *)handler_args;	
 
 //     if(key_is_AREA_CLOCK(key)) {
 //         area_SCREEN = get_AREA_VALUE(key);
@@ -195,7 +195,7 @@
 //             default:break;
 //         }
 //     } else if(key == KEY_ENTER) {
-//         dwin_clock_set(data_dwin);
+//         dwin_clock_set(main_data);
 //     } else if(key == KEY_SYNC) {
 //         set_TOGGLE_STATE(SYNC_TIME);
 //         if(sync_TIME) {
@@ -220,8 +220,8 @@
 
 // void set_color_screen_handler(void* handler_args, esp_event_base_t base, int32_t key, void* event_data)
 // {
-//     static  main_data_t *data_dwin = NULL; 
-//     if(data_dwin == NULL)data_dwin = (main_data_t *)handler_args;		
+//     static  main_data_t *main_data = NULL; 
+//     if(main_data == NULL)main_data = (main_data_t *)handler_args;		
 //     uint32_t  value_color=0;
  
 //         if(key_is_AREA_CUSTOM(key)) {
@@ -229,7 +229,7 @@
 //         } else if(key_is_NUMBER(key)) {
 //             colors_INTERFACE[area_SCREEN] = get_NUMBER(key);
 //         } else if(key == KEY_ENTER) {
-//             write_memory(data_dwin, DATA_COLOUR);
+//             write_memory(main_data, DATA_COLOUR);
 //         } else if(key == KEY_INIT ) {
 //              dwin_set_pic(CUSTOM_COLOURS_PIC);
 //         } else if(key == KEY_CLOSE) {
@@ -245,8 +245,8 @@
 
 // void notification_screen_handler(void* handler_args, esp_event_base_t base, int32_t key, void* event_data)
 // {
-//     static main_data_t *data_dwin = NULL; 
-//     if(data_dwin == NULL)  data_dwin = (main_data_t *)handler_args;	
+//     static main_data_t *main_data = NULL; 
+//     if(main_data == NULL)  main_data = (main_data_t *)handler_args;	
 //     static uint8_t new_value, cur_day;
 //     if(key == KEY_CLOSE || key == KEY_DELETE_DATA) {
 //         return;
@@ -267,7 +267,7 @@
 //                 cur_CLOCK[area_SCREEN] = new_value;
 //             }
 //         } else if(key == KEY_ENTER) {
-//             write_memory(data_dwin, DATA_NOTIF);
+//             write_memory(main_data, DATA_NOTIF);
 //             return;
 //         } else if(key_is_AREA_TOGGLE(key)) {
             
@@ -283,8 +283,8 @@
 
 // void timer_screen_handler(void* handler_args, esp_event_base_t base, int32_t key, void* event_data)
 // {
-//     static main_data_t *data_dwin = NULL; 
-//     if(data_dwin == NULL) data_dwin = (main_data_t *)handler_args;	
+//     static main_data_t *main_data = NULL; 
+//     if(main_data == NULL) main_data = (main_data_t *)handler_args;	
 //     static int8_t *timer_data = NULL;
 //     static uint8_t new_area;
 //     static bool run=false;
