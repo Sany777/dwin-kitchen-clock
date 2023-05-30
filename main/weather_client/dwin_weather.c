@@ -96,33 +96,59 @@ void get_weather(void)
     } else {
         ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
     }
-    const size_t len_data = esp_http_client_get_content_length(client);
-    if(len_data){
-        local_response_buffer[len_data] = 0;
-
-        // for(size_t i=0; i<len_data;i++){
-        //     if(local_response_buffer[i] == '[')local_response_buffer[i] = '{';
-        //     if(local_response_buffer[i] == ']')local_response_buffer[i] = '}';
-        // }
-        cJSON *root = cJSON_Parse(local_response_buffer);
-
-        const cJSON *sunrise_j = cJSON_GetObjectItemCaseSensitive(root, "cnt");
-        const cJSON *sunset_j = cJSON_GetObjectItemCaseSensitive(root, "sunset");
-        // if(cJSON_IsString(city_j) && (city_j->valuestring != NULL)){
-        //     city_name = city_j->valuestring;
-        //     city_len = strnlen(city_name, SIZE_BUF);
-        // }
-
-        if(cJSON_IsNumber(sunrise_j)){
-            int sunrise = sunrise_j->valuedouble;
-            ESP_LOGI(TAG, "GET !!! cnt %d", sunrise);
-        }else{
-            ESP_LOGI(TAG, "wrong");
+    const size_t data_len = esp_http_client_get_content_length(client);
+    if(data_len){
+        local_response_buffer[data_len] = 0;
+        int number_keys = 0;
+        char **temp_key = find_str_key(local_response_buffer, data_len, "\"temp\":");
+        char **temp_feel = find_str_key(local_response_buffer, data_len, "\"feels_like\":");
+        char **description = find_str_key(local_response_buffer, data_len, "\"description\":");
+        for(int i=0; i<data_len; i++){
+            if(local_response_buffer[i] == ',')local_response_buffer[i] = 0;
         }
-        cJSON_Delete(root);
+        for(int i=0; temp_key && temp_key[i]; i++){
+            ESP_LOGI(TAG, "temp %s", temp_key[i]);
+        }
+        for(int i=0; temp_feel && temp_feel[i]; i++){
+            ESP_LOGI(TAG, "temp feel  %s", temp_feel[i]);
+        }
+        for(int i=0; description && description[i]; i++){
+            ESP_LOGI(TAG, "description - %s", description[i]);
+        }
+        free(temp_key);
+        free(description);
+        free(temp_feel);
     }
-
-    // ESP_LOGI(TAG, "respnse %dl", sunrise);
     esp_http_client_cleanup(client);
+}
 
+
+#define SIZE_LIST_KEYS 10
+char ** find_str_key(char *buf, const size_t buf_len, const char *key)
+{
+    size_t keys_len = 0;
+    int key_numb = 0;
+    char *ptr = buf;
+    char **list = NULL;
+    const size_t size_key = strlen(key);
+    do {
+        ptr = strstr(ptr, key);
+        if(ptr){
+            if(key_numb+2 >= keys_len){
+                const size_t new_keys_len = keys_len + SIZE_LIST_KEYS;
+                char **new_list = calloc(sizeof(char *), new_keys_len);
+                assert(new_list);
+                if(keys_len){
+                    memcpy(new_list, list, keys_len);
+                    free(list);
+                }
+                list = new_list;
+                keys_len = new_keys_len;
+            }
+            ptr += size_key;
+            list[key_numb++] = ptr; 
+            if(buf_len+buf <= ptr) break;
+        }
+    } while(ptr);
+    return list;
 }

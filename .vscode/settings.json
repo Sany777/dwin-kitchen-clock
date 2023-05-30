@@ -44,7 +44,13 @@
     "param.h": "c",
     "sockets.h": "c",
     "err.h": "c",
-    "netdb.h": "c"
+    "netdb.h": "c",
+    "list": "c",
+    "*.tcc": "c",
+    "unordered_map": "c",
+    "cstring": "c",
+    "cjson.h": "c",
+    "task.h": "c"
   },
   "idf.flashType": "UART",
   "idf.portWin": "COM7",

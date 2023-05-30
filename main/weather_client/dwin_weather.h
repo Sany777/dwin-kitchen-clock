@@ -17,4 +17,5 @@
 
 
 
-void get_weather(void );
+void get_weather(void);
+char** find_str_key(char *buf, const size_t buf_len, const char *key);
