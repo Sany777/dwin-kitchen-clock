@@ -62,3 +62,9 @@ esp_err_t modif_peer(uint8_t *mac_addr, bool encrypt);
 
 void wifi_set_mode_handler(void* arg, esp_event_base_t event_base,
                                 int32_t action, void* event_data);
+
+void wifi_sta_handler(void* arg, esp_event_base_t event_base,
+                                int32_t event_id, void* event_data);
+
+void server_handler(void* arg, esp_event_base_t event_base,
+                            int32_t event_id, void* event_data);

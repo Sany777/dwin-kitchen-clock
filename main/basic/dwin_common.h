@@ -33,7 +33,7 @@
 #include "dwin_timer.h"
 #include "dwin_help.h"
 #include "dwin_drivers.h"
-
+#include "dwin_weather.h"
 
 static EventGroupHandle_t dwin_event_group;
 // static QueueHandle_t dwin_uart_events_queue;

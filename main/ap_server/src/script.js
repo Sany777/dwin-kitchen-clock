@@ -49,7 +49,7 @@ function sendData(formName)
         if(value){
           if(child.type === "text"||child.type === "number"){
             if(!data)data = js;
-            js[child.name.slice(0, 3)] = value;
+            js[child.name] = value;
           } else if(child.type === "color"){
             if(!data)data = js;
             const red = parseInt(value.substring(1, 3), 16)>>3;

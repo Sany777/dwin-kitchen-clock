@@ -343,8 +343,8 @@ static esp_err_t handler_set_network(httpd_req_t *req)
     }
     server_buf[received] = 0;
     cJSON *root = cJSON_Parse(server_buf);
-    const cJSON *ssid_name_j = cJSON_GetObjectItemCaseSensitive(root, "SSI");
-    const cJSON *pwd_wifi_j = cJSON_GetObjectItemCaseSensitive(root, "Pas");
+    const cJSON *ssid_name_j = cJSON_GetObjectItemCaseSensitive(root, "SSID");
+    const cJSON *pwd_wifi_j = cJSON_GetObjectItemCaseSensitive(root, "PWD");
     const char *ssid_name, *pwd_wifi;
     size_t pwd_len = 0, ssid_len = 0;
     if(cJSON_IsString(ssid_name_j) && (ssid_name_j->valuestring != NULL)){
@@ -400,7 +400,7 @@ static esp_err_t handler_set_api(httpd_req_t *req)
     }
     server_buf[received] = '\0';
     cJSON *root = cJSON_Parse(server_buf);
-    const cJSON *city_j = cJSON_GetObjectItemCaseSensitive(root, "Cit");
+    const cJSON *city_j = cJSON_GetObjectItemCaseSensitive(root, "City");
     const cJSON *key_j = cJSON_GetObjectItemCaseSensitive(root, "Key");
     const char *key = NULL, *city_name = NULL;
     size_t key_len = 0, city_len = 0;

@@ -29,31 +29,29 @@ switch(action){
             esp_netif_destroy_default_wifi(netif);
         }
         mode = WIFI_MODE_AP;
-        size_t ssid_len = strlen(ESP_WIFI_SSID);
         wifi_config.ap.max_connection = MAX_STA_CONN;
         wifi_config.ap.authmode = WIFI_AUTH_WPA_WPA2_PSK;
         wifi_config.ap.channel = ESP_WIFI_CHANNEL;
         wifi_config.ap.pmf_cfg.required = false;
-        memcpy(wifi_config.ap.ssid, ESP_WIFI_SSID, ssid_len);
-        memcpy(wifi_config.ap.password, ESP_WIFI_PASS, strlen(ESP_WIFI_PASS));
+        strcpy((char *)wifi_config.ap.ssid, ESP_WIFI_SSID);
+        strcpy((char *)wifi_config.ap.password, ESP_WIFI_PASS);
         netif = esp_netif_create_default_wifi_ap();
         assert(netif);
         esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &server_handler, NULL);
         esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &server_handler, NULL);
         ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config));
-        ESP_ERROR_CHECK(esp_wifi_start());
+        esp_wifi_connect();
         break;
     }
     case INIT_STA :
     {
+        ESP_LOGI(TAG, "Init STA");
         esp_wifi_stop();
-        size_t password_len = strlen(DEFAULT_PWD);
-        size_t ssid_len = strlen(DEFAULT_STA_SSID);
-        memcpy(wifi_config.sta.ssid, DEFAULT_STA_SSID, ssid_len);
-        memcpy(wifi_config.sta.password, DEFAULT_PWD, password_len);
+        strncpy((char *)wifi_config.sta.ssid, name_SSID, MAX_STR_LEN);
+        strncpy((char *)wifi_config.sta.password, pwd_WIFI, MAX_STR_LEN);
         wifi_config.sta.sae_pwe_h2e = WIFI_AUTH_WPA2_PSK;
-        if(mode != WIFI_MODE_STA){
+        // if(mode != WIFI_MODE_STA){
             if(mode == WIFI_MODE_AP){
                 memset(&wifi_config, 0, sizeof(wifi_config));
                 esp_netif_destroy_default_wifi(netif);
@@ -69,9 +67,10 @@ switch(action){
         #if CONFIG_ESPNOW_ENABLE_LONG_RANGE
             ESP_ERROR_CHECK(esp_wifi_set_protocol(ESP_IF_WIFI_STA, WIFI_PROTOCOL_11B|WIFI_PROTOCOL_11G|WIFI_PROTOCOL_11N|WIFI_PROTOCOL_LR));
         #endif
-        }
+        // }
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
         ESP_ERROR_CHECK(esp_wifi_start());
+        esp_wifi_connect();
         break;
     }
     case  CLOSE_CUR_CON :
@@ -188,9 +187,6 @@ switch(action){
     }
 }
 
-
-
-
 void server_handler(void* arg, esp_event_base_t event_base,
                             int32_t event_id, void* event_data)
 {
@@ -211,6 +207,7 @@ void wifi_sta_handler(void* arg, esp_event_base_t event_base,
 {
     static int retry_num;
     if (event_id == WIFI_EVENT_STA_START) {
+        ESP_LOGI(TAG, "Start STA");
         // xEventGroupSetBits(dwin_event_group, BIT_PROCESS_STA);
         retry_num = 0;
         esp_wifi_connect();
@@ -225,7 +222,7 @@ void wifi_sta_handler(void* arg, esp_event_base_t event_base,
         }
     } else if (event_id == WIFI_EVENT_STA_CONNECTED) {
         retry_num = 0;
-        ESP_LOGI(TAG, "Connected");
+        ESP_LOGI(TAG, "Connected STA success!!!");
         // xEventGroupSetBits(dwin_event_group, BIT_WIFI_STA);
         // xEventGroupClearBits(dwin_event_group, BIT_PROCESS_STA);
     }

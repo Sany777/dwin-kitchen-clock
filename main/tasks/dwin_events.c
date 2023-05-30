@@ -50,11 +50,17 @@ void init_dwin_events(main_data_t *data_dwin)
             );
     }
 
-        esp_event_post_to(loop_service, WIFI_SET, INIT_AP, NULL, 0, 1000);
-        //  vTaskDelay(pdMS_TO_TICKS(100000));
+        // esp_event_post_to(loop_service, WIFI_SET, INIT_AP, NULL, 0, 1000);
+        // vTaskDelay(pdMS_TO_TICKS(120000));
+        read_all_memory(data_dwin);
+        esp_event_post_to(loop_service, WIFI_SET, INIT_STA, NULL, 0, 2000);
         //  esp_event_post_to(loop_service, WIFI_SET, INIT_ESPNOW, NULL, 0, 1000);
         //  vTaskDelay(pdMS_TO_TICKS(3000));
         //  esp_event_post_to(loop_service, WIFI_SET, START_ESPNOW, NULL, 0, 1000);
+        vTaskDelay(pdMS_TO_TICKS(20000));
+        get_weather();
+
+        // get_weather();
 }
 
 void screen_change_handler(void* data_dwin, esp_event_base_t base, int32_t new_screen, void* event_data)

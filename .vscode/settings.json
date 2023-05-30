@@ -39,8 +39,16 @@
     "stdio.h": "c",
     "stat.h": "c",
     "dwin_drivers.h": "c",
-    "dwin_commands.h": "c"
+    "dwin_commands.h": "c",
+    "dwin_weather.h": "c",
+    "param.h": "c",
+    "sockets.h": "c",
+    "err.h": "c",
+    "netdb.h": "c"
   },
   "idf.flashType": "UART",
-  "idf.portWin": "COM7"
+  "idf.portWin": "COM7",
+  "idf.openOcdConfigs": [
+    "board/esp32-bridge.cfg"
+  ]
 }
