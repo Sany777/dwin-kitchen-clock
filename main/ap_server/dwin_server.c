@@ -362,13 +362,11 @@ static esp_err_t handler_set_network(httpd_req_t *req)
         DWIN_RESP_ERR(req, "Wrong format data", err_j);
     }
     if(ssid_len){
-        memcpy(name_SSID, ssid_name, ssid_len);
-        name_SSID[ssid_len] = 0;
+        memcpy(name_SSID, ssid_name, ssid_len+1);
         write_memory(main_data, DATA_SSID);
     }
     if(pwd_len){
-        memcpy(pwd_WIFI, pwd_wifi, pwd_len);
-        pwd_WIFI[pwd_len] = 0;
+        memcpy(pwd_WIFI, pwd_wifi, pwd_len+1);
         write_memory(main_data, DATA_PWD);
     }
     free(server_buf);
@@ -398,7 +396,7 @@ static esp_err_t handler_set_api(httpd_req_t *req)
     if (received != total_len) {
         DWIN_RESP_ERR(req, "Data not read", _err);
     }
-    server_buf[received] = '\0';
+    server_buf[received] = 0;
     cJSON *root = cJSON_Parse(server_buf);
     const cJSON *city_j = cJSON_GetObjectItemCaseSensitive(root, "City");
     const cJSON *key_j = cJSON_GetObjectItemCaseSensitive(root, "Key");
@@ -418,13 +416,11 @@ static esp_err_t handler_set_api(httpd_req_t *req)
         DWIN_RESP_ERR(req, "Wrong format input", __err);
     }
     if(key_len == SIZE_API){
-        memcpy(api_KEY, key, key_len);
-        api_KEY[key_len] = 0;
+        memcpy(api_KEY, key, key_len+1);
         write_memory(main_data, DATA_API);
     }
     if(city_len){
-        memcpy(name_CITY, city_name, city_len); 
-        name_CITY[city_len] = 0;
+        memcpy(name_CITY, city_name, city_len+1); 
         write_memory(main_data, DATA_CITY);
     }
     cJSON_Delete(root);
@@ -546,34 +542,25 @@ err:
 }
 
 
-esp_err_t set_run_webserver(const bool start)
+esp_err_t set_run_webserver(main_data_t *main_data)
 { 
-    static main_data_t *main_data;
     static char *server_buf;
     static httpd_handle_t server;
-    if(start){
-        if(main_data == NULL)main_data = malloc(sizeof(main_data_t));
-        assert(main_data);
-        if(server_buf == NULL)server_buf = malloc(SCRATCH_SIZE);
+    if(main_data && server_buf == NULL){
+        server_buf = malloc(SCRATCH_SIZE);
         assert(server_buf);
-        read_all_memory(main_data);
         httpd_config_t config = HTTPD_DEFAULT_CONFIG();
         config.max_uri_handlers = 28;
         config.uri_match_fn = httpd_uri_match_wildcard;
         esp_err_t e = httpd_start(&server, &config);
-        if ( e != ESP_OK){
+        if (e != ESP_OK){
             return e;
         }
-    } else {
-        if(server_buf){
-           free(server_buf); 
-           server_buf = NULL;
-        }
-        if(main_data){
-            free(main_data);
-            main_data = NULL;
-        }
-        return httpd_stop(server);
+    } else if(server_buf){
+        esp_err_t err = httpd_stop(server);
+        free(server_buf); 
+        server_buf = NULL;
+        return err;
     } 
 
     httpd_uri_t send_raw = {
@@ -780,7 +767,5 @@ esp_err_t set_run_webserver(const bool start)
         .user_ctx = NULL
     };
     httpd_register_uri_handler(server, &redir_uri);
-
-
     return ESP_OK;
 }

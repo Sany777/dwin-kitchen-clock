@@ -9,6 +9,5 @@
 
 
 const char *get_rssi_description(uint8_t rssi);
-picture_t get_pic(const uint weather_id, const bool night);
 const char *get_auth_mode(int authmode);
-
+picture_t get_pic(const uint weather_id, const bool night);

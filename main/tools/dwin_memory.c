@@ -67,7 +67,7 @@ void read_memory(main_data_t *main_data, const int data_identificator)
 		}
 		case DATA_API :
 		{
-			len = SIZE_API;
+			len = SIZE_API+1;
 			nvs_get_str(nvs_handle_dwin, "api", api_KEY, &len); 
 			break;
 		}

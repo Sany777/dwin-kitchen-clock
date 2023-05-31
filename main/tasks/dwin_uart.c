@@ -1,10 +1,12 @@
 #include "dwin_uart.h"
 
-#include "driver/gpio.h"
 
-void uart_event_task(void *pv)
+QueueHandle_t dwin_uart_events_queue = NULL;
+
+
+void init_uart()
 {
-     const uart_config_t uart_config = {
+    const uart_config_t uart_config = {
         .baud_rate = 115200,
         .data_bits = UART_DATA_8_BITS,
         .parity = UART_PARITY_DISABLE,
@@ -12,8 +14,6 @@ void uart_event_task(void *pv)
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
         .source_clk = UART_SCLK_DEFAULT,
     };
-    // We won't use a buffer for sending data.
-    QueueHandle_t dwin_uart_events_queue = NULL;
     ESP_ERROR_CHECK(uart_driver_install(UART_DWIN, UART_BUF_SIZE * 2, 0, 10, (QueueHandle_t *)&dwin_uart_events_queue, 0));
     assert(dwin_uart_events_queue);
     ESP_ERROR_CHECK(uart_param_config(UART_DWIN, &uart_config));
@@ -30,6 +30,11 @@ void uart_event_task(void *pv)
                                 UART_WAKEUP_THRESHOLD));
     ESP_ERROR_CHECK(esp_sleep_enable_uart_wakeup(
                             UART_DWIN));
+}
+
+
+void uart_event_task(void *pv)
+{
     bool heder_ok;    
 	size_t byte_rx_count, rxBytes;
     char *buf_RX = (char*) malloc(UART_BUF_SIZE);

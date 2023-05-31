@@ -20,7 +20,7 @@ void init_dwin_events(main_data_t *main_data)
                                     EVENTS_MANAGER,
                                     ESP_EVENT_ANY_ID,
                                     screen_change_handler,
-                                    (void * const)main_data,
+                                    (void *)main_data,
                                     NULL
                                 ));
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
@@ -28,7 +28,7 @@ void init_dwin_events(main_data_t *main_data)
                                     EVENTS_SET_TIME,
                                     ESP_EVENT_ANY_ID,
                                     set_time_handler,
-                                    (void * const)main_data,
+                                    (void *)main_data,
                                     NULL
                                 ));
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
@@ -36,7 +36,7 @@ void init_dwin_events(main_data_t *main_data)
                                     WIFI_SET,
                                     ESP_EVENT_ANY_ID,
                                     wifi_set_mode_handler,
-                                    (void * const)main_data,
+                                    (void *)main_data,
                                     NULL
                                 ));
     for(int i=0; i<SIZE_LIST_SERVICES; i++) {
@@ -49,18 +49,23 @@ void init_dwin_events(main_data_t *main_data)
                 NULL
             );
     }
-
-        // esp_event_post_to(loop_service, WIFI_SET, INIT_AP, NULL, 0, 1000);
-        // vTaskDelay(pdMS_TO_TICKS(120000));
-        read_all_memory(main_data);
+        esp_event_post_to(loop_service, WIFI_SET, INIT_AP, NULL, 0, 2000);
+        vTaskDelay(pdMS_TO_TICKS(20000));
         esp_event_post_to(loop_service, WIFI_SET, INIT_STA, NULL, 0, 2000);
+        EventBits_t xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_WIFI_STA, false, false, (pdMS_TO_TICKS(20000)));
+        if(xEventGroup & BIT_WIFI_STA){
+            get_weather(main_data);
+        }
         //  esp_event_post_to(loop_service, WIFI_SET, INIT_ESPNOW, NULL, 0, 1000);
-        //  vTaskDelay(pdMS_TO_TICKS(3000));
         //  esp_event_post_to(loop_service, WIFI_SET, START_ESPNOW, NULL, 0, 1000);
         vTaskDelay(pdMS_TO_TICKS(20000));
-        get_weather(main_data);
+        esp_event_post_to(loop_service, WIFI_SET, INIT_AP, NULL, 0, 2000);
+        esp_event_post_to(loop_service, WIFI_SET, START_STA, NULL, 0, 2000);
+        xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_WIFI_STA, false, false, (pdMS_TO_TICKS(20000)));
+        if(xEventGroup & BIT_WIFI_STA){
+            get_weather(main_data);
+        }
 
-        // get_weather();
 }
 
 void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)

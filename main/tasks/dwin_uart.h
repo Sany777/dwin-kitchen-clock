@@ -6,11 +6,12 @@
 #include <stdio.h>
 #include <string.h>
 #include "driver/uart.h"
-
+#include "driver/gpio.h"
 #include "dwin_common.h"
 
 void uart_event_task(void *pv);
-void dwin_uart_init(void);
+void init_uart();
+
 
     // int rxBytes = uart_read_bytes(UART_DWIN, (void*)buf_RX, UART_BUF_SIZE, pdMS_TO_TICKS(2000));
     // if(rxBytes){

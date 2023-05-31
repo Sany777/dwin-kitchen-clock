@@ -54,7 +54,9 @@
     "thread": "c",
     "ctype.h": "c",
     "esp_netif.h": "c",
-    "esp_http_client.h": "c"
+    "esp_http_client.h": "c",
+    "system_error": "c",
+    "parser.h": "c"
   },
   "idf.flashType": "UART",
   "idf.portWin": "COM7",

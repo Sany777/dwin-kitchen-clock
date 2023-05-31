@@ -1,7 +1,7 @@
 #include "wifi_dwin.h"
 
-static QueueHandle_t queue_espnow_tx, queue_espnow_rx;
-
+QueueHandle_t queue_espnow_tx, queue_espnow_rx;
+EventGroupHandle_t dwin_event_group;
 
 void wifi_set_mode_handler(void* arg, esp_event_base_t event_base,
                                 int32_t action, void* event_data)
@@ -16,12 +16,11 @@ switch(action){
     {
         if(mode == WIFI_MODE_AP)break;
         esp_wifi_stop();
-        if(mode == WIFI_MODE_STA){
-            memset(&wifi_config, 0, sizeof(wifi_config));
-            esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_STA_CONNECTED, &wifi_sta_handler);
-            esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &wifi_sta_handler);
+        memset(&wifi_config, 0, sizeof(wifi_config));
+        if(mode == WIFI_MODE_STA && netif){
             esp_netif_destroy_default_wifi(netif);
         }
+        netif = esp_netif_create_default_wifi_ap();
         mode = WIFI_MODE_AP;
         wifi_config.ap.max_connection = MAX_STA_CONN;
         wifi_config.ap.authmode = WIFI_AUTH_WPA_WPA2_PSK;
@@ -29,31 +28,38 @@ switch(action){
         wifi_config.ap.pmf_cfg.required = false;
         strcpy((char *)wifi_config.ap.ssid, AP_WIFI_SSID);
         strcpy((char *)wifi_config.ap.password, AP_WIFI_PWD);
-        netif = esp_netif_create_default_wifi_ap();
         assert(netif);
-        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &server_handler, NULL);
-        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &server_handler, NULL);
+        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &server_handler, main_data);
+        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &server_handler, main_data);       
+        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_START, &server_handler, main_data);
+        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STOP, &server_handler, main_data);
         ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config));
-        esp_wifi_connect();
+        ESP_ERROR_CHECK(esp_wifi_start());
         break;
     }
     case INIT_STA :
     {
         ESP_LOGI(TAG, "Init STA");
+        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_START, &wifi_sta_handler, main_data);
+        esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_sta_handler, main_data);
+        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &wifi_sta_handler, main_data);
+    }
+    case START_STA :
+    {
         esp_wifi_stop();
+        memset(&wifi_config, 0, sizeof(wifi_config));
         strncpy((char *)wifi_config.sta.ssid, name_SSID, MAX_STR_LEN);
         strncpy((char *)wifi_config.sta.password, pwd_WIFI, MAX_STR_LEN);
         wifi_config.sta.sae_pwe_h2e = WIFI_AUTH_WPA2_PSK;
-        if(mode == WIFI_MODE_AP){
-            memset(&wifi_config, 0, sizeof(wifi_config));
+        if(mode == WIFI_MODE_AP && netif){
             esp_netif_destroy_default_wifi(netif);
-            esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &server_handler);
             esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &server_handler);
+            esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &server_handler);
+            esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_START, &server_handler);
+            esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_STOP, &server_handler);
         }
         mode = WIFI_MODE_STA;
-        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_CONNECTED, &wifi_sta_handler, NULL);
-        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &wifi_sta_handler, NULL);
         netif = esp_netif_create_default_wifi_sta();
         assert(netif);
         ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
@@ -62,7 +68,6 @@ switch(action){
         #endif
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
         ESP_ERROR_CHECK(esp_wifi_start());
-        esp_wifi_connect();
         break;
     }
     case  CLOSE_CUR_CON :
@@ -90,7 +95,7 @@ switch(action){
     case INIT_ESPNOW :
     {
         if(mode == WIFI_MODE_STA){
-            ESP_ERROR_CHECK( esp_now_init() );
+            ESP_ERROR_CHECK(esp_now_init() );
             #if CONFIG_ESP_WIFI_STA_DISCONNECTED_PM_ENABLE
                 ESP_ERROR_CHECK(esp_now_set_wake_window(WINDOW_ESPNOW_MS));
             #endif
@@ -160,8 +165,8 @@ switch(action){
         sntp_setservername(0, "pool.ntp.org");
         sntp_servermode_dhcp(0);
         sntp_init();
-        setenv("TZ", "EET-2EEST,M3.5.0/3,M10.5.0/4", 1);
-        tzset();
+        // setenv("TZ", "EET-2EEST,M3.5.0/3,M10.5.0/4", 1);
+        // tzset();
     }
     case UPDATE_TIME :
     {
@@ -179,18 +184,27 @@ switch(action){
     }
 }
 
+
 void server_handler(void* arg, esp_event_base_t event_base,
                             int32_t event_id, void* event_data)
 {
-    if(event_id == WIFI_EVENT_AP_STACONNECTED){
-        set_run_webserver(true); 
-        // xEventGroupSetBits(dwin_event_group, BIT_SERVER_RUN);
-        ESP_LOGI(TAG, "Start AP");
-    } else if (event_id == WIFI_EVENT_AP_STADISCONNECTED){
-        // xEventGroupClearBits(dwin_event_group, BIT_SERVER_RUN);
-        set_run_webserver(false);
-        ESP_LOGI(TAG, "Stop AP");
-    } 
+    main_data_t *main_data = (main_data_t*)arg;
+    if(event_id == WIFI_EVENT_AP_START){
+        show_server(NULL, "Start server");
+        if(set_run_webserver(main_data) == ESP_OK){
+            xEventGroupSetBits(dwin_event_group, BIT_SERVER_RUN);
+        }
+    } else if (event_id == WIFI_EVENT_AP_STOP){
+        set_run_webserver(NULL);
+        xEventGroupClearBits(dwin_event_group, BIT_SERVER_RUN);
+        show_server(NULL, "Stop server");
+    } else if(event_id == WIFI_EVENT_AP_STACONNECTED){
+        wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
+        show_server(event->mac, "join.");
+    } else if(event_id == WIFI_EVENT_AP_STADISCONNECTED){
+        wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
+        show_server(event->mac, "leave.");
+    }
 }
 
 
@@ -198,25 +212,23 @@ void wifi_sta_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
 {
     static int retry_num;
-    if (event_id == WIFI_EVENT_STA_START) {
-        ESP_LOGI(TAG, "Start STA");
-        // xEventGroupSetBits(dwin_event_group, BIT_PROCESS_STA);
+    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
         retry_num = 0;
-        esp_wifi_connect();
-    } else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
+        DWIN_SHOW_ERR(esp_wifi_connect());
+    } else if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_STOP){
+        retry_num = RETRY_CONNECT_APSTA;
+        ESP_LOGI(TAG, "Sta stop!!!");
+    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED && retry_num < RETRY_CONNECT_APSTA) {
         ESP_LOGI(TAG, "Connect sta...");
-        if (retry_num < RETRY_CONNECT_APSTA) {
-            esp_wifi_connect();
-            retry_num++;
-        } else {
-            // xEventGroupClearBits(dwin_event_group, BIT_WIFI_STA);
-            // xEventGroupClearBits(dwin_event_group, BIT_PROCESS_STA);
-        }
-    } else if (event_id == WIFI_EVENT_STA_CONNECTED) {
+            if(esp_wifi_connect() != ESP_OK){
+                if(retry_num == 0) xEventGroupClearBits(dwin_event_group, BIT_WIFI_STA);
+                retry_num++;
+            }
+    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         retry_num = 0;
         ESP_LOGI(TAG, "Connected STA success!!!");
-        // xEventGroupSetBits(dwin_event_group, BIT_WIFI_STA);
-        // xEventGroupClearBits(dwin_event_group, BIT_PROCESS_STA);
+        xEventGroupSetBits(dwin_event_group, BIT_WIFI_STA);
+        xEventGroupClearBits(dwin_event_group, BIT_PROCESS_STA);
     }
 }
 

@@ -11,6 +11,7 @@
 #define time_ZONE               (main_data->weather_data->timezone)
 #define PoP                     (main_data->weather_data->pop)
 #define temp_FEELS_LIKE         (main_data->weather_data->feels_like)
+#define dt_TX                   (main_data->weather_data->dt_tx)
 #define temp_INDOOR             (main_data->weather_data->indoor)
 #define temp_OUTDOOR            (main_data->weather_data->outdoor)
 #define description_WEATHER     (main_data->weather_data->description)

@@ -20,7 +20,7 @@ form {
     display: flex;
     flex-direction: row;
     margin-left: 3rem;
-    gap: 7rem;
+    gap: 3rem;
     flex-wrap: wrap;
 }
 
@@ -32,4 +32,9 @@ form {
     justify-content: center;
     font-size: larger;
     flex-wrap: wrap;
+}
+
+input[type="text"] {
+    display: block;
+    min-width: 30rem;
 }

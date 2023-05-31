@@ -2,6 +2,7 @@
 
 #include "dwin_common.h"
 
+
 #define SIZE_BUF_FLOAT          6
 #define MAX_DIGIT_INT_NUMBER    9
 #define TWO_DIGIT               2
@@ -46,5 +47,4 @@ void send_in_frame(uint8_t row,
                     const uint16_t color, 
                     const char *message
                     );
-void print_mac(const uint8_t *mac);
-
+void show_server(uint8_t *mac, char *str);

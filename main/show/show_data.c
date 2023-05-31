@@ -1,5 +1,14 @@
 #include "show_data.h"
 
+void show_server(uint8_t *mac, char *str)
+{
+    if(mac){
+        ESP_LOGI(TAG, "Station "MACSTR" %s print_mac :",
+                 MAC2STR(mac), str);
+    } else {
+        ESP_LOGI(TAG, "%s", str);
+    }
+}
 
 int send_with_eof(const char *data_to_send)
 {
@@ -151,31 +160,6 @@ void send_in_frame(uint8_t row,
 		}
 		print_end();
 	}
-}
-
-#define SIZE_MAC_STR 17
-
-void print_mac(const uint8_t *mac) 
-{
-	uint8_t tmp;
-	int str_count=0; 
-	char str_out[SIZE_MAC_STR];
-    for(int mac_count=0; mac_count<SIZE_MAC; ) {
-        tmp = mac[mac_count++]&0xf0;
-		if(tmp) {
-			str_out[str_count++] = 'A' + tmp;
-		} else {
-			str_out[str_count++] = tmp+'0';
-		}
-		tmp = mac[mac_count]&0x0f;
-		if(tmp) {
-			str_out[str_count++] = 'A' + tmp;
-		} else {
-			str_out[str_count++] = tmp+'0';
-		}
-		str_out[str_count++] = '.';
-    }
-	uart_write_bytes(UART_DWIN, str_out, SIZE_MAC_STR);
 }
 
 

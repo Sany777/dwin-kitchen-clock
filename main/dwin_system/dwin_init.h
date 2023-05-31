@@ -6,5 +6,7 @@
 
 void esp_init();
 void wifi_init();
-void dwin_uart_init();
+
+
+extern EventGroupHandle_t dwin_event_group;
 

@@ -118,5 +118,15 @@
 #define AP_WIFI_PWD      "esp32first"
 
 #define NUMBER_DATA_WEATHER 5
-#define MAX_LEN_DESCRIPTION 20
+#define MAX_LEN_DESCRIPTION 10
 #define LEN_BUF_DESCRIPTION (MAX_LEN_DESCRIPTION+1)
+
+/* client weather */
+#define SIZE_URL_BUF 250
+#define FIRST_URL "https://api.openweathermap.org/data/2.5/forecast?q="
+#define SECOND_URL "&units=metric&cnt=5&appid="
+#define INITIAL_SIZE_LIST_KEYS 10
+#define SHIFT_DATA_TX 12
+
+/* Clock */
+#define FORMAT_CLOCK "EET-2EEST,M3.5.0/3,M10.5.0/4"

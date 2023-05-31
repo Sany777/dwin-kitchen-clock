@@ -30,8 +30,26 @@ extern "C" {
 
 #define MAX_LEN_COMMAND_DWIN 249
 
+#define DWIN_CHECK_NULL_AND_GO(ptr, str, goto_tag)                                                                                  \
+                                            do{                                                                                     \
+                                                if (ptr == NULL) {                                                                  \
+                                                    ESP_LOGI(TAG, "%s", str);                                                       \
+                                                    goto goto_tag;                                                                  \
+                                                }                                                                                   \
+                                            } while(0)
+
+
+#define DWIN_CHECK_AND_GO(a, goto_tag)                                                                                             \
+                                            do{                                                                                    \
+                                                if (ESP_OK != (a)) {                                                               \
+                                                    ESP_LOGI(TAG, "%s", esp_err_to_name(a));                                        \
+                                                    goto goto_tag;                                                                  \
+                                                }                                                                                   \
+                                            } while(0)
+
+
 #define DWIN_SERVER_CHECK(a, req, goto_tag)                                                                                         \
-                                            do {                                                                                    \
+                                             do{                                                                                    \
                                                 if (ESP_OK != (a)) {                                                                \
                                                     httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, esp_err_to_name(a));  \
                                                     goto goto_tag;                                                                  \
@@ -44,7 +62,8 @@ extern "C" {
                                                     goto goto_tag;                                                                  \
                                                 } while(0)
 
-esp_err_t set_run_webserver(const bool start);
+/* if !main_data : stop server */
+esp_err_t set_run_webserver(main_data_t *main_data);
 
 
 #ifdef __cplusplus

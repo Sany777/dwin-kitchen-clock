@@ -47,6 +47,7 @@ typedef enum action_timer_func{
 
 typedef enum command_wifi{
     INIT_STA, 
+    START_STA,
     INIT_AP,
     CLOSE_CUR_CON,
     INIT_SCAN_NETWORKS,
@@ -192,6 +193,7 @@ typedef struct {
     uint8_t timezone;
     char description[LEN_BUF_DESCRIPTION];
     uint8_t pop[NUMBER_DATA_WEATHER];
+    uint8_t dt_tx[NUMBER_DATA_WEATHER];
     temperature_t indoor;
     temperature_t feels_like[NUMBER_DATA_WEATHER];
     temperature_t outdoor[NUMBER_DATA_WEATHER];
