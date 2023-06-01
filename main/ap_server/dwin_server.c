@@ -472,7 +472,7 @@ static esp_err_t handler_set_time(httpd_req_t *req)
         DWIN_RESP_ERR(req, "Not enough storage", err);
     }
     *time = atol(server_buf);
-    // esp_event_post_to(loop_direct, EVENTS_SET_TIME, UPDATE_TIME_FROM_MS, time, sizeof(long), TIMEOUT_SEND_EVENTS);
+    // esp_event_post_to(direct_loop, EVENTS_SET_TIME, UPDATE_TIME_FROM_MS, time, sizeof(long), TIMEOUT_SEND_EVENTS);
     httpd_resp_sendstr(req, "Set time successfully");
     return ESP_OK;
 err:

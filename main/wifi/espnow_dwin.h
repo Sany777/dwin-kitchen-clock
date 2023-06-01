@@ -51,3 +51,12 @@ static const uint8_t BRODCAST_MAC[SIZE_MAC] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x
 
 
 
+void espnow_task_rx(void *pv);
+void espnow_task_tx(void *pv);
+void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status);
+void espnow_rx_cb(const esp_now_recv_info_t *recv_data, const uint8_t *data, int data_len);
+static esp_err_t add_peer(uint8_t *mac_addr,  bool encrypt);
+
+esp_err_t add_peer(uint8_t *mac_addr, bool encrypt);
+esp_err_t modif_peer(uint8_t *mac_addr, bool encrypt);
+

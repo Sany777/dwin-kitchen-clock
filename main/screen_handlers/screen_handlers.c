@@ -46,10 +46,10 @@
 //         }
 //     }
 //     dwin_set_pic(SEARCH_PIC);
-//     esp_event_post_to(loop_show, EVENTS_SHOW, ap_count, NULL, 0, TIMEOUT_SEND_EVENTS);
+//     esp_event_post_to(show_loop, EVENTS_SHOW, ap_count, NULL, 0, TIMEOUT_SEND_EVENTS);
 // }
 
-// void server_handler(void* handler_args, esp_event_base_t base, int32_t key, void* event_data)
+// void ap_handler(void* handler_args, esp_event_base_t base, int32_t key, void* event_data)
 // {
 
 //     static main_data_t *main_data = NULL; 
@@ -64,7 +64,7 @@
 //         return;
 //     }
 //     dwin_set_pic(SEARCH_PIC);
-//     esp_event_post_to(loop_show, EVENTS_SHOW, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
+//     esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
 // }
 
 
@@ -83,7 +83,7 @@
 //         return;
 //     }
 //     dwin_set_pic(SEARCH_PIC);
-//     esp_event_post_to(loop_show, EVENTS_SHOW, KEY_UPDATE_SCREEN, device_show, sizeof(device_inf_t), TIMEOUT_SEND_EVENTS);
+//     esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, device_show, sizeof(device_inf_t), TIMEOUT_SEND_EVENTS);
 // }
 
 // void setting_handler(void* handler_args, esp_event_base_t base, int32_t key, void* event_data)
@@ -131,7 +131,7 @@
 //     }
 
 //     dwin_set_pic(SEARCH_PIC);
-//     esp_event_post_to(loop_show, 
+//     esp_event_post_to(show_loop, 
 //                     EVENTS_SHOW, 
 //                     KEY_UPDATE_SCREEN, 
 //                     NULL, 
@@ -164,7 +164,7 @@
 
 //     dwin_set_pic(SEARCH_PIC);
 //     bool is_data_weather = data_weather != NULL && data_weather->weather_pic;
-//     esp_event_post_to(loop_show,
+//     esp_event_post_to(show_loop,
 //                 EVENTS_SHOW, 
 //                 (int32_t)temperature_indoor, 
 //                 is_data_weather 
@@ -213,7 +213,7 @@
     
 
 //     dwin_set_pic(SEARCH_PIC);
-//     esp_event_post_to(loop_show, EVENTS_SHOW, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
+//     esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
 
 
 // }
@@ -238,7 +238,7 @@
 //         }
 //     if(key != KEY_CLOSE && key != KEY_DELETE_DATA) {
 //         dwin_set_pic(SEARCH_PIC);
-//         esp_event_post_to(loop_show, EVENTS_SHOW, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
+//         esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
 //     }
 // }
 
@@ -277,7 +277,7 @@
 //             return;
 //         }
 //         dwin_set_pic(SEARCH_PIC);
-//         esp_event_post_to(loop_show, EVENTS_SHOW, cur_day, NULL, 0, TIMEOUT_SEND_EVENTS);
+//         esp_event_post_to(show_loop, EVENTS_SHOW, cur_day, NULL, 0, TIMEOUT_SEND_EVENTS);
 // }
 
 
@@ -345,5 +345,5 @@
 //     }
 
 //     dwin_set_pic(SEARCH_PIC);
-//     esp_event_post_to(loop_show, EVENTS_SHOW, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
+//     esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
 // }

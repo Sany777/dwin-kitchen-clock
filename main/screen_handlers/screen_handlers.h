@@ -16,7 +16,7 @@
 /*screen handlers*/
 // dwin_handler_t setting_handler;
 // dwin_handler_t search_screen_handler;
-// dwin_handler_t server_handler;
+// dwin_handler_t ap_handler;
 // dwin_handler_t device_screen_handler;
 // dwin_handler_t main_screen_handler;
 // dwin_handler_t clock_handler;

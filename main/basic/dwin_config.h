@@ -77,14 +77,16 @@
 
 /* delay process */
 #define DELAY_SCAN_SSID          (1500/portTICK_PERIOD_MS)
-#define WAIT_RESPONSE_SERVICE    (5000/portTICK_PERIOD_MS)
+#define WAIT_SERVICE    (5000/portTICK_PERIOD_MS)
 
 /* events delay*/
-#define DELAY_WIFI_EVENT         (1000/portTICK_PERIOD_MS)
+#define WAIT_WIFI_EVENT          (1000/portTICK_PERIOD_MS)
 #define TIMEOUT_SEND_EVENTS      (100/portTICK_PERIOD_MS)
 #define TICKS_TO_RUN_LOOP         100
 #define TASK_EVENT_SIZE           3
-#define DELAY_TASK_LOOP          (10/portTICK_PERIOD_MS)
+#define DELAY_SLOW_LOOP          (500/portTICK_PERIOD_MS)
+#define DELAY_FAST_LOOP          (20/portTICK_PERIOD_MS)
+#define DEALAY_START_TASK        (1000/portTICK_PERIOD_MS)
 #define SIZE_EVENTS_UART          10
 #define TIMEOUT_PUSH_KEY         (50/portTICK_PERIOD_MS)
 
@@ -126,7 +128,9 @@
 #define FIRST_URL "https://api.openweathermap.org/data/2.5/forecast?q="
 #define SECOND_URL "&units=metric&cnt=5&appid="
 #define INITIAL_SIZE_LIST_KEYS 10
-#define SHIFT_DATA_TX 12
-
+#define SHIFT_DT_TX 12
+#define STEP_DT_TX  3
+#define SECOND_WAIT_WIFI_BIT (pdMS_TO_TICKS(5000))
+#define FIRST_WAIT_WIFI_BIT  (pdMS_TO_TICKS(2000))
 /* Clock */
 #define FORMAT_CLOCK "EET-2EEST,M3.5.0/3,M10.5.0/4"

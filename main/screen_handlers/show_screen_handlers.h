@@ -22,7 +22,7 @@
 // dwin_handler_t show_clock_handler;
 // dwin_handler_t show_main_handler;
 // dwin_handler_t show_timer_handler;
-// dwin_handler_t show_server_handler;
+// dwin_handler_t show_ap_handler;
 
 
 // static const char *MES_ON = " [ON]";

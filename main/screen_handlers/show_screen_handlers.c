@@ -3,7 +3,7 @@
 
 // static const size_t FONT_STANDART = 3, FONT_INFO = 2, FONT_SECOND_INFO = 1, FONT_BUTTON = 4;
 
-// void show_server_handler(void* handler_args, 
+// void show_ap_handler(void* handler_args, 
 //                                     esp_event_base_t base,
 //                                     int32_t conected_device, 
 //                                     void* event_data) 

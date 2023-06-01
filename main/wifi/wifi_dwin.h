@@ -43,29 +43,12 @@
 
 #define WAKE_INTERVAL 100
 
-dwin_handler_t wifi_sta_handler;
-dwin_handler_t wifi_ap_handler;
-dwin_handler_t wifi_set_mode_handler;
-
-dwin_handler_t server_handler;
-
-
-
-void espnow_task_rx(void *pv);
-void espnow_task_tx(void *pv);
-void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status);
-void espnow_rx_cb(const esp_now_recv_info_t *recv_data, const uint8_t *data, int data_len);
-static esp_err_t add_peer(uint8_t *mac_addr,  bool encrypt);
-
-esp_err_t add_peer(uint8_t *mac_addr, bool encrypt);
-esp_err_t modif_peer(uint8_t *mac_addr, bool encrypt);
-
 void wifi_set_mode_handler(void* arg, esp_event_base_t event_base,
                                 int32_t action, void* event_data);
 
 void wifi_sta_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data);
 
-void server_handler(void* arg, esp_event_base_t event_base,
+void ap_handler(void* arg, esp_event_base_t event_base,
                             int32_t event_id, void* event_data);
 

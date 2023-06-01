@@ -3,7 +3,7 @@
 void show_server(uint8_t *mac, char *str)
 {
     if(mac){
-        ESP_LOGI(TAG, "Station "MACSTR" %s print_mac :",
+        ESP_LOGI(TAG, "Station "MACSTR" %s",
                  MAC2STR(mac), str);
     } else {
         ESP_LOGI(TAG, "%s", str);

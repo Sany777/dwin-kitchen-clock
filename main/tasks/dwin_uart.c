@@ -1,7 +1,7 @@
 #include "dwin_uart.h"
 
 
-QueueHandle_t dwin_uart_events_queue = NULL;
+QueueHandle_t dwin_uart_events_queue;
 
 
 void init_uart()
@@ -66,7 +66,7 @@ for(;;) {
                             if(buf_time == NULL)break;
                             memcpy((uint8_t*)buf_time, (uint8_t*)&buf_RX[INDEX_START_DATA_IN_RX], SIZE_TIME);
                             esp_event_post_to(
-                                    loop_service,
+                                    slow_service_loop,
                                     EVENTS_SET_TIME,
                                     KEY_GET_CLOCK,
                                     buf_time,
@@ -77,7 +77,7 @@ for(;;) {
                             uint32_t key = buf_RX[INDEX_START_DATA_IN_RX];
                             if(KEY_IS_SET_TASK(data_intifier)) {
                                 esp_event_post_to(
-                                    loop_service,
+                                    slow_service_loop,
                                     EVENTS_MANAGER,
                                     key,
                                     NULL,
@@ -86,7 +86,7 @@ for(;;) {
                                 );
                             } else {
                                 esp_event_post_to(
-                                    loop_service,
+                                    slow_service_loop,
                                     EVENTS_DIRECTION,
                                     key,
                                     NULL,

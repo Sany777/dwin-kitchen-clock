@@ -1,7 +1,18 @@
 #include "dwin_events.h"
 
-ESP_EVENT_DECLARE_BASE(EVENTS_SHOW);
 
+esp_event_loop_handle_t 
+                direct_loop, 
+                show_loop, 
+                fast_service_loop,
+                slow_service_loop;
+                
+ESP_EVENT_DEFINE_BASE(EVENTS_SHOW);
+ESP_EVENT_DEFINE_BASE(EVENTS_SERVICE);
+ESP_EVENT_DEFINE_BASE(EVENTS_DIRECTION);
+ESP_EVENT_DEFINE_BASE(EVENTS_MANAGER);
+ESP_EVENT_DEFINE_BASE(EVENTS_SET_TIME);
+ESP_EVENT_DEFINE_BASE(WIFI_SET);
 
 
 void init_dwin_events(main_data_t *main_data) 
@@ -11,12 +22,12 @@ void init_dwin_events(main_data_t *main_data)
         .task_name = NULL
     };
 
-    ESP_ERROR_CHECK(esp_event_loop_create(&my_loop_args, &loop_direct));
-    ESP_ERROR_CHECK(esp_event_loop_create(&my_loop_args, &loop_show));
-    ESP_ERROR_CHECK(esp_event_loop_create(&my_loop_args, &loop_service));
-
+    ESP_ERROR_CHECK(esp_event_loop_create(&my_loop_args, &direct_loop));
+    ESP_ERROR_CHECK(esp_event_loop_create(&my_loop_args, &show_loop));
+    ESP_ERROR_CHECK(esp_event_loop_create(&my_loop_args, &fast_service_loop));
+    ESP_ERROR_CHECK(esp_event_loop_create(&my_loop_args, &slow_service_loop));
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                                    loop_direct,
+                                    direct_loop,
                                     EVENTS_MANAGER,
                                     ESP_EVENT_ANY_ID,
                                     screen_change_handler,
@@ -24,7 +35,7 @@ void init_dwin_events(main_data_t *main_data)
                                     NULL
                                 ));
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                                    loop_service,
+                                    slow_service_loop,
                                     EVENTS_SET_TIME,
                                     ESP_EVENT_ANY_ID,
                                     set_time_handler,
@@ -32,14 +43,22 @@ void init_dwin_events(main_data_t *main_data)
                                     NULL
                                 ));
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                                    loop_service,
+                                    fast_service_loop,
                                     WIFI_SET,
                                     ESP_EVENT_ANY_ID,
                                     wifi_set_mode_handler,
                                     (void *)main_data,
                                     NULL
                                 ));
-    for(int i=0; i<SIZE_LIST_SERVICES; i++) {
+    ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
+                                slow_service_loop,
+                                WIFI_SET,
+                                GET_WEATHER,
+                                get_weather_handler,
+                                (void *)main_data,
+                                NULL
+                            ));
+    for(int i=0; i<SIZE_LIST_TASKS; i++) {
             xTaskCreate(
                 list_services[i].pTask, 
                 "service",
@@ -49,24 +68,23 @@ void init_dwin_events(main_data_t *main_data)
                 NULL
             );
     }
-        esp_event_post_to(loop_service, WIFI_SET, INIT_AP, NULL, 0, 2000);
-        vTaskDelay(pdMS_TO_TICKS(20000));
-        esp_event_post_to(loop_service, WIFI_SET, INIT_STA, NULL, 0, 2000);
-        EventBits_t xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_WIFI_STA, false, false, (pdMS_TO_TICKS(20000)));
-        if(xEventGroup & BIT_WIFI_STA){
-            get_weather(main_data);
-        }
-        //  esp_event_post_to(loop_service, WIFI_SET, INIT_ESPNOW, NULL, 0, 1000);
-        //  esp_event_post_to(loop_service, WIFI_SET, START_ESPNOW, NULL, 0, 1000);
-        vTaskDelay(pdMS_TO_TICKS(20000));
-        esp_event_post_to(loop_service, WIFI_SET, INIT_AP, NULL, 0, 2000);
-        esp_event_post_to(loop_service, WIFI_SET, START_STA, NULL, 0, 2000);
-        xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_WIFI_STA, false, false, (pdMS_TO_TICKS(20000)));
-        if(xEventGroup & BIT_WIFI_STA){
-            get_weather(main_data);
-        }
+
+
+
+        start_ap();
+        vTaskDelay(pdMS_TO_TICKS(25000));
+        get_weather();
+        // esp_event_post_to(fast_service_loop, WIFI_SET, INIT_STA, NULL, 0, 2000);
+        
+        // esp_event_post_to(slow_service_loop, WIFI_SET, INIT_ESPNOW, NULL, 0, 1000);
+        // xEventGroupWaitBits(dwin_event_group, BIT_INIT_ESPNOW, false, false, (pdMS_TO_TICKS(20000)));
+        // esp_event_post_to(slow_service_loop, WIFI_SET, START_ESPNOW, NULL, 0, 1000);
 
 }
+
+
+                                                                          \
+
 
 void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)
 {
@@ -77,7 +95,7 @@ void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_s
                         service_handler = NULL;
     if(direction_handler) {
         ESP_ERROR_CHECK(esp_event_handler_instance_unregister_with(
-                        loop_direct, 
+                        direct_loop, 
                         EVENTS_DIRECTION, 
                         ESP_EVENT_ANY_ID,  
                         direction_handler
@@ -86,7 +104,7 @@ void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_s
     }
     if(show_handler) {
         ESP_ERROR_CHECK(esp_event_handler_instance_unregister_with(
-                        loop_show, 
+                        show_loop, 
                         EVENTS_SHOW, 
                         ESP_EVENT_ANY_ID,  
                         show_handler
@@ -95,7 +113,7 @@ void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_s
     }
     if(service_handler) {
         ESP_ERROR_CHECK(esp_event_handler_instance_unregister_with(
-                        loop_service, 
+                        slow_service_loop, 
                         EVENTS_SERVICE, 
                         ESP_EVENT_ANY_ID,  
                         service_handler)
@@ -105,7 +123,7 @@ void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_s
     vTaskDelay(TIMEOUT_SEND_EVENTS);
     if(links_handlers_list[new_screen].main_handler) {
         ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                                    loop_direct, 
+                                    direct_loop, 
                                     EVENTS_DIRECTION, 
                                     ESP_EVENT_ANY_ID, 
                                     links_handlers_list[new_screen].main_handler, 
@@ -115,7 +133,7 @@ void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_s
     }
     if(links_handlers_list[new_screen].show_handler) {
         ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                                    loop_show, 
+                                    show_loop, 
                                     EVENTS_SHOW, 
                                     ESP_EVENT_ANY_ID, 
                                     links_handlers_list[new_screen].show_handler, 
@@ -125,7 +143,7 @@ void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_s
     }
     if(links_handlers_list[new_screen].service_handler) {
         ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                                loop_service, 
+                                slow_service_loop, 
                                 EVENTS_SERVICE, 
                                 ESP_EVENT_ANY_ID, 
                                 links_handlers_list[new_screen].service_handler, 
@@ -133,7 +151,7 @@ void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_s
                                 &service_handler
                             ));
     }
-    esp_event_post_to(loop_direct, EVENTS_DIRECTION, KEY_INIT, NULL, 0, TIMEOUT_SEND_EVENTS);
+    esp_event_post_to(direct_loop, EVENTS_DIRECTION, KEY_INIT, NULL, 0, TIMEOUT_SEND_EVENTS);
 }
 
 
@@ -191,43 +209,58 @@ void set_time_handler(void* handler_args, esp_event_base_t base, int32_t method_
         }
         default : return;
     }
-    esp_event_post_to(loop_direct, EVENTS_DIRECTION, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
+    esp_event_post_to(direct_loop, EVENTS_DIRECTION, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
 }
 
 void direction_task(void *pv)
 {
-    vTaskDelay(pdMS_TO_TICKS(5000));
+    vTaskDelay(DEALAY_START_TASK);
     while(1) {
-        esp_event_loop_run(loop_direct, TICKS_TO_RUN_LOOP);
-        vTaskDelay(DELAY_TASK_LOOP);
+        // esp_event_loop_run(direct_loop, TICKS_TO_RUN_LOOP);
+        vTaskDelay(DELAY_FAST_LOOP);
     }
 }
 
 
  void show_task(void *pv)
 {
+    vTaskDelay(DEALAY_START_TASK);
     while(1) {
-        esp_event_loop_run(loop_show, TICKS_TO_RUN_LOOP);
-        vTaskDelay(DELAY_TASK_LOOP);
-    }
-}
+        if(show_loop){
+            // esp_event_loop_run(show_loop, TICKS_TO_RUN_LOOP);
 
- void services_task(void *pv)
-{
-    vTaskDelay(pdMS_TO_TICKS(5000));
-    while(1) {
-        if(loop_service){
-            esp_event_loop_run(loop_service, TICKS_TO_RUN_LOOP);
         }
-        vTaskDelay(DELAY_TASK_LOOP);
+        vTaskDelay(DELAY_FAST_LOOP);
     }
 }
 
+ void fast_services_task(void *pv)
+{
+    vTaskDelay(DEALAY_START_TASK);
+    while(1) {
+        if(fast_service_loop){
+            esp_event_loop_run(fast_service_loop, TICKS_TO_RUN_LOOP);
+        }
+        vTaskDelay(DELAY_FAST_LOOP);
+    }
+}
+
+
+void slow_services_task(void *pv)
+{
+    vTaskDelay(DEALAY_START_TASK);
+    while(1) {
+        if(slow_service_loop){
+            esp_event_loop_run(slow_service_loop, TICKS_TO_RUN_LOOP);
+        }
+        vTaskDelay(DELAY_SLOW_LOOP);
+    }
+}
 
 void vApplicationIdleHook( void )
 { 
     TickType_t us_time_sleep = TIMER_WAKEUP_LONG_TIME_US;
     while (1) {
-        // sleep_dwin(us_time_sleep);
+        sleep_dwin(us_time_sleep);
     }
 }

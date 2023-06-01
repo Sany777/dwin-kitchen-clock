@@ -45,8 +45,7 @@ typedef enum action_timer_func{
     STOP_TIMER_FUNC,
 }action_timer_func_t;
 
-typedef enum command_wifi{
-    INIT_STA, 
+enum events{
     START_STA,
     INIT_AP,
     CLOSE_CUR_CON,
@@ -63,8 +62,9 @@ typedef enum command_wifi{
     SEND_RESULT,
     SET_CONFIG,
     SET_MODE_STA,
-    END_COMMAND_WIFI
-}command_wifi_t;
+    GET_WEATHER,
+    SHOW_SCREEN
+};
 
 typedef enum flag_state_device{
     SOUNDS_ALLOW,
@@ -83,7 +83,7 @@ typedef enum flag_state_device{
     RESPONSE_UPDATE,
     PROCESS_STA,
     PROCESS_DWIN,
-    PROCESS_SERVER,
+    PROCESS_GET,
     SERVER_OK,
 
     ESPNOW_RUN,
@@ -92,10 +92,10 @@ typedef enum flag_state_device{
 }flag_state_device_t;
 
 /*events bit*/
-#define BIT_SERVER_RUN          ( 1 << SERVER_OK )
+#define BIT_SERVER_STOP          ( 1 << SERVER_OK )
 #define BIT_DWIN_RESPONSE_OK    ( 1 << RESPONSE_OK )
 #define BIT_PROCESS_STA         ( 1 << PROCESS_STA )
-#define BIT_PROCESS_SERVER      ( 1 << PROCESS_SERVER )
+#define BIT_END_PROCESS_GET_WEATHER ( 1 << PROCESS_GET )
 #define BIT_PROCESS_DWIN        ( 1 << PROCESS_DWIN )
 #define BIT_SYNC_TIME           ( 1 << SYNC_TIME )
 #define BIT_ESPNOW_ALLOW        ( 1 << ESPNOW_ALLOW )
@@ -193,7 +193,7 @@ typedef struct {
     uint8_t timezone;
     char description[LEN_BUF_DESCRIPTION];
     uint8_t pop[NUMBER_DATA_WEATHER];
-    uint8_t dt_tx[NUMBER_DATA_WEATHER];
+    uint8_t dt_tx;
     temperature_t indoor;
     temperature_t feels_like[NUMBER_DATA_WEATHER];
     temperature_t outdoor[NUMBER_DATA_WEATHER];

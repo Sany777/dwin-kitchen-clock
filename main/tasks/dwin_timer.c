@@ -40,7 +40,7 @@ void periodic_timer_callback(void* arg)
             if(item->time < item->time_init){
                 item->time++;
                 if(item->time == item->time_init){
-                    esp_event_post_to( loop_service,
+                    esp_event_post_to( slow_service_loop,
                                         TIMER_TURNED_ON,
                                         item->event_id,
                                         item->pv,

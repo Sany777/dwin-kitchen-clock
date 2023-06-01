@@ -56,7 +56,11 @@
     "esp_netif.h": "c",
     "esp_http_client.h": "c",
     "system_error": "c",
-    "parser.h": "c"
+    "parser.h": "c",
+    "nvs_flash.h": "c",
+    "time.h": "c",
+    "dwin_memory.h": "c",
+    "esp_log.h": "c"
   },
   "idf.flashType": "UART",
   "idf.portWin": "COM7",

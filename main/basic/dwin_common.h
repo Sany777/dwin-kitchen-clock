@@ -35,5 +35,19 @@
 #include "dwin_drivers.h"
 #include "dwin_weather.h"
 #include "parser.h"
+
+ESP_EVENT_DECLARE_BASE(WIFI_SET); 
+ESP_EVENT_DECLARE_BASE(EVENTS_SERVICE); 
+ESP_EVENT_DECLARE_BASE(EVENTS_SET_TIME); 
+ESP_EVENT_DECLARE_BASE(EVENTS_MANAGER); 
+ESP_EVENT_DECLARE_BASE(EVENTS_DIRECTION); 
+ESP_EVENT_DECLARE_BASE(EVENTS_SHOW);
+
 extern EventGroupHandle_t dwin_event_group;
-// static QueueHandle_t dwin_uart_events_queue;
+extern esp_event_loop_handle_t 
+                direct_loop, 
+                show_loop, 
+                fast_service_loop,
+                slow_service_loop;
+
+extern QueueHandle_t dwin_uart_events_queue, queue_espnow_tx, queue_espnow_rx;

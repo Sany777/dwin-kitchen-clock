@@ -1,5 +1,6 @@
 #include "dwin_init.h"
 
+EventGroupHandle_t dwin_event_group;
 
 void esp_init()
 {
