@@ -1,8 +1,10 @@
 #include "dwin_init.h"
 
+
+
 EventGroupHandle_t dwin_event_group;
 
-void esp_init()
+void esp_init(void)
 {
     main_data_t *main_data = (main_data_t *) calloc(1, sizeof(main_data_t));
     assert(main_data);

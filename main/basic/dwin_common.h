@@ -35,6 +35,8 @@
 #include "dwin_drivers.h"
 #include "dwin_weather.h"
 #include "parser.h"
+#include "dwin_timer.h"
+
 
 ESP_EVENT_DECLARE_BASE(WIFI_SET); 
 ESP_EVENT_DECLARE_BASE(EVENTS_SERVICE); 

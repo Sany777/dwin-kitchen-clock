@@ -118,7 +118,7 @@ function createForms()
 
 function updateTime() 
 {
-  const data = "" + Math.trunc(new Date().getTime() / 1000);
+  const data = "" + Math.trunc(new Date().getTime());
   sendDataForm("time", data);
 }
 

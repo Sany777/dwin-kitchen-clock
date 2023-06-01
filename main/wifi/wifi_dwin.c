@@ -1,13 +1,102 @@
 #include "wifi_dwin.h"
+ 
+// char buff[INET6_ADDRSTRLEN];
+//             ip_addr_t const *ip = esp_sntp_getserver(i);
+//             if (ipaddr_ntoa_r(ip, buff, INET6_ADDRSTRLEN) != NULL)
+//                 ESP_LOGI(TAG, "server %d: %s", i, buff);
+
+void set_espnow_handler(void* arg, esp_event_base_t event_base,
+                                int32_t action, void* event_data)
+{
+    static bool init_espnow;
+    static bool run_espnow;
+    static TaskHandle_t rx_espnow, tx_espnow;
+switch(action){
+    case START_ESPNOW :
+    {
+        if(!init_espnow){
+            wifi_mode_t mode;
+            esp_wifi_get_mode(&mode);
+            if(mode != WIFI_MODE_STA){
+                start_sta();
+                vTaskDelay(1000);
+            }
+            ESP_ERROR_CHECK(esp_now_init());
+            #if CONFIG_ESP_WIFI_STA_DISCONNECTED_PM_ENABLE
+                ESP_ERROR_CHECK(esp_now_set_wake_window(WINDOW_ESPNOW_MS));
+            #endif
+            ESP_ERROR_CHECK( esp_now_set_pmk((uint8_t *)ESPNOW_PMK) );
+            queue_espnow_tx = xQueueCreate(ESPNOW_QUEUE_SIZE, sizeof(espnow_send_t));
+            queue_espnow_rx = xQueueCreate(ESPNOW_QUEUE_SIZE, sizeof(espnow_rx_data_t*));
+            assert(queue_espnow_tx);
+            assert(queue_espnow_rx);
+            xTaskCreate(espnow_task_rx, "espnow_task_rx", 4000, (main_data_t *)arg, 2, rx_espnow);
+            xTaskCreate(espnow_task_tx, "espnow_task_tx", 4000, (main_data_t *)arg, 2, tx_espnow);
+            ESP_ERROR_CHECK( esp_now_register_send_cb(espnow_send_cb) );
+            init_espnow = true;
+            run_espnow = true;
+        } else if(!run_espnow){
+            run_espnow = true;
+            vTaskResume(tx_espnow);
+            esp_now_register_recv_cb(espnow_rx_cb);
+        }
+        xEventGroupSetBits(dwin_event_group, BIT_ESPNOW_RUN);
+        break;
+    }
+    case PAUSE_ESPNOW :
+    {
+        if(init_espnow && run_espnow){
+            vTaskSuspend(tx_espnow);
+            esp_now_unregister_recv_cb();
+        }
+        xEventGroupClearBits(dwin_event_group, BIT_ESPNOW_RUN);
+        break;
+    }
+    case  STOP_ESPNOW :
+    {
+        if(init_espnow){
+            esp_now_unregister_recv_cb();
+            esp_now_unregister_send_cb();
+            vTaskDelay(1000);
+            vTaskDelete(rx_espnow);
+            rx_espnow = NULL;
+            espnow_rx_data_t *data_rx;
+            while(xQueueReceive(queue_espnow_rx, &data_rx, 0) == pdTRUE){
+                if(data_rx){
+                    if(data_rx->parcel){
+                        free(data_rx->parcel);
+                    }
+                    free(data_rx);
+                }
+            }
+            vQueueDelete(queue_espnow_rx);
+            queue_espnow_rx = NULL;
+            if(tx_espnow){
+                vTaskDelete(tx_espnow);
+                tx_espnow = NULL;
+            } 
+            if(queue_espnow_tx){
+                vQueueDelete(queue_espnow_tx);
+                queue_espnow_tx = NULL;
+            }
+            esp_now_deinit();
+            xEventGroupClearBits(dwin_event_group, BIT_ESPNOW_RUN);
+            xEventGroupClearBits(dwin_event_group, BIT_ESPNOW_CONECT);
+            init_espnow = false;
+        }
+        break;
+    }
+    default:break;
+    }
+}
 
 
-void wifi_set_mode_handler(void* arg, esp_event_base_t event_base,
+void set_mode_wifi_handler(void* arg, esp_event_base_t event_base,
                                 int32_t action, void* event_data)
 {
     static wifi_config_t wifi_config;
     static esp_netif_t *netif = NULL;
     static wifi_mode_t mode = WIFI_MODE_NULL;
-    static TaskHandle_t rx_espnow, tx_espnow;
     static bool init_sta;
     main_data_t *main_data = (main_data_t *)arg;
 switch(action){
@@ -36,6 +125,11 @@ switch(action){
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config));
         ESP_ERROR_CHECK(esp_wifi_start());
         break;
+    }
+    case INIT_SCAN_NETWORKS :
+    {
+        esp_wifi_set_event_mask(EVENT_OFF_WIFI);
+        if(mode == WIFI_MODE_STA)break;
     }
     case START_STA :
     {
@@ -74,11 +168,6 @@ switch(action){
         esp_wifi_stop();
         break;
     }
-    case INIT_SCAN_NETWORKS :
-    {
-        esp_wifi_set_event_mask(EVENT_OFF_WIFI);
-        break;
-    }
     case DEINIT_SCAN_NETWORKS :
     {
         ESP_ERROR_CHECK(esp_wifi_set_event_mask(EVENT_ON_WIFI));
@@ -91,94 +180,7 @@ switch(action){
         ESP_ERROR_CHECK(esp_wifi_scan_stop());
         break;
     }
-    case INIT_ESPNOW :
-    {
-        if(mode == WIFI_MODE_STA){
-            ESP_ERROR_CHECK(esp_now_init() );
-            #if CONFIG_ESP_WIFI_STA_DISCONNECTED_PM_ENABLE
-                ESP_ERROR_CHECK(esp_now_set_wake_window(WINDOW_ESPNOW_MS));
-            #endif
-            ESP_ERROR_CHECK( esp_now_set_pmk((uint8_t *)ESPNOW_PMK) );
-            queue_espnow_tx = xQueueCreate(ESPNOW_QUEUE_SIZE, sizeof(espnow_send_t));
-            queue_espnow_rx = xQueueCreate(ESPNOW_QUEUE_SIZE, sizeof(espnow_rx_data_t*));
-            assert(queue_espnow_tx);
-            assert(queue_espnow_rx);
-            xTaskCreate(espnow_task_rx, "espnow_task_rx", 4000, main_data, 2, rx_espnow);
-            xTaskCreate(espnow_task_tx, "espnow_task_tx", 4000, main_data, 2, tx_espnow);
-            xEventGroupSetBits(dwin_event_group, BIT_INIT_ESPNOW);
-        }
-        break;
-    }
-    case START_ESPNOW :
-    {
-        ESP_ERROR_CHECK( esp_now_register_send_cb(espnow_send_cb) );
-        ESP_ERROR_CHECK( esp_now_register_recv_cb(espnow_rx_cb) );
-        xEventGroupSetBits(dwin_event_group, BIT_ESPNOW_RUN);
-        break;
-    }
-    case PAUSE_ESPNOW :
-    {
-        if(tx_espnow)vTaskSuspend(tx_espnow);
-        esp_now_unregister_recv_cb();
-        break;
-    }
-    case  STOP_ESPNOW :
-    {
-        esp_now_unregister_recv_cb();
-        esp_now_unregister_send_cb();
-        vTaskDelay(1000);
-        if(rx_espnow){
-            vTaskDelete(rx_espnow);
-            rx_espnow = NULL;
-        }
-        if(queue_espnow_rx){
-            espnow_rx_data_t *data_rx;
-            while(xQueueReceive(queue_espnow_rx, &data_rx, 0) == pdTRUE){
-                if(data_rx){
-                    if(data_rx->parcel){
-                        free(data_rx->parcel);
-                    }
-                    free(data_rx);
-                }
-            }
-            vQueueDelete(queue_espnow_rx);
-            queue_espnow_rx = NULL;
-        }
-        if(tx_espnow){
-            vTaskDelete(tx_espnow);
-            tx_espnow = NULL;
-        } 
-        if(queue_espnow_tx){
-            vQueueDelete(queue_espnow_tx);
-            queue_espnow_tx = NULL;
-        }
-        esp_now_deinit();
-        xEventGroupClearBits(dwin_event_group, BIT_ESPNOW_RUN);
-        xEventGroupClearBits(dwin_event_group, BIT_ESPNOW_CONECT);
-        xEventGroupClearBits(dwin_event_group, BIT_INIT_ESPNOW);
-        break;
-    }
-    case  INIT_SNTP :
-    {
-        sntp_setoperatingmode(SNTP_OPMODE_POLL);
-        sntp_setservername(0, "pool.ntp.org");
-        sntp_servermode_dhcp(0);
-        sntp_init();
-        // setenv("TZ", "EET-2EEST,M3.5.0/3,M10.5.0/4", 1);
-        // tzset();
-    }
-    case UPDATE_TIME :
-    {
-        if(mode != WIFI_MODE_STA)break;
-        int retry = 0;
-        while (sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET && ++retry < TIMEOUT_SNTP) {
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-        }
-        if(retry < TIMEOUT_SNTP) {
-            esp_event_post_to(direct_loop, EVENTS_SET_TIME, UPDATE_TIME_FROM_SNTP, NULL, 0, TIMEOUT_SEND_EVENTS);
-        }
-        break;
-    }
+    
     default : break;
     }
 }
@@ -218,15 +220,44 @@ void wifi_sta_handler(void* arg, esp_event_base_t event_base,
         retry_num = RETRY_CONNECT_APSTA;
         ESP_LOGI(TAG, "Sta stop!!!");
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED && retry_num < RETRY_CONNECT_APSTA) {
-        ESP_LOGI(TAG, "Connect sta...");
-            if(esp_wifi_connect() != ESP_OK){
-                if(retry_num == 0) xEventGroupClearBits(dwin_event_group, BIT_WIFI_STA);
-                retry_num++;
-            }
+        ESP_LOGI(TAG, "Atempt connecting sta...");
+        if(esp_wifi_connect() != ESP_OK){
+            if(retry_num == 0) xEventGroupClearBits(dwin_event_group, BIT_WIFI_STA);
+            retry_num++;
+        }
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         retry_num = 0;
         ESP_LOGI(TAG, "Connected STA success!!!");
         xEventGroupSetBits(dwin_event_group, BIT_WIFI_STA);
-        xEventGroupClearBits(dwin_event_group, BIT_PROCESS_STA);
+
     }
+}
+
+
+void time_sync(struct timeval *tv)
+{
+    settimeofday(tv, FORMAT_CLOCK);
+    esp_event_post_to(slow_service_loop, EVENTS_SET_TIME, UPDATE_TIME_FROM_ETHER, NULL, 0, WAIT_SERVICE);
+}
+
+void init_sntp_handler(void* arg, esp_event_base_t event_base,
+                                int32_t event_id, void* event_data)
+
+{
+    EventBits_t xEventGroup = xEventGroupWaitBits(dwin_event_group,                       
+                                                          BIT_WIFI_STA, false, false,                               
+                                                          FIRST_WAIT_WIFI_BIT);                                     
+    if(!(xEventGroup&BIT_WIFI_STA)){                                                      
+        start_sta();                                                                      
+        xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_WIFI_STA, 
+                                            false, false,                                                                     SECOND_WAIT_WIFI_BIT*3);                                                            
+        if(!(xEventGroup&BIT_WIFI_STA))return;                                            
+    }
+    sntp_set_time_sync_notification_cb(time_sync);
+    sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
+    ESP_LOGI(TAG, "SNTP start init !!!");
+    sntp_setoperatingmode(ESP_SNTP_OPMODE_POLL);
+    sntp_setservername(0, "pool.ntp.org");
+    sntp_servermode_dhcp(0);
+    sntp_init();
 }

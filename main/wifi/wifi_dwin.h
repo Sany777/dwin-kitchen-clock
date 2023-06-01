@@ -30,7 +30,7 @@
 #define MAX_STA_CONN       2
 #define ESPNOW_PMK "pmk1234567890123"
 #define ESPNOW_LMK "Lmk1234567890123"
-#define TIMEOUT_SNTP 15
+#define TIMEOUT_SNTP 5
 
 
 #define EVENT_OFF_WIFI      (WIFI_EVENT_STA_START \
@@ -43,12 +43,14 @@
 
 #define WAKE_INTERVAL 100
 
-void wifi_set_mode_handler(void* arg, esp_event_base_t event_base,
+void set_mode_wifi_handler(void* arg, esp_event_base_t event_base,
                                 int32_t action, void* event_data);
-
 void wifi_sta_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data);
-
 void ap_handler(void* arg, esp_event_base_t event_base,
                             int32_t event_id, void* event_data);
-
+void set_espnow_handler(void* arg, esp_event_base_t event_base,
+                                int32_t action, void* event_data);
+void init_sntp_handler(void* arg, esp_event_base_t event_base,
+                                int32_t event_id, void* event_data);
+void time_sync(struct timeval *tv);

@@ -13,6 +13,7 @@ ESP_EVENT_DEFINE_BASE(EVENTS_DIRECTION);
 ESP_EVENT_DEFINE_BASE(EVENTS_MANAGER);
 ESP_EVENT_DEFINE_BASE(EVENTS_SET_TIME);
 ESP_EVENT_DEFINE_BASE(WIFI_SET);
+ESP_EVENT_DEFINE_BASE(ESPNOW_SET);
 
 
 void init_dwin_events(main_data_t *main_data) 
@@ -27,34 +28,42 @@ void init_dwin_events(main_data_t *main_data)
     ESP_ERROR_CHECK(esp_event_loop_create(&my_loop_args, &fast_service_loop));
     ESP_ERROR_CHECK(esp_event_loop_create(&my_loop_args, &slow_service_loop));
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                                    direct_loop,
-                                    EVENTS_MANAGER,
-                                    ESP_EVENT_ANY_ID,
-                                    screen_change_handler,
-                                    (void *)main_data,
-                                    NULL
-                                ));
+                                direct_loop,
+                                EVENTS_MANAGER,
+                                ESP_EVENT_ANY_ID,
+                                screen_change_handler,
+                                (void *)main_data,
+                                NULL
+                            ));
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                                    slow_service_loop,
-                                    EVENTS_SET_TIME,
-                                    ESP_EVENT_ANY_ID,
-                                    set_time_handler,
-                                    (void *)main_data,
-                                    NULL
-                                ));
+                                slow_service_loop,
+                                WIFI_SET,
+                                INIT_SNTP,
+                                init_sntp_handler,
+                                (void *)main_data,
+                                NULL
+                            ));
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                                    fast_service_loop,
-                                    WIFI_SET,
-                                    ESP_EVENT_ANY_ID,
-                                    wifi_set_mode_handler,
-                                    (void *)main_data,
-                                    NULL
-                                ));
+                                slow_service_loop,
+                                EVENTS_SET_TIME,
+                                ESP_EVENT_ANY_ID,
+                                set_time_handler,
+                                (void *)main_data,
+                                NULL
+                            ));
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
                                 slow_service_loop,
                                 WIFI_SET,
                                 GET_WEATHER,
                                 get_weather_handler,
+                                (void *)main_data,
+                                NULL
+                            ));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
+                                fast_service_loop,
+                                WIFI_SET,
+                                ESP_EVENT_ANY_ID,
+                                set_mode_wifi_handler,
                                 (void *)main_data,
                                 NULL
                             ));
@@ -71,15 +80,15 @@ void init_dwin_events(main_data_t *main_data)
 
 
 
+        // get_weather();
+        // vTaskDelay(pdMS_TO_TICKS(5000));
+        // start_ap();
+        // vTaskDelay(pdMS_TO_TICKS(25000));
+        get_weather();
+        vTaskDelay(pdMS_TO_TICKS(5000));
         start_ap();
         vTaskDelay(pdMS_TO_TICKS(25000));
-        get_weather();
-        // esp_event_post_to(fast_service_loop, WIFI_SET, INIT_STA, NULL, 0, 2000);
-        
-        // esp_event_post_to(slow_service_loop, WIFI_SET, INIT_ESPNOW, NULL, 0, 1000);
-        // xEventGroupWaitBits(dwin_event_group, BIT_INIT_ESPNOW, false, false, (pdMS_TO_TICKS(20000)));
-        // esp_event_post_to(slow_service_loop, WIFI_SET, START_ESPNOW, NULL, 0, 1000);
-
+        start_sntp();
 }
 
 
@@ -90,9 +99,9 @@ void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_s
 {
     if(new_screen >= SIZE_LIST_TASKS || new_screen < 0) return;
     static esp_event_handler_instance_t 
-                        direction_handler = NULL, 
-                        show_handler = NULL, 
-                        service_handler = NULL;
+                        direction_handler, 
+                        show_handler, 
+                        service_handler;
     if(direction_handler) {
         ESP_ERROR_CHECK(esp_event_handler_instance_unregister_with(
                         direct_loop, 
@@ -175,33 +184,23 @@ void set_time_handler(void* handler_args, esp_event_base_t base, int32_t method_
                 free(new_time);
             }
             break;
-        } 
-        case UPDATE_TIME_FROM_MS:
-        {
-            time_t *time_now = (time_t *)time_data;
-            if(!time_now)return;
-            struct timeval now = {
-                .tv_sec = (time_t)time_now/1000,
-                .tv_usec = (suseconds_t)time_now%(uint64_t)1000
-            };
-            settimeofday(&now, NULL);
         }
-        case UPDATE_TIME_FROM_SNTP:
+        case UPDATE_TIME_FROM_ETHER:
         {
             static struct tm timeinfo;
             time_t time_now;
             time(&time_now);
             localtime_r(&time_now, &timeinfo);
-            if(timeinfo.tm_year > 1900) {
-                cur_HOUR = timeinfo.tm_hour;
-                cur_SEC = timeinfo.tm_sec;
-                cur_MIN = timeinfo.tm_min;
-                cur_DAY = timeinfo.tm_mday;
-                cur_MONTH = timeinfo.tm_mon;
-                cur_YEAR = timeinfo.tm_year;
-                cur_WEEK_DAY = timeinfo.tm_wday;
-                // if(sync_TIME)dwin_clock_set(main_data);
-            } 
+            cur_HOUR = timeinfo.tm_hour;
+            cur_SEC = timeinfo.tm_sec;
+            cur_MIN = timeinfo.tm_min;
+            cur_DAY = timeinfo.tm_mday;
+            cur_MONTH = timeinfo.tm_mon;
+            cur_YEAR = timeinfo.tm_year;
+            cur_WEEK_DAY = timeinfo.tm_wday;
+            ESP_LOGI(TAG, "YES! %d:%d%d", cur_HOUR, cur_MIN/10, cur_MIN%10 );
+            
+            if(sync_TIME)dwin_clock_set(main_data);
             // else if(method_update != UPDATE_TIME_FROM_MS) {
             //     xTaskNotify(task_service_wifi, INIT_SNTP, eSetBits);
             // }

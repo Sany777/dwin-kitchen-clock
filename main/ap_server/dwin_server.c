@@ -467,12 +467,14 @@ static esp_err_t handler_set_time(httpd_req_t *req)
         DWIN_RESP_ERR(req, "Data not read", err);
     }
     server_buf[total_len] = 0;
-    long *time = malloc(sizeof(long));
+    long long time = atoll(server_buf);
     if(!time){
-        DWIN_RESP_ERR(req, "Not enough storage", err);
+        DWIN_RESP_ERR(req, "Value wrong", err);
     }
-    *time = atol(server_buf);
-    // esp_event_post_to(direct_loop, EVENTS_SET_TIME, UPDATE_TIME_FROM_MS, time, sizeof(long), TIMEOUT_SEND_EVENTS);
+    struct timeval tv;
+    tv.tv_sec = time/1000;
+    tv.tv_usec = time%1000;
+    time_sync(&tv);
     httpd_resp_sendstr(req, "Set time successfully");
     return ESP_OK;
 err:
@@ -529,7 +531,6 @@ static esp_err_t notif_handler(httpd_req_t *req)
     if (received != total_len) {
         DWIN_RESP_ERR(req, "Data not read", err);
     }
-    char *buf = calloc(1, 3);
     for(size_t i=0, i_notif = 0; i_notif<SIZE_NOTIFICATION && i<total_len; i_notif++, i+=2){
         notification_DATA[i_notif] = GET_NUMBER(server_buf[i])*10 + GET_NUMBER(server_buf[i+1]);
     }

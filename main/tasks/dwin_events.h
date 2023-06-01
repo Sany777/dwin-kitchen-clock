@@ -25,16 +25,6 @@ enum {
     CPU_1
 };
 
-typedef enum
-{
-    PUSH_KEY,
-    SELECT_TASK,
-    START_SERVICE,
-    UPDATE_TIME_FROM_UART,
-    UPDATE_TIME_FROM_SNTP,
-    UPDATE_TIME_FROM_MS,
-    DATA_SHOW
-} command_id_t;
 
 /*screen tasks*/
 typedef enum {
@@ -163,6 +153,19 @@ void uart_event_task(void *);
                         do{                                                                                     \
                             esp_event_post_to(fast_service_loop, WIFI_SET, START_STA, NULL, 0, WAIT_SERVICE);   \
                         }while(0) 
+
+
+#define start_espnow()                                                                                              \
+                        do{                                                                                         \
+                            esp_event_post_to(fast_service_loop, WIFI_SET, START_ESPNOW, NULL, 0, WAIT_SERVICE);    \
+                        }while(0) 
+#define start_sntp()                                                                                                \
+                        do{                                                                                         \
+                            esp_event_post_to(slow_service_loop, WIFI_SET, INIT_SNTP, NULL, 0, WAIT_SERVICE);       \
+                        }while(0) 
+
+
+
 
 
 void init_dwin_events(main_data_t*);

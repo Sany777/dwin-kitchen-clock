@@ -63,56 +63,60 @@ enum events{
     SET_CONFIG,
     SET_MODE_STA,
     GET_WEATHER,
-    SHOW_SCREEN
+    SHOW_SCREEN,
+    PUSH_KEY,
+    SELECT_TASK,
+    START_SERVICE,
+    UPDATE_TIME_FROM_UART,
+    UPDATE_TIME_FROM_ETHER,
+    UPDATE_TIME_FROM_MS,
+    DATA_SHOW
 };
 
 typedef enum flag_state_device{
     SOUNDS_ALLOW,
-    SYNC_TIME,
+    SYNC_TIME_ALLOW,
     ESPNOW_ALLOW,
+
+    SNTP_WORK,
+    IS_WEATHER,
+
     ESPNOW_CONECT,
     DATA_PREPARING,
-    CLOCK_RUN,
     TIMER_RUN,
     INTERNET_OK,
     WIFI_STA,
-    SNTP_WORK,
     SENSOR_1_OK,
     SENSOR_2_OK,
     RESPONSE_OK,
     RESPONSE_UPDATE,
-    PROCESS_STA,
     PROCESS_DWIN,
-    PROCESS_GET,
     SERVER_OK,
 
     ESPNOW_RUN,
-
-
 }flag_state_device_t;
 
 /*events bit*/
-#define BIT_SERVER_STOP          ( 1 << SERVER_OK )
-#define BIT_DWIN_RESPONSE_OK    ( 1 << RESPONSE_OK )
-#define BIT_PROCESS_STA         ( 1 << PROCESS_STA )
-#define BIT_END_PROCESS_GET_WEATHER ( 1 << PROCESS_GET )
-#define BIT_PROCESS_DWIN        ( 1 << PROCESS_DWIN )
-#define BIT_SYNC_TIME           ( 1 << SYNC_TIME )
 #define BIT_ESPNOW_ALLOW        ( 1 << ESPNOW_ALLOW )
-#define BIT_ESPNOW_RUN          ( 1 << ESPNOW_RUN )
-#define BIT_INIT_ESPNOW         ( 1 << INIT_ESPNOW )
-#define BIT_DATA_PREPARING      ( 1 << DATA_PREPARING )
-#define BIT_CLOCK_RUN           ( 1 << CLOCK_RUN )
-#define BIT_TIMER_RUN           ( 1 << TIMER_RUN )
-#define BIT_WIFI_STA            ( 1 << WIFI_STA  )
-#define BIT_INTERNET            ( 1 << INTERNET_OK )
-#define BIT_ESPNOW_CONECT       ( 1 << ESPNOW_CONECT )
-#define BIT_SNTP                ( 1 << SNTP_WORK )
-#define BIT_SEN_1               ( 1 << SENSOR_1_OK )
-#define BIT_SEN_2               ( 1 << SENSOR_2_OK )
+#define BIT_SYNC_TIME_ALLOW     ( 1 << SYNC_TIME_ALLOW )
 #define BIT_SOUNDS_ALLOW        ( 1 << SOUNDS_ALLOW )
 
-#define STORED_FLAGS       (BIT_SOUNDS_ALLOW|BIT_SYNC_TIME|BIT_ESPNOW_ALLOW)
+#define BIT_ESPNOW_RUN          ( 1 << ESPNOW_RUN )
+#define BIT_WIFI_STA            ( 1 << WIFI_STA  )
+#define BIT_SERVER_STOP         ( 1 << SERVER_OK )
+#define BIT_SNTP_WORK           ( 1 << SNTP_WORK )
+#define BIT_TIMER_RUN           ( 1 << TIMER_RUN )
+#define BIT_IS_WEATHER          ( 1 << IS_WEATHER )
+
+#define BIT_ESPNOW_CONECT       ( 1 << ESPNOW_CONECT )
+#define BIT_DWIN_RESPONSE_OK    ( 1 << RESPONSE_OK )
+#define BIT_PROCESS_DWIN        ( 1 << PROCESS_DWIN )
+#define BIT_DATA_PREPARING      ( 1 << DATA_PREPARING )
+#define BIT_INTERNET            ( 1 << INTERNET_OK )
+#define BIT_SEN_1               ( 1 << SENSOR_1_OK )
+#define BIT_SEN_2               ( 1 << SENSOR_2_OK )
+
+#define STORED_FLAGS       (BIT_SOUNDS_ALLOW|BIT_SYNC_TIME_ALLOW|BIT_ESPNOW_ALLOW)
 
 typedef enum index_clock {
     INDEX_YEAR,

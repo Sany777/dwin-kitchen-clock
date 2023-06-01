@@ -60,7 +60,9 @@
     "nvs_flash.h": "c",
     "time.h": "c",
     "dwin_memory.h": "c",
-    "esp_log.h": "c"
+    "esp_log.h": "c",
+    "sys.h": "c",
+    "netfwd": "c"
   },
   "idf.flashType": "UART",
   "idf.portWin": "COM7",
