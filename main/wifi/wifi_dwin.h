@@ -53,4 +53,18 @@ void set_espnow_handler(void* arg, esp_event_base_t event_base,
                                 int32_t action, void* event_data);
 void init_sntp_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data);
-void time_sync(struct timeval *tv);
+void set_time_tv(struct timeval *tv);
+
+#define BREAK_IF_NO_WIFI_CON()                                                           \
+    do{                                                                             \
+        EventBits_t xEventGroup = xEventGroupWaitBits(dwin_event_group,             \
+                        BIT_WIFI_STA,                                               \
+                        false, false,                                               \
+                        FIRST_WAIT_WIFI_BIT);                                       \                               
+        if(!(xEventGroup&BIT_WIFI_STA)){                                            \                                                                  
+            start_sta();                                                            \                                                      
+            xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_WIFI_STA,       \
+                                            false, false, SECOND_WAIT_WIFI_BIT*3);  \                                                      
+            if(!(xEventGroup&BIT_WIFI_STA))return;                                  \                      
+        }                                                                           \
+    }while(0)

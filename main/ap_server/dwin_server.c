@@ -225,7 +225,7 @@ static esp_err_t handler_set_img(httpd_req_t *req)
     }
     send_chunc(server_buf, total_len);
     if(total_len < MAX_LEN_CHUNC_IMG){
-        char *pos_pic_str = get_pos_data_str_from_uri(req->uri, BASE_PATH_SAVE_PIC);
+        char *pos_pic_str = get_data_from_uri(req->uri, BASE_PATH_SAVE_PIC);
         if(!pos_pic_str){
             DWIN_RESP_ERR(req, "Format data position pic is wrong", err);
         }
@@ -283,7 +283,7 @@ err:
 
 static esp_err_t handler_save_pic(httpd_req_t *req)
 {
-    const char *pos_pic_str = get_pos_data_str_from_uri(req->uri, BASE_PATH_SAVE_PIC);
+    const char *pos_pic_str = get_data_from_uri(req->uri, BASE_PATH_SAVE_PIC);
     if(!pos_pic_str){
         DWIN_RESP_ERR(req, "Data not read", err);
     }
@@ -474,7 +474,7 @@ static esp_err_t handler_set_time(httpd_req_t *req)
     struct timeval tv;
     tv.tv_sec = time/1000;
     tv.tv_usec = time%1000;
-    time_sync(&tv);
+    set_time_tv(&tv);
     httpd_resp_sendstr(req, "Set time successfully");
     return ESP_OK;
 err:

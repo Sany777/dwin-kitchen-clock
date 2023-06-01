@@ -1,7 +1,5 @@
 #include "dwin_init.h"
 
-
-
 EventGroupHandle_t dwin_event_group;
 
 void esp_init(void)
@@ -18,11 +16,12 @@ void esp_init(void)
       ESP_ERROR_CHECK(nvs_flash_init());
     }
     init_uart();
-    setenv("TZ", FORMAT_CLOCK, 1);
+    setenv("TZ", FORMAT_CLOCK_DEFAULT, 1);
     tzset();
     read_all_memory(main_data);
     wifi_init();
     init_dwin_events(main_data);
+  
 }
 
 

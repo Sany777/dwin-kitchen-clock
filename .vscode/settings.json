@@ -62,7 +62,9 @@
     "dwin_memory.h": "c",
     "esp_log.h": "c",
     "sys.h": "c",
-    "netfwd": "c"
+    "netfwd": "c",
+    "esp_now.h": "c",
+    "event_groups.h": "c"
   },
   "idf.flashType": "UART",
   "idf.portWin": "COM7",

@@ -1,10 +1,23 @@
 #include "dwin_help.h"
 
 
+void set_timezone(int hour)
+{
+    if(hour < 23 || hour > -23){
+        char *buf_format_time = calloc(1, SIZE_BUF_FORMAT_CLOCK);
+        if(buf_format_time){
+            sprintf(buf_format_time, "EET%+dEEST,M3.5.0/3,M10.5.0/4", hour);
+            setenv("TZ", buf_format_time, 1);
+            tzset();
+            free(buf_format_time);
+        }    
+    }
+}
+
 void fix_scale_height(uint16_t *h_points, 
                 const int number,
                 const uint16_t height)
-{     
+{
     uint8_t max_height = 0;
     for(int i=0; i<number; i++){
         if(h_points[i] > max_height){
@@ -17,7 +30,24 @@ void fix_scale_height(uint16_t *h_points,
     }
 }
 
-char *get_pos_data_str_from_uri(const char *uri_str, 
+
+void set_time_tv(struct timeval *tv)
+{
+    settimeofday(tv, NULL);
+    esp_event_post_to(direct_loop, EVENTS_DIRECTION, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
+    if(sntp_get_sync_interval() < SYNCH_10_HOUR)sntp_set_sync_interval(SYNCH_10_HOUR);
+}
+
+void set_time_tm(struct tm *timeptr)
+{
+    time_t time = mktime(timeptr);
+    struct timeval tv = {
+        .tv_sec = time,
+    };
+    set_time_tv(&tv);
+}
+
+char *get_data_from_uri(const char *uri_str, 
                                 const char *base_path)
 {
     const size_t base_pathlen = strlen(base_path);

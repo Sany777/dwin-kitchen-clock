@@ -5,12 +5,10 @@
 
 /*data identifier from dwin*/
 #define KEY_READ_COMMAND (0x78)
-#define KEY_GET_CLOCK (155)
 
 /*index byte in RX buffer*/
 #define INDEX_IDENTIF_DATA_IN_RX    (0)
 #define INDEX_START_DATA_IN_RX      (2)
-#define SIZE_SENDING_TIME           (6)/*without week day*/
 
 #define init_update_dwin()			uart_write_bytes(UART_DWIN, INIT_UPDATE, sizeof(INIT_UPDATE))
 
@@ -34,20 +32,13 @@
 										uart_write_bytes(UART_DWIN, SET_PIC, sizeof(SET_PIC));  \
 										break; 													\
 									}
-#define dwin_clock_get() 			uart_write_bytes(UART_DWIN, GET_TIME, sizeof(GET_TIME))
-#define dwinClockOff()  			uart_write_bytes(UART_DWIN, CLOCK_OFF, sizeof(CLOCK_OFF))
 #define hide_rect() 				uart_write_bytes(UART_DWIN, RECTANGLE_OFF, sizeof(RECTANGLE_OFF))
 #define cancel_text_box()			uart_write_bytes(UART_DWIN, CANCEL_TEXT_BOX, sizeof(CANCEL_TEXT_BOX))
 #define clear_screen()				uart_write_bytes(UART_DWIN, CLEAR_SCREEN, sizeof(CLEAR_SCREEN))
 
-void dwin_clock_on(const uint16_t row, 
-							const uint16_t column, 
-							const uint16_t text_color, 
-							const uint8_t font);
 void dwin_print(uint16_t row, uint16_t column, 
 					const uint16_t text_color, 
 					const uint8_t font) ;
-void dwin_clock_set(const main_data_t *main_data);
 void save_pic(const uint8_t pic);
 void set_text_box(const uint16_t x_s, 
                     const uint16_t y_s, 

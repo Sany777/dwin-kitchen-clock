@@ -2,7 +2,7 @@
  
 // char buff[INET6_ADDRSTRLEN];
 //             ip_addr_t const *ip = esp_sntp_getserver(i);
-//             if (ipaddr_ntoa_r(ip, buff, INET6_ADDRSTRLEN) != NULL)
+            // if (ipaddr_ntoa_r(ip, buff, INET6_ADDRSTRLEN) != NULL)
 //                 ESP_LOGI(TAG, "server %d: %s", i, buff);
 
 void set_espnow_handler(void* arg, esp_event_base_t event_base,
@@ -103,9 +103,12 @@ switch(action){
     case INIT_AP :
     {
         if(mode == WIFI_MODE_AP)break;
-        if(mode != WIFI_MODE_NULL)esp_wifi_stop();
-        if(mode == WIFI_MODE_STA && netif){
-            esp_netif_destroy_default_wifi(netif);
+        if(mode != WIFI_MODE_NULL){
+            esp_wifi_stop();
+            vTaskDelay(200);
+            if(mode == WIFI_MODE_STA && netif){
+                esp_netif_destroy_default_wifi(netif);
+            }
         }
         netif = esp_netif_create_default_wifi_ap();
         mode = WIFI_MODE_AP;
@@ -137,6 +140,7 @@ switch(action){
             esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_START, &wifi_sta_handler, main_data);
             esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_sta_handler, main_data);
             esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &wifi_sta_handler, main_data);
+            esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_STOP, &wifi_sta_handler, main_data);
             init_sta = true;
         }
         if(mode != WIFI_MODE_NULL)esp_wifi_stop();
@@ -215,49 +219,37 @@ void wifi_sta_handler(void* arg, esp_event_base_t event_base,
     static int retry_num;
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
         retry_num = 0;
-        DWIN_SHOW_ERR(esp_wifi_connect());
+        esp_wifi_connect();
     } else if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_STOP){
         retry_num = RETRY_CONNECT_APSTA;
-        ESP_LOGI(TAG, "Sta stop!!!");
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED && retry_num < RETRY_CONNECT_APSTA) {
-        ESP_LOGI(TAG, "Atempt connecting sta...");
         if(esp_wifi_connect() != ESP_OK){
             if(retry_num == 0) xEventGroupClearBits(dwin_event_group, BIT_WIFI_STA);
             retry_num++;
         }
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         retry_num = 0;
-        ESP_LOGI(TAG, "Connected STA success!!!");
         xEventGroupSetBits(dwin_event_group, BIT_WIFI_STA);
-
     }
 }
 
 
-void time_sync(struct timeval *tv)
-{
-    settimeofday(tv, FORMAT_CLOCK);
-    esp_event_post_to(slow_service_loop, EVENTS_SET_TIME, UPDATE_TIME_FROM_ETHER, NULL, 0, WAIT_SERVICE);
-}
 
 void init_sntp_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
 
 {
-    EventBits_t xEventGroup = xEventGroupWaitBits(dwin_event_group,                       
-                                                          BIT_WIFI_STA, false, false,                               
-                                                          FIRST_WAIT_WIFI_BIT);                                     
-    if(!(xEventGroup&BIT_WIFI_STA)){                                                      
-        start_sta();                                                                      
-        xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_WIFI_STA, 
-                                            false, false,                                                                     SECOND_WAIT_WIFI_BIT*3);                                                            
-        if(!(xEventGroup&BIT_WIFI_STA))return;                                            
+    if(!esp_sntp_enabled()){
+        BREAK_IF_NO_WIFI_CON();
+        set_time_tv(set_time_tv);
+        sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
+        sntp_setoperatingmode(ESP_SNTP_OPMODE_POLL);
+        sntp_setservername(0, "pool.ntp.org");
+        sntp_setservername(1, "time.windows.com");
+        sntp_servermode_dhcp(0);
+        sntp_set_sync_interval(SYNC_15_MIN);
+        sntp_init();
+    } else {
+        sntp_restart();
     }
-    sntp_set_time_sync_notification_cb(time_sync);
-    sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
-    ESP_LOGI(TAG, "SNTP start init !!!");
-    sntp_setoperatingmode(ESP_SNTP_OPMODE_POLL);
-    sntp_setservername(0, "pool.ntp.org");
-    sntp_servermode_dhcp(0);
-    sntp_init();
 }

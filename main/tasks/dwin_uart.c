@@ -39,7 +39,6 @@ void uart_event_task(void *pv)
 	size_t byte_rx_count, rxBytes;
     char *buf_RX = (char*) malloc(UART_BUF_SIZE);
     assert(buf_RX);
-    char data_intifier;
     uart_event_t event;
 for(;;) {
     if(xQueueReceive(dwin_uart_events_queue, (void * )&event, (TickType_t)portMAX_DELAY)) {
@@ -51,31 +50,16 @@ for(;;) {
                             portMAX_DELAY);
             byte_rx_count = 0;
             heder_ok = false;
-            buf_RX[rxBytes] = 0;
-            send_str_dwin(buf_RX);
             while(rxBytes--) {
                 if (heder_ok) {
-                    if((buf_RX[byte_rx_count - 3] == 0xCC)      \
-                        && (buf_RX[byte_rx_count - 2] == 0x33)  \
-                        && (buf_RX[byte_rx_count - 1] == 0xC3)  \
-                        && (buf_RX[byte_rx_count] == 0x3C)      \
-                    ) {
-                        data_intifier = buf_RX[INDEX_IDENTIF_DATA_IN_RX];
-                        if(data_intifier == KEY_GET_CLOCK) {
-                            uint8_t *buf_time = (uint8_t*) malloc(SIZE_BUF_TIME);
-                            if(buf_time == NULL)break;
-                            memcpy((uint8_t*)buf_time, (uint8_t*)&buf_RX[INDEX_START_DATA_IN_RX], SIZE_TIME);
-                            esp_event_post_to(
-                                    slow_service_loop,
-                                    EVENTS_SET_TIME,
-                                    KEY_GET_CLOCK,
-                                    buf_time,
-                                    SIZE_BUF_TIME,
-                                    TIMEOUT_PUSH_KEY
-                                );
-                        } else if(data_intifier == KEY_READ_COMMAND) {
+                    if((buf_RX[byte_rx_count - 3] == 0xCC)      
+                        && (buf_RX[byte_rx_count - 2] == 0x33)  
+                        && (buf_RX[byte_rx_count - 1] == 0xC3)  
+                        && (buf_RX[byte_rx_count] == 0x3C))
+                    {
+                        if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == KEY_READ_COMMAND) {
                             uint32_t key = buf_RX[INDEX_START_DATA_IN_RX];
-                            if(KEY_IS_SET_TASK(data_intifier)) {
+                            if(KEY_IS_SET_TASK(buf_RX[INDEX_IDENTIF_DATA_IN_RX])) {
                                 esp_event_post_to(
                                     slow_service_loop,
                                     EVENTS_MANAGER,

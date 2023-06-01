@@ -51,5 +51,5 @@ extern esp_event_loop_handle_t
                 show_loop, 
                 fast_service_loop,
                 slow_service_loop;
-
 extern QueueHandle_t dwin_uart_events_queue, queue_espnow_tx, queue_espnow_rx;
+extern char *buf_format_time;

@@ -1,19 +1,5 @@
 #include "dwin_drivers.h"
 
-
-void dwin_clock_on(const uint16_t row, const uint16_t column, const uint16_t text_color, const uint8_t font) 
-{
-    CLOCK_ON[CLOCK_FONT] = font;
-    CLOCK_ON[CLOCK_COLOUR_1] = text_color>>8;
-    CLOCK_ON[CLOCK_COLOUR_2] = text_color<<8;
-	CLOCK_ON[CLOCK_COL_1] = column>>8;
-    CLOCK_ON[CLOCK_COL_2] = column<<8;
-    CLOCK_ON[CLOCK_ROW_1] = row>>8;
-    CLOCK_ON[CLOCK_ROW_2] = row<<8;
-	uart_write_bytes(UART_DWIN, CLOCK_ON, sizeof(CLOCK_ON));
-}
-
-
 void send_chunc(const char *data, const size_t data_len)
 {
     static uint32_t addr = 0;
@@ -34,7 +20,6 @@ void send_chunc(const char *data, const size_t data_len)
     }
 }
 
-
 void dwin_print(uint16_t row, uint16_t column, const uint16_t text_color, const uint8_t font) 
 {
 	column *= font * 8;
@@ -47,19 +32,6 @@ void dwin_print(uint16_t row, uint16_t column, const uint16_t text_color, const 
     PRINT[PRINT_ROW_1] = row>>8;
     PRINT[PRINT_ROW_2] = row<<8;
 	uart_write_bytes(UART_DWIN, PRINT, sizeof(PRINT));
-}
-
-void dwin_clock_set(const main_data_t *main_data) 
-{
-    uint8_t time_to_send[SIZE_SENDING_TIME];
-	uart_write_bytes(UART_DWIN, HEADER_CLOCK_SET, sizeof(HEADER_CLOCK_SET));
-	for (uint8_t count_cur_time=0, count_send_time=0; count_cur_time<SIZE_TIME; count_cur_time++) {
-        if(count_cur_time != INDEX_WEEK_DAY) {
-		    time_to_send[count_send_time++] = cur_CLOCK[count_cur_time];
-        }
-	}
-    uart_write_bytes(UART_DWIN, time_to_send, SIZE_SENDING_TIME);
-	print_end();
 }
 
 void save_pic(const uint8_t pic)
@@ -138,8 +110,6 @@ void print_lines(const uint16_t *points,
         print_end(); 
     }
 }
-
-
 
 void print_broken_line(const uint16_t *y_points, 
                 const int points_number,

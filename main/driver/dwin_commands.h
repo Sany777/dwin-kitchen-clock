@@ -11,15 +11,11 @@
 #define FRAME_END               0xCC,0x33,0xC3,0x3C
 #define COMMAND_SET_BOX         0x45
 #define COMMAND_PRINT           0x98
-#define COMMAND_GET_TIME        0x9B,0x5A
 #define MAX_BUZZER_TIME         0xef
 #define COMMAND_BUZZER          0x79
 #define COMMAND_SET_SETTING     0x55,0xAA,0x5A,0xA5
-#define COMMAND_SET_CLOCK       0xE7,COMMAND_SET_SETTING
 #define COMMAND_SET_BRIGHT      0x5f
 #define COMMAND_SET_PIC         0x70
-#define COMMAND_CLOCK_ON        0x9b,0xFF,0x00
-#define COMMAND_CLOCK_OFF       0x9b,0x00
 #define COMMAND_ON_RECTANGLE    0x59
 #define COMMAND_OFF_RECTANGLE   0x69
 #define COMMAND_FILL_AREA       0x64
@@ -148,19 +144,6 @@ static char PRINT[] = {
     FRAME_END,
 };
 
-static char CLOCK_ON[] = {
-    FRAME_HEADER, 
-    COMMAND_CLOCK_ON, 
-    VARIABLE_VALUE,
-    VARIABLE_VALUE,
-    VARIABLE_VALUE,
-    VARIABLE_VALUE,
-    VARIABLE_VALUE,
-    VARIABLE_VALUE,
-    VARIABLE_VALUE,
-    FRAME_END
-};
-
 static char SET_PIC[] = {
     FRAME_HEADER, 
     COMMAND_SET_PIC, 
@@ -168,10 +151,6 @@ static char SET_PIC[] = {
     FRAME_END
 };
 
-static const char HEADER_CLOCK_SET[]= {
-    FRAME_HEADER, 
-    COMMAND_SET_CLOCK, 
-};
 
 static char SET_BRIGHT[] = {
     FRAME_HEADER, 
@@ -180,22 +159,10 @@ static char SET_BRIGHT[] = {
     FRAME_END
 };
 
-static const char CLOCK_OFF[] = {
-    FRAME_HEADER, 
-    COMMAND_CLOCK_OFF, 
-    FRAME_END
-};
-
 static char FULL_COMMAND_BUZZER[] = {
     FRAME_HEADER, 
     COMMAND_BUZZER, 
     VARIABLE_VALUE, 
-    FRAME_END
-};
-
-static const char GET_TIME[] = {
-    FRAME_HEADER, 
-    COMMAND_GET_TIME, 
     FRAME_END
 };
 
@@ -220,16 +187,6 @@ static const char CANCEL_TEXT_BOX[] = {
 };
 
 static const char END[] = { FRAME_END };
-
-enum index_byte_clock_on {
-    CLOCK_FONT = 4,
-    CLOCK_COLOUR_1,
-    CLOCK_COLOUR_2,
-    CLOCK_COL_1,
-    CLOCK_COL_2,
-    CLOCK_ROW_1,
-    CLOCK_ROW_2
-};
 
 enum index_byte_print {
     PRINT_COL_1=2,

@@ -12,8 +12,8 @@ void espnow_rx_cb(const esp_now_recv_info_t *recv_data, const uint8_t *data, int
 {
     if(recv_data && recv_data->src_addr
             && recv_data->des_addr
-            && data
-    ){
+            && data)
+    {
         espnow_rx_data_t *data_rx = (espnow_rx_data_t*) malloc(sizeof(espnow_rx_data_t));
         if(data_rx){
             data_rx->parcel = malloc(data_len);

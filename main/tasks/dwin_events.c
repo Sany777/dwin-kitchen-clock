@@ -11,7 +11,6 @@ ESP_EVENT_DEFINE_BASE(EVENTS_SHOW);
 ESP_EVENT_DEFINE_BASE(EVENTS_SERVICE);
 ESP_EVENT_DEFINE_BASE(EVENTS_DIRECTION);
 ESP_EVENT_DEFINE_BASE(EVENTS_MANAGER);
-ESP_EVENT_DEFINE_BASE(EVENTS_SET_TIME);
 ESP_EVENT_DEFINE_BASE(WIFI_SET);
 ESP_EVENT_DEFINE_BASE(ESPNOW_SET);
 
@@ -43,14 +42,7 @@ void init_dwin_events(main_data_t *main_data)
                                 (void *)main_data,
                                 NULL
                             ));
-    ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                                slow_service_loop,
-                                EVENTS_SET_TIME,
-                                ESP_EVENT_ANY_ID,
-                                set_time_handler,
-                                (void *)main_data,
-                                NULL
-                            ));
+
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
                                 slow_service_loop,
                                 WIFI_SET,
@@ -80,15 +72,16 @@ void init_dwin_events(main_data_t *main_data)
 
 
 
-        // get_weather();
-        // vTaskDelay(pdMS_TO_TICKS(5000));
-        // start_ap();
-        // vTaskDelay(pdMS_TO_TICKS(25000));
-        get_weather();
-        vTaskDelay(pdMS_TO_TICKS(5000));
-        start_ap();
-        vTaskDelay(pdMS_TO_TICKS(25000));
-        start_sntp();
+    get_weather();
+    // vTaskDelay(pdMS_TO_TICKS(5000));
+    start_ap();
+    // vTaskDelay(pdMS_TO_TICKS(25000));
+    get_weather();
+    // vTaskDelay(pdMS_TO_TICKS(7000));
+    start_ap();
+    // vTaskDelay(pdMS_TO_TICKS(25000));
+    start_sntp();
+
 }
 
 
@@ -164,52 +157,6 @@ void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_s
 }
 
 
-void set_time_handler(void* handler_args, esp_event_base_t base, int32_t method_update, void* time_data)
-{
-    main_data_t *main_data = (main_data_t *)handler_args;
-    switch(method_update) {
-        case UPDATE_TIME_FROM_UART:
-        {
-            uint8_t *new_time = (uint8_t*)time_data;
-            if(new_time){
-                for(uint8_t i=0, temp=0; i<SIZE_BUF_TIME; i++) {
-                    temp = new_time[i];
-                    if(i == BYTE_WEAK_DAY) {
-                        cur_WEEK_DAY = (temp + 6) % 7;
-                    }
-                    else {
-                        cur_CLOCK[i] = GET_DEC(temp);
-                    }
-                }
-                free(new_time);
-            }
-            break;
-        }
-        case UPDATE_TIME_FROM_ETHER:
-        {
-            static struct tm timeinfo;
-            time_t time_now;
-            time(&time_now);
-            localtime_r(&time_now, &timeinfo);
-            cur_HOUR = timeinfo.tm_hour;
-            cur_SEC = timeinfo.tm_sec;
-            cur_MIN = timeinfo.tm_min;
-            cur_DAY = timeinfo.tm_mday;
-            cur_MONTH = timeinfo.tm_mon;
-            cur_YEAR = timeinfo.tm_year;
-            cur_WEEK_DAY = timeinfo.tm_wday;
-            ESP_LOGI(TAG, "YES! %d:%d%d", cur_HOUR, cur_MIN/10, cur_MIN%10 );
-            
-            if(sync_TIME)dwin_clock_set(main_data);
-            // else if(method_update != UPDATE_TIME_FROM_MS) {
-            //     xTaskNotify(task_service_wifi, INIT_SNTP, eSetBits);
-            // }
-            break;
-        }
-        default : return;
-    }
-    esp_event_post_to(direct_loop, EVENTS_DIRECTION, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
-}
 
 void direction_task(void *pv)
 {
@@ -237,9 +184,7 @@ void direction_task(void *pv)
 {
     vTaskDelay(DEALAY_START_TASK);
     while(1) {
-        if(fast_service_loop){
-            esp_event_loop_run(fast_service_loop, TICKS_TO_RUN_LOOP);
-        }
+        esp_event_loop_run(fast_service_loop, TICKS_TO_RUN_LOOP);
         vTaskDelay(DELAY_FAST_LOOP);
     }
 }
@@ -249,9 +194,7 @@ void slow_services_task(void *pv)
 {
     vTaskDelay(DEALAY_START_TASK);
     while(1) {
-        if(slow_service_loop){
-            esp_event_loop_run(slow_service_loop, TICKS_TO_RUN_LOOP);
-        }
+        esp_event_loop_run(slow_service_loop, TICKS_TO_RUN_LOOP);
         vTaskDelay(DELAY_SLOW_LOOP);
     }
 }

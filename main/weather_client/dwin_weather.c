@@ -56,15 +56,7 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 
 void get_weather_handler(void* args, esp_event_base_t base, int32_t key, void* event_data)
 {
-    EventBits_t xEventGroup = xEventGroupWaitBits(dwin_event_group,                       
-                                                          BIT_WIFI_STA, false, false,                               
-                                                          FIRST_WAIT_WIFI_BIT);                                     
-    if(!(xEventGroup&BIT_WIFI_STA)){                                                      
-        start_sta();                                                                      
-        xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_WIFI_STA, 
-                                            false, false,                                                                     SECOND_WAIT_WIFI_BIT);                                                            
-        if(!(xEventGroup&BIT_WIFI_STA))return;                                            
-    }
+    BREAK_IF_NO_WIFI_CON();
     main_data_t *main_data = (main_data_t*)args;
     char *url_buf = (char*)calloc(1, SIZE_URL_BUF);
     assert(url_buf);
@@ -114,23 +106,22 @@ void get_weather_handler(void* args, esp_event_base_t base, int32_t key, void* e
             sunset_HOUR = timeinfo.tm_hour;
             sunset_MIN = timeinfo.tm_min;
             dt_TX = atoi((dt_txt[0]+SHIFT_DT_TX));
-            weather_PIC = get_pic(atoi(id[0]), dt_TX>sunset_HOUR-2);
+            weather_PIC = get_pic(atoi(id[0]), (dt_TX>sunset_HOUR-2));
             strncpy(description_WEATHER, description[0], LEN_BUF_DESCRIPTION);
             for(int i=0; temp && temp[i]; i++){
                 temp_OUTDOOR[i] = (atof(temp[i]))*10;
-                ESP_LOGI(TAG, "temp %d.%d %d:00", temp_OUTDOOR[i]/10, temp_OUTDOOR[i]%10, i*STEP_DT_TX+dt_TX);
                 temp_FEELS_LIKE[i] = (atof(temp_feel[i]))*10;
-                ESP_LOGI(TAG, "temp_feel %d.%d", temp_FEELS_LIKE[i]/10, temp_FEELS_LIKE[i]%10);
                 PoP[i] = (uint8_t) atoi(pop[i]);
             }
-            ESP_LOGI(TAG, "des : %s", description_WEATHER);
+            if(dt_txt)free(dt_txt);
+            if(pop)free(pop);
+            if(sunrise)free(sunrise);
+            if(sunset)free(sunset);
             if(id)free(id);
             if(temp)free(temp);
             if(description)free(description);
             if(temp_feel)free(temp_feel);
         } 
-    } else{
-        DWIN_SHOW_ERR(err);
     }
     esp_http_client_cleanup(client);
     free(url_buf);

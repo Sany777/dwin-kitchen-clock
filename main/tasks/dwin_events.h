@@ -75,7 +75,7 @@ extern  dwin_handler_t clock_handler;
 extern  dwin_handler_t set_color_screen_handler;
 extern  dwin_handler_t notification_screen_handler;
 extern  dwin_handler_t timer_screen_handler;
-extern  dwin_handler_t set_time_handler;
+
 
 extern  dwin_handler_t show_ssid_handler;
 extern  dwin_handler_t show_device_handler;
