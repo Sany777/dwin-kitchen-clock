@@ -73,13 +73,16 @@ void init_dwin_events(main_data_t *main_data)
 
 
     get_weather();
-    // vTaskDelay(pdMS_TO_TICKS(5000));
+    ESP_LOGI(TAG, "get_weather"); 
+    vTaskDelay(pdMS_TO_TICKS(5000));
     start_ap();
-    // vTaskDelay(pdMS_TO_TICKS(25000));
+    ESP_LOGI(TAG, "start_ap"); 
+    vTaskDelay(pdMS_TO_TICKS(25000));
     get_weather();
-    // vTaskDelay(pdMS_TO_TICKS(7000));
+    vTaskDelay(pdMS_TO_TICKS(7000));
     start_ap();
-    // vTaskDelay(pdMS_TO_TICKS(25000));
+    vTaskDelay(pdMS_TO_TICKS(25000));
+    ESP_LOGI(TAG, "start_sntp"); 
     start_sntp();
 
 }

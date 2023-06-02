@@ -31,6 +31,32 @@
 #define COMMAND_CLEAR_SCREEN                  0x52
 #define COMMAND_INIT_UPDATE                   0xf2,0xf2,0xf2,0x5A,0xA5,0x1E
 #define COMMAND_WORK_IN_VIDEOBUF              0x72
+#define HEADER_SET_CLOCK                      0xAA,0xE7,0x55,0xAA,0x5A,0xA5
+#define COMMAND_GET_TIME                      0x9B,0x5A
+
+#define START_DATA_CLOCK  6
+#define SIZE_SENDING_TIME 6
+#define SIZE_BUF_CLOCK_SET (SIZE_SENDING_TIME+START_DATA_CLOCK)
+
+enum index_clock {
+    INDEX_YEAR = START_DATA_CLOCK,
+    INDEX_MONTH,
+    INDEX_DAY,
+    INDEX_HOUR,
+    INDEX_MIN,
+    INDEX_SEC,
+    END_INDEX_CLOCK,
+};
+
+enum index_byte_print {
+    PRINT_COL_1=2,
+    PRINT_COL_2,
+    PRINT_ROW_1,
+    PRINT_ROW_2,
+    PRINT_FONT=8,
+    PRINT_COLOUR_1,
+    PRINT_COLOUR_2,
+};
 
 /****************************** FULL DWIN COMMANDS **********************************/
 
@@ -57,6 +83,11 @@ static char INIT_UPDATE[] = {
     FRAME_END,
 };
 
+static const char GET_TIME[] = {
+    FRAME_HEADER, 
+    COMMAND_GET_TIME, 
+    FRAME_END
+};
 
 static char CIRCULAR[] = {
     FRAME_HEADER,
@@ -188,12 +219,3 @@ static const char CANCEL_TEXT_BOX[] = {
 
 static const char END[] = { FRAME_END };
 
-enum index_byte_print {
-    PRINT_COL_1=2,
-    PRINT_COL_2,
-    PRINT_ROW_1,
-    PRINT_ROW_2,
-    PRINT_FONT=8,
-    PRINT_COLOUR_1,
-    PRINT_COLOUR_2,
-};

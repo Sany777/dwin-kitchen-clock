@@ -17,16 +17,8 @@
 #define description_WEATHER     (main_data->weather_data->description)
 
 /*for main_data instance*/
-#define cur_CLOCK               (main_data->cur_time)
 #define area_SCREEN             (main_data->area)
 #define selected_VALUE_CLOCK    (main_data->cur_time[area_SCREEN])
-#define cur_HOUR                (main_data->cur_time[INDEX_HOUR])
-#define cur_MIN                 (main_data->cur_time[INDEX_MIN])
-#define cur_MONTH               (main_data->cur_time[INDEX_MONTH])
-#define cur_DAY                 (main_data->cur_time[INDEX_DAY])
-#define cur_YEAR                (main_data->cur_time[INDEX_YEAR])
-#define cur_SEC                 (main_data->cur_time[INDEX_SEC])
-#define cur_WEEK_DAY            (main_data->cur_time[INDEX_WEEK_DAY])
 #define pwd_WIFI                (main_data->pwd_wifi)
 #define name_SSID               (main_data->ssid_name)
 #define name_CITY               (main_data->city_name)

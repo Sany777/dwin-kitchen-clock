@@ -19,7 +19,6 @@
 /****************************/
 
 #define SIZE_WEEK    7
-#define SIZE_TIME    7
 #define MAX_HOUR     23
 #define MAX_MIN_SEC  59
 #define MAX_MONTH    12
@@ -95,7 +94,7 @@
 #define ESPNOW_QUEUE_SIZE           5
 
 
-#define TIMER_WAKEUP_LONG_TIME_US    (60 * 1000 * 1000UL)
+#define TIMER_WAKEUP_LONG_TIME_US    (10 * 1000)
 #define TIMER_WAKEUP_SHORT_TIME_US   (10 * 1000UL)
 
 #define WINDOW_ESPNOW_MS 65000

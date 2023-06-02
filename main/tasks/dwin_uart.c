@@ -68,6 +68,20 @@ for(;;) {
                                     0,
                                     TIMEOUT_PUSH_KEY
                                 );
+                            } if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == KEY_GET_CLOCK){
+                                struct tm tm_time = {
+                                    .tm_year = buf_RX[1],
+                                    .tm_mon = buf_RX[2],
+                                    .tm_mday = buf_RX[3],
+                                    .tm_hour = buf_RX[5],
+                                    .tm_min = buf_RX[6],
+                                    .tm_sec = buf_RX[7],
+                                };
+                                time_t time = mktime(&tm_time);
+                                struct timeval tv = {
+                                    .tv_sec = time,
+                                };
+                                set_time_tv(&tv);
                             } else {
                                 esp_event_post_to(
                                     slow_service_loop,

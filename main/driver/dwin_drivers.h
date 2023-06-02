@@ -5,6 +5,7 @@
 
 /*data identifier from dwin*/
 #define KEY_READ_COMMAND (0x78)
+#define KEY_GET_CLOCK (155)
 
 /*index byte in RX buffer*/
 #define INDEX_IDENTIF_DATA_IN_RX    (0)
@@ -61,3 +62,9 @@ void print_broken_line(const uint16_t *y_points,
                 const uint16_t x_start,
                 const uint16_t x_end);
 void send_chunc(const char *data, const size_t data_len);
+void dwin_clock_on(const uint16_t row, 
+							const uint16_t column, 
+							const uint16_t text_color, 
+							const uint8_t font);
+#define dwin_clock_get() 	uart_write_bytes(UART_DWIN, GET_TIME, sizeof(GET_TIME))
+void dwin_clock_set(struct tm *tmptr);

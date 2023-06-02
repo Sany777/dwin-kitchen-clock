@@ -118,16 +118,6 @@ typedef enum flag_state_device{
 
 #define STORED_FLAGS       (BIT_SOUNDS_ALLOW|BIT_SYNC_TIME_ALLOW|BIT_ESPNOW_ALLOW)
 
-typedef enum index_clock {
-    INDEX_YEAR,
-    INDEX_MONTH,
-    INDEX_DAY,
-    INDEX_WEEK_DAY,
-    INDEX_HOUR,
-    INDEX_MIN,
-    INDEX_SEC,
-    END_INDEX_CLOCK,
-}index_clock_t;
 
 typedef enum index_timer {
     INDEX_HOUR_T,
@@ -254,7 +244,6 @@ typedef struct {
     char city_name[SIZE_BUF];
     char buf_api[SIZE_BUF];
     uint8_t colors_interface[SIZE_COLOURS_INTERFACE];
-    uint8_t cur_time[SIZE_TIME];
     uint8_t notif[SIZE_NOTIFICATION];
     weather_data_t *weather_data;
     sensor_data_t *sensor_data[NUMBER_SENSOR];

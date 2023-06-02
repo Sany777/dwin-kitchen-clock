@@ -76,7 +76,7 @@ void send_temperature(temperature_t int_as_float)
     if(int_as_float < 1000 && int_as_float > -1000) {
         char str_float[SIZE_BUF_FLOAT]; 
         size_t it=0;
-        if(int_as_float < 0) {
+        if(int_as_float < 0){
             str_float[it++] = '-';
             int_as_float *= -1;
         }

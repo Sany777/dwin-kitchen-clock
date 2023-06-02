@@ -3,14 +3,11 @@
 
 void set_timezone(int hour)
 {
-    if(hour < 23 || hour > -23){
-        char *buf_format_time = calloc(1, SIZE_BUF_FORMAT_CLOCK);
-        if(buf_format_time){
-            sprintf(buf_format_time, "EET%+dEEST,M3.5.0/3,M10.5.0/4", hour);
-            setenv("TZ", buf_format_time, 1);
-            tzset();
-            free(buf_format_time);
-        }    
+    if(hour < 24 || hour > -24){
+        char buf_format_time[SIZE_BUF_FORMAT_CLOCK] = {0};
+        sprintf(buf_format_time, "EET%+dEEST,M3.5.0/3,M10.5.0/4", hour);
+        setenv("TZ", buf_format_time, 1);
+        tzset();
     }
 }
 
@@ -40,11 +37,14 @@ void set_time_tv(struct timeval *tv)
 
 void set_time_tm(struct tm *timeptr)
 {
-    time_t time = mktime(timeptr);
-    struct timeval tv = {
-        .tv_sec = time,
-    };
-    set_time_tv(&tv);
+    if(timeptr->tm_hour < 24 && timeptr->tm_year >= 123){
+        time_t time = mktime(timeptr);
+        struct timeval tv = {
+            .tv_sec = time,
+        };
+        set_time_tv(&tv);
+        dwin_clock_set(&timeptr);
+    }
 }
 
 char *get_data_from_uri(const char *uri_str, 
@@ -63,13 +63,13 @@ char *get_data_from_uri(const char *uri_str,
 char *get_chip(int model_id)
 {
     switch(model_id){
-    case 1: return "ESP32";
-    case 2: return "ESP32-S2";
-    case 3: return "ESP32-S3";
-    case 5: return "ESP32-C3";
-    case 6: return "ESP32-H2";
-    case 12: return "ESP32-C2";
-    default: break;
+        case 1: return "ESP32";
+        case 2: return "ESP32-S2";
+        case 3: return "ESP32-S3";
+        case 5: return "ESP32-C3";
+        case 6: return "ESP32-H2";
+        case 12: return "ESP32-C2";
+        default: break;
     }
     return "uknown";
 }

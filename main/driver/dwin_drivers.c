@@ -149,3 +149,15 @@ void print_rect(const uint16_t x_s, const uint16_t y_s, const uint16_t x_e, cons
     uart_write_bytes(UART_DWIN, RECTANGLE_ON, sizeof(RECTANGLE_ON));
 }
 
+void dwin_clock_set(struct tm *tmptr) 
+{
+    uint8_t time_to_send[SIZE_BUF_CLOCK_SET] = {HEADER_SET_CLOCK};
+    time_to_send[INDEX_YEAR]    = GET_HEX(tmptr->tm_year);
+    time_to_send[INDEX_MONTH]   = GET_HEX(tmptr->tm_mon);
+    time_to_send[INDEX_DAY]     = GET_HEX(tmptr->tm_mday);
+    time_to_send[INDEX_HOUR]    = GET_HEX(tmptr->tm_hour);
+    time_to_send[INDEX_MIN]     = GET_HEX(tmptr->tm_min);
+    time_to_send[INDEX_SEC]     = GET_HEX(tmptr->tm_sec);
+    uart_write_bytes(UART_DWIN, time_to_send, SIZE_BUF_CLOCK_SET);
+	print_end();
+}

@@ -10,14 +10,13 @@
 #define PRIORITY_SLOW_SERVICE   (PRIORITY_DIRECTION-3)
 
 
-#define sleep_dwin(time_us)                                                                 \
-                                do{                                                         \
-                                    ESP_LOGI(TAG, "Light sleep");                           \ 
-                                    stop_event_timer();                                     \
-                                    ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(time_us));\
-                                    uart_wait_tx_idle_polling(UART_DWIN);                   \
-                                    ESP_ERROR_CHECK(esp_light_sleep_start());               \
+#define sleep_dwin(time_us)                                                                     \
+                                do{                                                             \
+                                    ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(time_us));    \
+                                    uart_wait_tx_idle_polling(UART_DWIN);                       \
+                                    ESP_ERROR_CHECK(esp_light_sleep_start());                   \
                                 }while(0)
+                                    //stop_event_timer();                                     
 
 
 enum {
