@@ -27,6 +27,14 @@ void init_dwin_events(main_data_t *main_data)
     ESP_ERROR_CHECK(esp_event_loop_create(&my_loop_args, &fast_service_loop));
     ESP_ERROR_CHECK(esp_event_loop_create(&my_loop_args, &slow_service_loop));
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
+                                slow_service_loop,
+                                ESPNOW_SET,
+                                ESP_EVENT_ANY_ID,
+                                set_espnow_handler,
+                                (void *)main_data,
+                                NULL
+                            ));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
                                 direct_loop,
                                 EVENTS_MANAGER,
                                 ESP_EVENT_ANY_ID,
@@ -44,7 +52,7 @@ void init_dwin_events(main_data_t *main_data)
                             ));
 
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                                slow_service_loop,
+                                direct_loop,
                                 WIFI_SET,
                                 GET_WEATHER,
                                 get_weather_handler,
@@ -55,6 +63,14 @@ void init_dwin_events(main_data_t *main_data)
                                 fast_service_loop,
                                 WIFI_SET,
                                 ESP_EVENT_ANY_ID,
+                                set_mode_wifi_handler,
+                                (void *)main_data,
+                                NULL
+                            ));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
+                                direct_loop,
+                                EVENTS_DIRECTION,
+                                GET_DATA_FROM_DEVICE,
                                 set_mode_wifi_handler,
                                 (void *)main_data,
                                 NULL
@@ -70,22 +86,22 @@ void init_dwin_events(main_data_t *main_data)
             );
     }
 
-
-
-    get_weather();
-    ESP_LOGI(TAG, "get_weather"); 
+    // start_sta();
+    // vTaskDelay(pdMS_TO_TICKS(5000));
+    sntp_init();
     vTaskDelay(pdMS_TO_TICKS(5000));
-    start_ap();
-    ESP_LOGI(TAG, "start_ap"); 
-    vTaskDelay(pdMS_TO_TICKS(25000));
     get_weather();
-    vTaskDelay(pdMS_TO_TICKS(7000));
-    start_ap();
-    vTaskDelay(pdMS_TO_TICKS(25000));
-    ESP_LOGI(TAG, "start_sntp"); 
-    start_sntp();
+    // ESP_LOGI(TAG, "get_weather"); 
+    vTaskDelay(pdMS_TO_TICKS(10000));
 
+    ESP_LOGI(TAG, "Start espnow"); 
+    start_espnow();
+    // ESP_LOGI(TAG, "Start timer"); 
+    // init_event_timer(main_data);
+    // add_periodic_event(WIFI_SET, GET_WEATHER, 15, RELOAD_COUNT);
+    // add_periodic_event(WIFI_SET, INIT_SNTP, 10, RELOAD_COUNT);
 }
+
 
 
                                                                           \

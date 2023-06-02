@@ -1,10 +1,10 @@
 #include "dwin_timer.h"
 
-static esp_timer_handle_t periodic_timer = NULL;
+esp_timer_handle_t periodic_timer = NULL;
 SLIST_HEAD(list_events_timer, time_func) list_timer_func = SLIST_HEAD_INITIALIZER(list_timer_func);
 
 
-esp_err_t add_function_to_timer_loop(int32_t event_id, size_t sec, mode_time_func_t mode, void *pv)
+esp_err_t add_periodic_event(esp_event_base_t basa, int32_t event_id, size_t sec, mode_time_func_t mode)
 {
     time_func_t *item = NULL;
     bool no_event = true;
@@ -18,10 +18,11 @@ esp_err_t add_function_to_timer_loop(int32_t event_id, size_t sec, mode_time_fun
        item = malloc(sizeof(time_func_t)); 
     }
     if(item){
+        item->basa = basa;
         item->time_init = sec;
         item->time = 0;
         item->mode = mode;
-        item->event_id = item->event_id;
+        item->event_id = event_id;
         SLIST_INSERT_HEAD(&list_timer_func, item, next);
         if(!esp_timer_is_active(periodic_timer)){
             return esp_timer_start_periodic(periodic_timer, 1000000);
@@ -32,7 +33,7 @@ esp_err_t add_function_to_timer_loop(int32_t event_id, size_t sec, mode_time_fun
 }
 
 
-void periodic_timer_callback(void* arg)
+void periodic_timer_callback(void* main_data)
 {
     if(!SLIST_EMPTY(&list_timer_func)){
         time_func_t *item = NULL;
@@ -40,11 +41,11 @@ void periodic_timer_callback(void* arg)
             if(item->time < item->time_init){
                 item->time++;
                 if(item->time == item->time_init){
-                    esp_event_post_to( slow_service_loop,
-                                        TIMER_TURNED_ON,
+                    esp_event_post_to( direct_loop,
+                                        item->basa,
                                         item->event_id,
-                                        item->pv,
-                                        0,
+                                        main_data,
+                                        sizeof(main_data_t),
                                         TIMEOUT_PUSH_KEY );
                     if(item->mode == RELOAD_COUNT){
                         item->time = 0;
@@ -74,7 +75,6 @@ esp_err_t set_mode_timer_function(int32_t event_id, action_timer_func_t mode)
                 } else if(mode == START_TIMER_FUNC) {
                     item->time = 0;
                 } else if(mode == STOP_TIMER_FUNC) {
-                    if(item->pv)free(item->pv);
                     SLIST_REMOVE(&list_timer_func, item, time_func, next);
                 }
                 return ESP_OK;
@@ -84,7 +84,7 @@ esp_err_t set_mode_timer_function(int32_t event_id, action_timer_func_t mode)
     return ESP_ERR_NOT_FOUND;
 }
 
-esp_err_t init_loop_event_timer(main_data_t *main_data)
+esp_err_t init_event_timer(main_data_t *main_data)
 {
     const esp_timer_create_args_t periodic_timer_args = {
         .callback = &periodic_timer_callback,

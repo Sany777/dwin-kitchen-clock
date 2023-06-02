@@ -64,10 +64,18 @@
     "sys.h": "c",
     "netfwd": "c",
     "esp_now.h": "c",
-    "event_groups.h": "c"
+    "event_groups.h": "c",
+    "semphr.h": "c",
+    "typeinfo": "c",
+    "compare": "cpp",
+    "functional": "cpp",
+    "ratio": "cpp",
+    "tuple": "cpp",
+    "type_traits": "cpp",
+    "esp_timer.h": "c"
   },
   "idf.flashType": "UART",
-  "idf.portWin": "COM7",
+  "idf.portWin": "COM8",
   "idf.openOcdConfigs": [
     "board/esp32-bridge.cfg"
   ]

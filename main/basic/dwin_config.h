@@ -33,7 +33,7 @@
 
 /* size buffer */
 
-#define ESP_WIFI_CHANNEL   1
+#define ESP_WIFI_CHANNEL   0
 #define MAX_OTA_SIZE  1500000
 /* Scratch server_buffer size */
 #define SCRATCH_SIZE  1000 // 2 KB
@@ -89,9 +89,9 @@
 #define SIZE_EVENTS_UART          10
 #define TIMEOUT_PUSH_KEY         (50/portTICK_PERIOD_MS)
 
-#define ESPNOW_MAXDELAY          512
+#define ESPNOW_MAXDELAY          1000
 
-#define ESPNOW_QUEUE_SIZE           5
+#define ESPNOW_QUEUE_SIZE         7
 
 
 #define TIMER_WAKEUP_LONG_TIME_US    (10 * 1000)
@@ -100,7 +100,7 @@
 #define WINDOW_ESPNOW_MS 65000
 #define CLIENT_BUF_LEN 4000
 #define SIZE_IP 4
-#define SIZE_MAC 6
+#define SIZE_MAC 8
 #define SIZE_BUF_INFO_SEND 18
 #define START_FLAG_SENSORS SENSOR_1_OK
 #define START_FLAG_TIMERS TIMER_DEVICE_1
@@ -110,7 +110,7 @@
 #define MAX_NAME_DEVICE 20
 
 #define MY_DEVICE_TYPE  DWIN_SCREEN_DEVICE
-#define MY_DEVICE_NAME "dwinScreen"
+#define MY_DEVICE_NAME "dwinScreen2"
 #define NUMBER_SENSOR 2
 
 #define VARIABLE_VALUE '\0'
@@ -130,7 +130,7 @@
 #define SHIFT_DT_TX 12
 #define STEP_DT_TX  3
 #define SECOND_WAIT_WIFI_BIT (pdMS_TO_TICKS(5000))
-#define FIRST_WAIT_WIFI_BIT  (pdMS_TO_TICKS(100))
+#define FIRST_WAIT_WIFI_BIT  (pdMS_TO_TICKS(1000))
 /* Clock */
 #define FORMAT_CLOCK_DEFAULT "EET-2EEST,M3.5.0/3,M10.5.0/4"
 #define SYNCH_10_HOUR 36000000
@@ -138,4 +138,3 @@
 
 #define SIZE_BUF_FORMAT_CLOCK (sizeof(FORMAT_CLOCK_DEFAULT)+2)
 
-// #define FORMAT_CLOCK "EET-2EEST,M3.5.0/3,M10.5.0/4"

@@ -19,13 +19,12 @@
 
 #include "dwin_common.h"
 
-static const uint8_t BRODCAST_MAC[SIZE_MAC] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+static const uint8_t BRODCAST_MAC[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 #define IS_BROADCAST_ADDR(addr)     (memcmp(addr, BRODCAST_MAC, SIZE_MAC) == 0)
 #define IS_ALL_ADDR(addr)           ((addr[0] == 0)&&(addr[1])==0)
 
 
 #define MAX_TIME_GETTING_DATA      (3000/portTICK_PERIOD_MS)
-#define DEFAULT_CHANNEL_ESPNOW     1
 #define SIZE_MAC                   6
 
 #define SIZE_SENSOR_PACKAGE         (sizeof(sensor_package_t))
@@ -39,18 +38,18 @@ static const uint8_t BRODCAST_MAC[SIZE_MAC] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x
 /*15 min*/
 #define WAIT_NEXT_REQEST_ADD (900000/portTICK_PERIOD_MS)
 
-#define TIMEOUT_RESPONSE_DEVICE_INFO ((MAX_ATEMPT_SEND_DATA+1)*TIMEOUT_SEND)
+#define TIMEOUT_RESPONSE_DEVICE_INFO ((MAX_ATEMPT_SEND_DATA+2)*TIMEOUT_SEND)
 
 #define MAX_ATEMPT_REQUEST 10
 #define MAX_ATEMPT_SEND_DATA 5
-#define NUMBER_RESPONSE_ADD_NEW 2
-#define NUMBER_REQUEST_ADD_NEW 5
+#define NUMBER_RESPONSE_ADD_NEW 5
+#define NUMBER_REQUEST_ADD_NEW 7
 #define TIMEOUT_SEND                (500/portTICK_PERIOD_MS)
 #define WAIT_PUSH_ESPNOW_TO_QUEUE   (1000/portTICK_PERIOD_MS)
 #define TIME_RESPONSE_ADD           (TIMEOUT_SEND*NUMBER_REQUEST_ADD_NEW)
 
 
-
+void get_data_espnow(void* args, esp_event_base_t base, int32_t key, void* event_data);
 void espnow_task_rx(void *pv);
 void espnow_task_tx(void *pv);
 void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status);

@@ -26,10 +26,10 @@
 
 #define RETRY_CONNECT_APSTA 5
 
-#define ESP_WIFI_CHANNEL   1
 #define MAX_STA_CONN       2
 #define ESPNOW_PMK "pmk1234567890123"
-#define ESPNOW_LMK "Lmk1234567890123"
+#define ESPNOW_LMK "lmk1234567890123"
+
 #define TIMEOUT_SNTP 5
 
 
@@ -64,7 +64,7 @@ void set_time_tv(struct timeval *tv);
         if(!(xEventGroup&BIT_WIFI_STA)){                                            \                                                                  
             start_sta();                                                            \                                                      
             xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_WIFI_STA,       \
-                                            false, false, SECOND_WAIT_WIFI_BIT*3);  \                                                      
+                                            false, false, SECOND_WAIT_WIFI_BIT*2);  \                                                      
             if(!(xEventGroup&BIT_WIFI_STA))return;                                  \                      
         }                                                                           \
     }while(0)

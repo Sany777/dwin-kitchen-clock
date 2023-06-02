@@ -22,6 +22,7 @@ typedef enum espnow_action{
     RESPONSE_ADD_NEW,
     REQUEST_ADD_NEW,
     NEED_TIME,
+    NEED_TEMP,
     NEED_NETWORK,
     NEED_DEVICE_INFO,
 } espnow_action_t;
@@ -70,6 +71,7 @@ enum events{
     UPDATE_TIME_FROM_UART,
     UPDATE_TIME_FROM_ETHER,
     UPDATE_TIME_FROM_MS,
+    GET_DATA_FROM_DEVICE,
     DATA_SHOW
 };
 
@@ -82,7 +84,7 @@ typedef enum flag_state_device{
     IS_WEATHER,
 
     ESPNOW_CONECT,
-    DATA_PREPARING,
+    IS_TIME,
     TIMER_RUN,
     INTERNET_OK,
     WIFI_STA,
@@ -107,11 +109,12 @@ typedef enum flag_state_device{
 #define BIT_SNTP_WORK           ( 1 << SNTP_WORK )
 #define BIT_TIMER_RUN           ( 1 << TIMER_RUN )
 #define BIT_IS_WEATHER          ( 1 << IS_WEATHER )
+#define BIT_IS_TIME             ( 1 << IS_TIME )
 
 #define BIT_ESPNOW_CONECT       ( 1 << ESPNOW_CONECT )
 #define BIT_DWIN_RESPONSE_OK    ( 1 << RESPONSE_OK )
 #define BIT_PROCESS_DWIN        ( 1 << PROCESS_DWIN )
-#define BIT_DATA_PREPARING      ( 1 << DATA_PREPARING )
+
 #define BIT_INTERNET            ( 1 << INTERNET_OK )
 #define BIT_SEN_1               ( 1 << SENSOR_1_OK )
 #define BIT_SEN_2               ( 1 << SENSOR_2_OK )
@@ -151,8 +154,8 @@ typedef struct{
 
 typedef struct network_package{
     uint16_t crc;
-    uint8_t ssid[SIZE_BUF];
-    uint8_t pwd[SIZE_BUF];
+    char ssid[SIZE_BUF];
+    char pwd[SIZE_BUF];
 } __attribute__((packed))network_package_t;
 
 typedef struct time_package{
@@ -200,10 +203,10 @@ typedef struct time_func {
     size_t time_init;
     uint32_t event_id;
     mode_time_func_t mode;
-    void *pv;
+    esp_event_base_t basa;
 }time_func_t;
 
-typedef struct espnow_rx_data{
+typedef struct {
     uint8_t mac[SIZE_MAC];
     bool is_brodcast_dst;
     uint8_t rssi;

@@ -10,4 +10,5 @@ char *get_data_from_uri(const char *uri_str,
 char *get_chip(int model_id);
 void set_timezone(int hour);
 void set_time_tv(struct timeval *tv);
-void set_time_tm(struct tm *timeptr);
+void set_time_tm(struct tm *timeptr, const bool update_dwin);
+struct tm* get_time_tm();

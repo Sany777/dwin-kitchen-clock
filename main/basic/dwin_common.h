@@ -39,11 +39,13 @@
 
 
 ESP_EVENT_DECLARE_BASE(WIFI_SET); 
+ESP_EVENT_DECLARE_BASE(ESPNOW_SET); 
 ESP_EVENT_DECLARE_BASE(EVENTS_SERVICE); 
-ESP_EVENT_DECLARE_BASE(EVENTS_SET_TIME); 
 ESP_EVENT_DECLARE_BASE(EVENTS_MANAGER); 
 ESP_EVENT_DECLARE_BASE(EVENTS_DIRECTION); 
 ESP_EVENT_DECLARE_BASE(EVENTS_SHOW);
+
+
 
 extern EventGroupHandle_t dwin_event_group;
 extern esp_event_loop_handle_t 
@@ -53,3 +55,4 @@ extern esp_event_loop_handle_t
                 slow_service_loop;
 extern QueueHandle_t dwin_uart_events_queue, queue_espnow_tx, queue_espnow_rx;
 extern char *buf_format_time;
+extern TaskHandle_t rx_espnow, tx_espnow;

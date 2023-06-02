@@ -27,15 +27,21 @@ void fix_scale_height(uint16_t *h_points,
     }
 }
 
+struct tm* get_time_tm()
+{
+    time_t time_now;
+    time(&time_now);
+    return gmtime(&time_now);
+}
 
 void set_time_tv(struct timeval *tv)
 {
     settimeofday(tv, NULL);
+    xEventGroupSetBits(dwin_event_group, BIT_IS_TIME);
     esp_event_post_to(direct_loop, EVENTS_DIRECTION, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
-    if(sntp_get_sync_interval() < SYNCH_10_HOUR)sntp_set_sync_interval(SYNCH_10_HOUR);
 }
 
-void set_time_tm(struct tm *timeptr)
+void set_time_tm(struct tm *timeptr, const bool update_dwin)
 {
     if(timeptr->tm_hour < 24 && timeptr->tm_year >= 123){
         time_t time = mktime(timeptr);
@@ -43,7 +49,8 @@ void set_time_tm(struct tm *timeptr)
             .tv_sec = time,
         };
         set_time_tv(&tv);
-        dwin_clock_set(&timeptr);
+        xEventGroupSetBits(dwin_event_group, BIT_IS_TIME);
+        if(update_dwin)dwin_clock_set(&timeptr);
     }
 }
 

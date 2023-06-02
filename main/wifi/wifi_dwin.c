@@ -10,29 +10,27 @@ void set_espnow_handler(void* arg, esp_event_base_t event_base,
 {
     static bool init_espnow;
     static bool run_espnow;
-    static TaskHandle_t rx_espnow, tx_espnow;
 switch(action){
     case START_ESPNOW :
     {
         if(!init_espnow){
+            xTaskCreate(espnow_task_rx, "espnow_task_rx", 5000, arg, 5, &rx_espnow);
+            xTaskCreate(espnow_task_tx, "espnow_task_tx", 5000, arg, 5, &tx_espnow);
+            assert(rx_espnow);
+            assert(tx_espnow);
+            ESP_ERROR_CHECK(esp_now_init());
             wifi_mode_t mode;
             esp_wifi_get_mode(&mode);
-            if(mode != WIFI_MODE_STA){
-                start_sta();
-                vTaskDelay(1000);
-            }
-            ESP_ERROR_CHECK(esp_now_init());
+            // if(mode != WIFI_MODE_STA){
+            //     start_sta();
+            //     vTaskDelay(10000);
+            // }
             #if CONFIG_ESP_WIFI_STA_DISCONNECTED_PM_ENABLE
                 ESP_ERROR_CHECK(esp_now_set_wake_window(WINDOW_ESPNOW_MS));
             #endif
             ESP_ERROR_CHECK( esp_now_set_pmk((uint8_t *)ESPNOW_PMK) );
-            queue_espnow_tx = xQueueCreate(ESPNOW_QUEUE_SIZE, sizeof(espnow_send_t));
-            queue_espnow_rx = xQueueCreate(ESPNOW_QUEUE_SIZE, sizeof(espnow_rx_data_t*));
-            assert(queue_espnow_tx);
-            assert(queue_espnow_rx);
-            xTaskCreate(espnow_task_rx, "espnow_task_rx", 4000, (main_data_t *)arg, 2, rx_espnow);
-            xTaskCreate(espnow_task_tx, "espnow_task_tx", 4000, (main_data_t *)arg, 2, tx_espnow);
             ESP_ERROR_CHECK( esp_now_register_send_cb(espnow_send_cb) );
+            ESP_ERROR_CHECK(esp_now_register_recv_cb(espnow_rx_cb));
             init_espnow = true;
             run_espnow = true;
         } else if(!run_espnow){
@@ -41,10 +39,12 @@ switch(action){
             esp_now_register_recv_cb(espnow_rx_cb);
         }
         xEventGroupSetBits(dwin_event_group, BIT_ESPNOW_RUN);
+        ESP_LOGI(TAG, "Run espnow");
         break;
     }
     case PAUSE_ESPNOW :
     {
+        ESP_LOGI(TAG, "pause espnow");
         if(init_espnow && run_espnow){
             vTaskSuspend(tx_espnow);
             esp_now_unregister_recv_cb();
@@ -55,6 +55,7 @@ switch(action){
     case  STOP_ESPNOW :
     {
         if(init_espnow){
+            ESP_LOGI(TAG, "Stop espnow");
             esp_now_unregister_recv_cb();
             esp_now_unregister_send_cb();
             vTaskDelay(1000);
@@ -108,9 +109,10 @@ switch(action){
             vTaskDelay(200);
             if(mode == WIFI_MODE_STA && netif){
                 esp_netif_destroy_default_wifi(netif);
+                netif = NULL;
             }
         }
-        netif = esp_netif_create_default_wifi_ap();
+        if(netif == NULL)netif = esp_netif_create_default_wifi_ap();
         mode = WIFI_MODE_AP;
         memset(&wifi_config, 0, sizeof(wifi_config));
         wifi_config.ap.max_connection = MAX_STA_CONN;
@@ -147,17 +149,18 @@ switch(action){
         if(mode == WIFI_MODE_AP && netif){
             xEventGroupWaitBits(dwin_event_group, BIT_SERVER_STOP, false, false, SECOND_WAIT_WIFI_BIT);
             esp_netif_destroy_default_wifi(netif);
+            netif = NULL;
             esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &ap_handler);
             esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &ap_handler);
             esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_START, &ap_handler);
             esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_STOP, &ap_handler);
         }
+        if(netif == NULL)netif = esp_netif_create_default_wifi_sta();
         memset(&wifi_config, 0, sizeof(wifi_config));
         strncpy((char *)wifi_config.sta.ssid, name_SSID, MAX_STR_LEN);
         strncpy((char *)wifi_config.sta.password, pwd_WIFI, MAX_STR_LEN);
         wifi_config.sta.sae_pwe_h2e = WIFI_AUTH_WPA2_PSK;
         mode = WIFI_MODE_STA;
-        netif = esp_netif_create_default_wifi_sta();
         assert(netif);
         ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
         #if CONFIG_ESPNOW_ENABLE_LONG_RANGE
@@ -234,6 +237,14 @@ void wifi_sta_handler(void* arg, esp_event_base_t event_base,
 }
 
 
+void set_time_cb(struct timeval *tv)
+{
+    set_time_tv(tv);
+    if(sntp_get_sync_interval() < SYNCH_10_HOUR){
+        sntp_set_sync_interval(SYNCH_10_HOUR);
+        xEventGroupSetBits(dwin_event_group, BIT_SNTP_WORK|BIT_IS_TIME);
+    }
+}
 
 void init_sntp_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
@@ -241,7 +252,7 @@ void init_sntp_handler(void* arg, esp_event_base_t event_base,
 {
     if(!esp_sntp_enabled()){
         BREAK_IF_NO_WIFI_CON();
-        set_time_tv(set_time_tv);
+        sntp_set_time_sync_notification_cb(set_time_cb);
         sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
         sntp_setoperatingmode(ESP_SNTP_OPMODE_POLL);
         sntp_setservername(0, "pool.ntp.org");
@@ -249,6 +260,7 @@ void init_sntp_handler(void* arg, esp_event_base_t event_base,
         sntp_servermode_dhcp(0);
         sntp_set_sync_interval(SYNC_15_MIN);
         sntp_init();
+        ESP_LOGI(TAG, "sntp_init();");
     } else {
         sntp_restart();
     }

@@ -56,6 +56,10 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 
 void get_weather_handler(void* args, esp_event_base_t base, int32_t key, void* event_data)
 {
+        time_t time_raw;
+    time(&time_raw);
+    printf("time ::: %s", ctime(&time_raw));
+
     BREAK_IF_NO_WIFI_CON();
     main_data_t *main_data = (main_data_t*)args;
     char *url_buf = (char*)calloc(1, SIZE_URL_BUF);
@@ -113,6 +117,7 @@ void get_weather_handler(void* args, esp_event_base_t base, int32_t key, void* e
                 temp_FEELS_LIKE[i] = (atof(temp_feel[i]))*10;
                 PoP[i] = (uint8_t) atoi(pop[i]);
             }
+            ESP_LOGI(TAG, "Get weather : temp %d.%d", temp_OUTDOOR[0]/10, temp_OUTDOOR[0]%10);
             if(dt_txt)free(dt_txt);
             if(pop)free(pop);
             if(sunrise)free(sunrise);
@@ -126,6 +131,8 @@ void get_weather_handler(void* args, esp_event_base_t base, int32_t key, void* e
     esp_http_client_cleanup(client);
     free(url_buf);
     free(local_response_buffer);
+
+
 }
 
 char ** find_str_key(char *buf, const size_t buf_len, const char *key)
