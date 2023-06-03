@@ -21,10 +21,13 @@ switch(action){
             ESP_ERROR_CHECK(esp_now_init());
             wifi_mode_t mode;
             esp_wifi_get_mode(&mode);
-            // if(mode != WIFI_MODE_STA){
-            //     start_sta();
-            //     vTaskDelay(10000);
-            // }
+            if(mode != WIFI_MODE_STA){
+                start_sta();
+                xEventGroupWaitBits(dwin_event_group,             
+                        BIT_WIFI_STA,                                              
+                        false, false,
+                        SECOND_WAIT_WIFI_BIT); 
+            }
             #if CONFIG_ESP_WIFI_STA_DISCONNECTED_PM_ENABLE
                 ESP_ERROR_CHECK(esp_now_set_wake_window(WINDOW_ESPNOW_MS));
             #endif
@@ -146,6 +149,7 @@ switch(action){
             init_sta = true;
         }
         if(mode != WIFI_MODE_NULL)esp_wifi_stop();
+
         if(mode == WIFI_MODE_AP && netif){
             xEventGroupWaitBits(dwin_event_group, BIT_SERVER_STOP, false, false, SECOND_WAIT_WIFI_BIT);
             esp_netif_destroy_default_wifi(netif);
@@ -232,7 +236,13 @@ void wifi_sta_handler(void* arg, esp_event_base_t event_base,
         }
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         retry_num = 0;
-        xEventGroupSetBits(dwin_event_group, BIT_WIFI_STA);
+        EventBits_t xEventGroup = xEventGroupSetBits(dwin_event_group, BIT_WIFI_STA);
+        if(xEventGroup&BIT_SYNC_TIME_ALLOW && !(xEventGroup&BIT_IS_TIME)){
+            start_sntp();
+        }
+        if(!(xEventGroup&BIT_IS_WEATHER)){
+            get_weather();
+        }
     }
 }
 
@@ -242,7 +252,7 @@ void set_time_cb(struct timeval *tv)
     set_time_tv(tv);
     if(sntp_get_sync_interval() < SYNCH_10_HOUR){
         sntp_set_sync_interval(SYNCH_10_HOUR);
-        xEventGroupSetBits(dwin_event_group, BIT_SNTP_WORK|BIT_IS_TIME);
+        xEventGroupSetBits(dwin_event_group, BIT_SNTP_WORK);
     }
 }
 
@@ -251,7 +261,6 @@ void init_sntp_handler(void* arg, esp_event_base_t event_base,
 
 {
     if(!esp_sntp_enabled()){
-        BREAK_IF_NO_WIFI_CON();
         sntp_set_time_sync_notification_cb(set_time_cb);
         sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
         sntp_setoperatingmode(ESP_SNTP_OPMODE_POLL);
@@ -260,7 +269,6 @@ void init_sntp_handler(void* arg, esp_event_base_t event_base,
         sntp_servermode_dhcp(0);
         sntp_set_sync_interval(SYNC_15_MIN);
         sntp_init();
-        ESP_LOGI(TAG, "sntp_init();");
     } else {
         sntp_restart();
     }

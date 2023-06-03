@@ -14,6 +14,30 @@
 
 
 
+void get_data_espnow(void* args, esp_event_base_t base, int32_t key, void* event_data)
+{
+    device_inf_t *new_device = (device_inf_t *)event_data;
+    ESP_LOGI(TAG, "NEW device with name %s", new_device->name);
+    EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
+    if(!(xEventGroup&BIT_WIFI_STA || new_device->type == SENSOR_TEMP_DEVICE)){
+        espnow_send_t data_tx;
+        memcpy(data_tx.mac, new_device->mac, SIZE_MAC);
+        if(!(xEventGroup&BIT_WIFI_STA )){
+            data_tx.action = NEED_NETWORK;
+            xQueueSend(queue_espnow_tx, &data_tx, WAIT_PUSH_ESPNOW_TO_QUEUE);
+            xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_WIFI_STA, false, false, 10000/portTICK_PERIOD_MS);
+            if(!(xEventGroup&BIT_WIFI_STA) && !(xEventGroup&BIT_IS_TIME)){
+                data_tx.action = NEED_TIME;
+                xQueueSend(queue_espnow_tx, &data_tx, WAIT_PUSH_ESPNOW_TO_QUEUE);
+            }
+        }
+        if(new_device->type == SENSOR_TEMP_DEVICE){
+            data_tx.action = NEED_TEMP;
+            xQueueSend(queue_espnow_tx, &data_tx, WAIT_PUSH_ESPNOW_TO_QUEUE);
+        }
+    }
+}
+
 
 
 

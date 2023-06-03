@@ -13,7 +13,7 @@ typedef void dwin_handler_t (void*, esp_event_base_t, int32_t, void*);
 typedef int temperature_t;
 
 typedef enum espnow_action{
-    NOPE,
+    TRY_AGAIN,
     GIVE_NOT,
     GIVE_TIME,
     GIVE_TIMERS,
@@ -160,12 +160,13 @@ typedef struct network_package{
 
 typedef struct time_package{
     uint16_t crc;
-    time_t time;
+    uint16_t time;
 } __attribute__((packed))time_package_t;
 
 typedef struct  action_packag{
     uint16_t crc;
-    uint8_t action;             
+    uint8_t action;  
+    uint8_t mac[8];           
 } __attribute__((packed)) action_package_t;
 
 typedef struct hello_package{
@@ -175,7 +176,6 @@ typedef struct hello_package{
 typedef struct device_espnow {
     uint16_t crc;
     uint8_t type;
-    uint8_t mac[8];
     char name[MAX_NAME_DEVICE+1];
 } __attribute__((packed)) device_info_package_t;
 
@@ -230,8 +230,8 @@ typedef struct device_inf {
     SLIST_ENTRY(device_inf)next;
     uint8_t mac[SIZE_MAC];
     uint8_t type;
-    char name[0];
-} __attribute__((packed))device_inf_t;
+    char *name;
+} device_inf_t;
 
 typedef struct sensor_data{
     temperature_t temperature;

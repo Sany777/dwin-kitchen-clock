@@ -6,10 +6,11 @@ SLIST_HEAD(list_events_timer, time_func) list_timer_func = SLIST_HEAD_INITIALIZE
 
 esp_err_t add_periodic_event(esp_event_base_t basa, int32_t event_id, size_t sec, mode_time_func_t mode)
 {
+    if(!periodic_timer) return ESP_ERR_INVALID_STATE;
     time_func_t *item = NULL;
     bool no_event = true;
     SLIST_FOREACH(item, &list_timer_func, next){
-        if(item->event_id == event_id){
+        if(item->event_id == event_id && item->basa == basa){
             no_event = false;
             break;
         }
@@ -36,8 +37,12 @@ esp_err_t add_periodic_event(esp_event_base_t basa, int32_t event_id, size_t sec
 void periodic_timer_callback(void* main_data)
 {
     if(!SLIST_EMPTY(&list_timer_func)){
-        time_func_t *item = NULL;
-        SLIST_FOREACH(item, &list_timer_func, next){
+        time_func_t *item = NULL, *prev = NULL;
+        SLIST_FOREACH(prev, &list_timer_func, next){
+            item = SLIST_NEXT(prev, next);
+            if(!item){
+                item = prev;
+            }
             if(item->time < item->time_init){
                 item->time++;
                 if(item->time == item->time_init){
@@ -49,10 +54,9 @@ void periodic_timer_callback(void* main_data)
                                         TIMEOUT_PUSH_KEY );
                     if(item->mode == RELOAD_COUNT){
                         item->time = 0;
-                    } else if(item->mode == WITH_REMOVING) {
-                        time_func_t *tmp = item;
-                        item = SLIST_NEXT(item, next);          
-                        SLIST_REMOVE(&list_timer_func, tmp, time_func, next);
+                    } else if(item->mode == WITH_REMOVING) { 
+                        if(item == prev)SLIST_REMOVE_HEAD(&list_timer_func, next);
+                        else  SLIST_REMOVE(&list_timer_func, prev, time_func, next);
                     }
                 }
             } 
@@ -63,12 +67,12 @@ void periodic_timer_callback(void* main_data)
     }
 }
 
-esp_err_t set_mode_timer_function(int32_t event_id, action_timer_func_t mode)
+esp_err_t set_mode_timer_event(esp_event_base_t basa, int32_t event_id, action_timer_func_t mode)
 {
     if(!SLIST_EMPTY(&list_timer_func)){
         time_func_t *item = NULL, *item_del = NULL;
         SLIST_FOREACH(item, &list_timer_func, next){
-            if(item->event_id == event_id){
+            if(item->event_id == event_id && item->basa == basa){
                 if(mode == PAUSE_TIMER_FUNC){
                     item->mode = WITHOUT_RELOAD;
                     item->time = item->time_init;

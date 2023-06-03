@@ -120,6 +120,8 @@ typedef enum Main_buttons{
     KEY_DELETE_DATA,
     KEY_INIT,
     KEY_UPDATE_SCREEN,
+    CHECK_NET_DATA,
+    TEST_2,
     KEY_END_BUTTONS
 }key_btn_t;
 

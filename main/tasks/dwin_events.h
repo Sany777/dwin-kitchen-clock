@@ -145,7 +145,7 @@ void uart_event_task(void *);
 
 #define get_weather()                                                                                           \
                         do{                                                                                     \
-                            esp_event_post_to(slow_service_loop, WIFI_SET, GET_WEATHER, NULL, 0, WAIT_SERVICE); \
+                            esp_event_post_to(slow_service_loop, WIFI_SET, GET_WEATHER, NULL, 0, WAIT_SERVICE*2); \
                         }while(0)                                                                               \
 
 #define start_sta()                                                                                             \
@@ -172,7 +172,7 @@ void init_dwin_events(main_data_t*);
     {
         .pTask = direction_task,
         .priority = PRIORITY_DIRECTION,
-        .stack = 1024
+        .stack = 2048
     },
     {
         .pTask = show_task,

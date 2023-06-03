@@ -1,6 +1,6 @@
 #include "dwin_events.h"
-
-
+void check_net_data_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data);
+void test_clock_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)    ;
 esp_event_loop_handle_t 
                 direct_loop, 
                 show_loop, 
@@ -52,7 +52,7 @@ void init_dwin_events(main_data_t *main_data)
                             ));
 
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                                direct_loop,
+                                slow_service_loop,
                                 WIFI_SET,
                                 GET_WEATHER,
                                 get_weather_handler,
@@ -67,11 +67,13 @@ void init_dwin_events(main_data_t *main_data)
                                 (void *)main_data,
                                 NULL
                             ));
-    ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
+
+
+                            ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
                                 direct_loop,
                                 EVENTS_DIRECTION,
-                                GET_DATA_FROM_DEVICE,
-                                set_mode_wifi_handler,
+                                CHECK_NET_DATA,
+                                check_net_data_handler,
                                 (void *)main_data,
                                 NULL
                             ));
@@ -85,27 +87,51 @@ void init_dwin_events(main_data_t *main_data)
                 NULL
             );
     }
-
+ xEventGroupSetBits(dwin_event_group, BIT_SYNC_TIME_ALLOW);
+ xEventGroupClearBits(dwin_event_group, BIT_IS_WEATHER);
     // start_sta();
     // vTaskDelay(pdMS_TO_TICKS(5000));
-    sntp_init();
-    vTaskDelay(pdMS_TO_TICKS(5000));
-    get_weather();
+    // sntp_init();
+    // vTaskDelay(pdMS_TO_TICKS(7000));
+    // get_weather();
     // ESP_LOGI(TAG, "get_weather"); 
-    vTaskDelay(pdMS_TO_TICKS(10000));
-
+    ESP_LOGI(TAG, "Init timer"); 
+    init_event_timer(main_data);
+                start_sta();
+                xEventGroupWaitBits(dwin_event_group,             
+                        BIT_WIFI_STA,                                              
+                        false, false,
+                        SECOND_WAIT_WIFI_BIT); 
     ESP_LOGI(TAG, "Start espnow"); 
     start_espnow();
-    // ESP_LOGI(TAG, "Start timer"); 
-    // init_event_timer(main_data);
-    // add_periodic_event(WIFI_SET, GET_WEATHER, 15, RELOAD_COUNT);
-    // add_periodic_event(WIFI_SET, INIT_SNTP, 10, RELOAD_COUNT);
+
+
+}
+
+
+void check_net_data_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)
+{
+    EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
+    if(xEventGroup&BIT_WIFI_STA){
+        write_memory(main_data, DATA_PWD);
+        write_memory(main_data, DATA_SSID);
+        ESP_LOGI(TAG, "write data!!!");
+    } else {
+        read_memory(main_data, DATA_PWD);
+        read_memory(main_data, DATA_SSID);
+    }
 }
 
 
 
-                                                                          \
 
+void test_clock_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)                                                     
+{
+    time_t time_raw;
+    time(&time_raw);
+    printf(" every 1 sec time ::: %s", ctime(&time_raw));
+
+}
 
 void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)
 {
@@ -181,7 +207,7 @@ void direction_task(void *pv)
 {
     vTaskDelay(DEALAY_START_TASK);
     while(1) {
-        // esp_event_loop_run(direct_loop, TICKS_TO_RUN_LOOP);
+        esp_event_loop_run(direct_loop, TICKS_TO_RUN_LOOP);
         vTaskDelay(DELAY_FAST_LOOP);
     }
 }

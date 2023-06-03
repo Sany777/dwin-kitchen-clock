@@ -72,7 +72,9 @@
     "ratio": "cpp",
     "tuple": "cpp",
     "type_traits": "cpp",
-    "esp_timer.h": "c"
+    "esp_timer.h": "c",
+    "sensor.h": "c",
+    "dwin_defines.h": "c"
   },
   "idf.flashType": "UART",
   "idf.portWin": "COM8",
