@@ -88,7 +88,7 @@
 #define DEALAY_START_TASK        (1000/portTICK_PERIOD_MS)
 #define DEALAY_START_ESPNOWTASK  (4000/portTICK_PERIOD_MS)
 #define SIZE_EVENTS_UART          10
-#define TIMEOUT_PUSH_KEY         (150/portTICK_PERIOD_MS)
+#define TIMEOUT_PUSH_KEY         (200/portTICK_PERIOD_MS)
 
 #define ESPNOW_MAXDELAY          1000
 

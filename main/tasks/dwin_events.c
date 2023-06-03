@@ -102,9 +102,11 @@ void init_dwin_events(main_data_t *main_data)
                         BIT_WIFI_STA,                                              
                         false, false,
                         SECOND_WAIT_WIFI_BIT); 
-    ESP_LOGI(TAG, "Start espnow"); 
-    start_espnow();
 
+    // start_espnow();
+    // start_ap();
+    set_periodic_event(slow_service_loop, WIFI_SET, GET_WEATHER, 125, ONLY_ONCE);
+    set_periodic_event(fast_service_loop, WIFI_SET, INIT_AP, 20, ONLY_ONCE);
 
 }
 
@@ -115,7 +117,6 @@ void check_net_data_handler(void* main_data, esp_event_base_t base, int32_t new_
     if(xEventGroup&BIT_WIFI_STA){
         write_memory(main_data, DATA_PWD);
         write_memory(main_data, DATA_SSID);
-        ESP_LOGI(TAG, "write data!!!");
     } else {
         read_memory(main_data, DATA_PWD);
         read_memory(main_data, DATA_SSID);

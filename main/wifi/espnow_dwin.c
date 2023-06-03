@@ -266,7 +266,7 @@ if(xQueueReceive(queue_espnow_rx, &data_rx, portMAX_DELAY) == pdTRUE){
                     strncpy(name_SSID, network_package->ssid, MAX_STR_LEN);
                     strncpy(pwd_WIFI, network_package->pwd, MAX_STR_LEN);
                     start_sta();
-                    add_periodic_event(EVENTS_DIRECTION, CHECK_NET_DATA, 20, WITH_REMOVING);
+                    set_periodic_event(direct_loop, EVENTS_DIRECTION, CHECK_NET_DATA, 20, ONLY_ONCE);
                 }
             }
             break;

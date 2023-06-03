@@ -35,16 +35,11 @@ typedef enum type_devic{
 
 /* time function */
 typedef enum mode_time_fun{
-    WITH_REMOVING,
-    WITHOUT_RELOAD,
+    ONLY_ONCE,
     RELOAD_COUNT,
+    REMOVE_EVENT,
 } mode_time_func_t;
 
-typedef enum action_timer_func{
-    PAUSE_TIMER_FUNC,
-    START_TIMER_FUNC,
-    STOP_TIMER_FUNC,
-}action_timer_func_t;
 
 enum events{
     START_STA,
@@ -197,14 +192,15 @@ typedef struct {
 } weather_data_t;
 
 /* data struct timer func*/
-typedef struct time_func {
-    SLIST_ENTRY(time_func)next;
+typedef struct periodic_event {
+    SLIST_ENTRY(periodic_event)next;
     size_t time;
     size_t time_init;
     uint32_t event_id;
     mode_time_func_t mode;
-    esp_event_base_t basa;
-}time_func_t;
+    esp_event_base_t base;
+    esp_event_loop_handle_t event_loop;
+}periodic_event_t;
 
 typedef struct {
     uint8_t mac[SIZE_MAC];
