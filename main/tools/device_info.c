@@ -47,6 +47,7 @@ void delete_device_info(const uint8_t *mac)
     device_inf_t *item  = get_device_before(mac);
     if(item){
         SLIST_REMOVE_AFTER(item, next);
+        free(item);
     }
 }
 

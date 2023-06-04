@@ -1,8 +1,6 @@
 #include "dwin_uart.h"
 
-
 QueueHandle_t dwin_uart_events_queue;
-
 
 void init_uart()
 {
@@ -14,7 +12,7 @@ void init_uart()
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
         .source_clk = UART_SCLK_DEFAULT,
     };
-    ESP_ERROR_CHECK(uart_driver_install(UART_DWIN, UART_BUF_SIZE * 2, 0, 10, (QueueHandle_t *)&dwin_uart_events_queue, 0));
+    ESP_ERROR_CHECK(uart_driver_install(UART_DWIN, UART_BUF_SIZE * 2, 0, SIZE_UART_EVENTS, (QueueHandle_t *)&dwin_uart_events_queue, 0));
     assert(dwin_uart_events_queue);
     ESP_ERROR_CHECK(uart_param_config(UART_DWIN, &uart_config));
     esp_log_level_set(TAG, ESP_LOG_INFO);
@@ -61,14 +59,14 @@ for(;;) {
                             uint32_t key = buf_RX[INDEX_START_DATA_IN_RX];
                             if(KEY_IS_SET_TASK(buf_RX[INDEX_IDENTIF_DATA_IN_RX])) {
                                 esp_event_post_to(
-                                    slow_service_loop,
+                                    direct_loop,
                                     EVENTS_MANAGER,
                                     key,
                                     NULL,
                                     0,
                                     TIMEOUT_PUSH_KEY
                                 );
-                            } if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == KEY_GET_CLOCK){
+                            } else if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == KEY_GET_CLOCK){
                                 struct tm tm_time = {
                                     .tm_year = GET_DEC(buf_RX[1]),
                                     .tm_mon = GET_DEC(buf_RX[2]),
@@ -80,7 +78,7 @@ for(;;) {
                                 set_time_tm(&tm_time, false);
                             } else {
                                 esp_event_post_to(
-                                    slow_service_loop,
+                                    direct_loop,
                                     EVENTS_DIRECTION,
                                     key,
                                     NULL,
@@ -114,9 +112,9 @@ for(;;) {
             xQueueReset(dwin_uart_events_queue);
             break;
         }
-    default:
+        default:
             break;
-    }
+        }
     }
     }
 }

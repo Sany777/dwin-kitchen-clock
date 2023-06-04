@@ -37,7 +37,6 @@ typedef enum type_devic{
 typedef enum mode_time_fun{
     ONLY_ONCE,
     RELOAD_COUNT,
-    REMOVE_EVENT,
 } mode_time_func_t;
 
 

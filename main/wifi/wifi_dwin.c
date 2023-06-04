@@ -10,10 +10,12 @@ void set_espnow_handler(void* arg, esp_event_base_t event_base,
 {
     static bool init_espnow;
     static bool run_espnow;
+    static esp_event_handler_instance_t *handler_check;
 switch(action){
     case START_ESPNOW :
     {
         if(!init_espnow){
+            main_data_t *main_data = (main_data_t *)arg;
             xTaskCreate(espnow_task_rx, "espnow_task_rx", 5000, arg, 5, &rx_espnow);
             xTaskCreate(espnow_task_tx, "espnow_task_tx", 5000, arg, 5, &tx_espnow);
             assert(rx_espnow);
@@ -28,6 +30,14 @@ switch(action){
                         false, false,
                         SECOND_WAIT_WIFI_BIT); 
             }
+            ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
+                                direct_loop,
+                                EVENTS_DIRECTION,
+                                CHECK_NET_DATA,
+                                check_net_data_handler,
+                                (void *)main_data,
+                                &handler_check
+                            ));
             #if CONFIG_ESP_WIFI_STA_DISCONNECTED_PM_ENABLE
                 ESP_ERROR_CHECK(esp_now_set_wake_window(WINDOW_ESPNOW_MS));
             #endif
@@ -42,12 +52,10 @@ switch(action){
             esp_now_register_recv_cb(espnow_rx_cb);
         }
         xEventGroupSetBits(dwin_event_group, BIT_ESPNOW_RUN);
-        ESP_LOGI(TAG, "Run espnow");
         break;
     }
     case PAUSE_ESPNOW :
     {
-        ESP_LOGI(TAG, "pause espnow");
         if(init_espnow && run_espnow){
             vTaskSuspend(tx_espnow);
             esp_now_unregister_recv_cb();
@@ -87,10 +95,16 @@ switch(action){
             xEventGroupClearBits(dwin_event_group, BIT_ESPNOW_RUN);
             xEventGroupClearBits(dwin_event_group, BIT_ESPNOW_CONECT);
             init_espnow = false;
+            ESP_ERROR_CHECK(esp_event_handler_instance_unregister_with(
+                    direct_loop,
+                    EVENTS_DIRECTION,
+                    CHECK_NET_DATA, 
+                    handler_check
+            ));
         }
         break;
     }
-    default:break;
+        default:break;
     }
 }
 

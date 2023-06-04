@@ -35,7 +35,6 @@ void init_dwin_events(main_data_t *main_data)
         .queue_size = TASK_EVENT_SIZE,
         .task_name = NULL
     };
-
     ESP_ERROR_CHECK(esp_event_loop_create(&my_loop_args, &direct_loop));
     ESP_ERROR_CHECK(esp_event_loop_create(&my_loop_args, &show_loop));
     ESP_ERROR_CHECK(esp_event_loop_create(&my_loop_args, &fast_service_loop));
@@ -81,26 +80,14 @@ void init_dwin_events(main_data_t *main_data)
                                 (void *)main_data,
                                 NULL
                             ));
-
-
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-        direct_loop,
-        EVENTS_DIRECTION,
-        CHECK_NET_DATA,
-        check_net_data_handler,
-        (void *)main_data,
-        NULL
-    ));
-
-    ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-        direct_loop,
-        EVENTS_DIRECTION,
-        TEST_1,
-        test_handler,
-        (void *)main_data,
-        NULL
-    ));
-
+                            direct_loop,
+                            EVENTS_DIRECTION,
+                            TEST_1,
+                            test_handler,
+                            (void *)main_data,
+                            NULL
+                        ));
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
         direct_loop,
         EVENTS_DIRECTION,
@@ -109,8 +96,7 @@ void init_dwin_events(main_data_t *main_data)
         (void *)main_data,
         NULL
     ));
-
-    for(int i=0; i<SIZE_LIST_TASKS; i++) {
+    for(int i=0; i<SIZE_LIST_TASKS; i++){
             xTaskCreate(
                 list_services[i].pTask, 
                 "service",
@@ -120,25 +106,18 @@ void init_dwin_events(main_data_t *main_data)
                 NULL
             );
     }
-    ESP_LOGI(TAG, "start");
-    set_periodic_event(direct_loop, EVENTS_DIRECTION, TEST_1, 1, RELOAD_COUNT);
-    set_periodic_event(direct_loop, EVENTS_DIRECTION, TEST_2, 5, ONLY_ONCE);
+
+
+
+    start_espnow();
     vTaskDelay(10000/portTICK_PERIOD_MS);
-    ESP_LOGI(TAG, "TEST_2, 3, RELOAD_COUNT");
-    set_periodic_event(direct_loop, EVENTS_DIRECTION, TEST_2, 3, RELOAD_COUNT);
+    esp_event_post_to(slow_service_loop, ESPNOW_SET, STOP_ESPNOW, NULL, 0, WAIT_SERVICE);
+    vTaskDelay(5000/portTICK_PERIOD_MS);
+    start_espnow();
+    esp_event_post_to(slow_service_loop, ESPNOW_SET, PAUSE_ESPNOW, NULL, 0, WAIT_SERVICE);
     vTaskDelay(10000/portTICK_PERIOD_MS);
-    ESP_LOGI(TAG, "remove TEST_1");
-    remove_periodic_event(EVENTS_DIRECTION, TEST_1);
-    ESP_LOGI(TAG, "set TEST_1, 1, RELOAD_COUNT");
-    set_periodic_event(direct_loop, EVENTS_DIRECTION, TEST_1, 1, RELOAD_COUNT);
-    vTaskDelay(100/portTICK_PERIOD_MS);
-    set_periodic_event(direct_loop, EVENTS_DIRECTION, TEST_2, 5, ONLY_ONCE);
-    vTaskDelay(10000/portTICK_PERIOD_MS);
-    set_periodic_event(direct_loop, EVENTS_DIRECTION, TEST_1, 5, ONLY_ONCE);
-    set_periodic_event(direct_loop, EVENTS_DIRECTION, TEST_2, 10, RELOAD_COUNT);
-    vTaskDelay(10000/portTICK_PERIOD_MS);
-        set_periodic_event(direct_loop, EVENTS_DIRECTION, TEST_1, 15, ONLY_ONCE);
-    set_periodic_event(direct_loop, EVENTS_DIRECTION, TEST_2, 10, ONLY_ONCE);
+    start_espnow();
+
 }
 
 
@@ -176,7 +155,7 @@ void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_s
                         direct_loop, 
                         EVENTS_DIRECTION, 
                         ESP_EVENT_ANY_ID,  
-                        direction_handler
+                        &direction_handler
                     ));
         direction_handler = NULL;
     }

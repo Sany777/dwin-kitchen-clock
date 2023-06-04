@@ -80,7 +80,7 @@
     "vector": "c"
   },
   "idf.flashType": "UART",
-  "idf.portWin": "COM8",
+  "idf.portWin": "COM7",
   "idf.openOcdConfigs": [
     "board/esp32-bridge.cfg"
   ]
