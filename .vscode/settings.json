@@ -75,7 +75,9 @@
     "esp_timer.h": "c",
     "sensor.h": "c",
     "dwin_defines.h": "c",
-    "algorithm": "c"
+    "algorithm": "c",
+    "deque": "c",
+    "vector": "c"
   },
   "idf.flashType": "UART",
   "idf.portWin": "COM8",

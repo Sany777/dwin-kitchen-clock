@@ -10,7 +10,7 @@
 #include "dwin_data_types.h"
 #include "dwin_events.h"
 
-void set_periodic_event(esp_event_loop_handle_t event_loop, 
+esp_err_t set_periodic_event(esp_event_loop_handle_t event_loop, 
                                 esp_event_base_t basa, 
                                 int32_t event_id, 
                                 size_t sec, 

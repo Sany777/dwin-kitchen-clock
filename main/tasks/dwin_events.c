@@ -133,9 +133,12 @@ void init_dwin_events(main_data_t *main_data)
     set_periodic_event(direct_loop, EVENTS_DIRECTION, TEST_1, 1, RELOAD_COUNT);
     vTaskDelay(100/portTICK_PERIOD_MS);
     set_periodic_event(direct_loop, EVENTS_DIRECTION, TEST_2, 5, ONLY_ONCE);
-    // vTaskDelay(10000/portTICK_PERIOD_MS);
-    // set_periodic_event(direct_loop, EVENTS_DIRECTION, TEST_1, 5, ONLY_ONCE);
-    // set_periodic_event(direct_loop, EVENTS_DIRECTION, TEST_2, 10, RELOAD_COUNT);
+    vTaskDelay(10000/portTICK_PERIOD_MS);
+    set_periodic_event(direct_loop, EVENTS_DIRECTION, TEST_1, 5, ONLY_ONCE);
+    set_periodic_event(direct_loop, EVENTS_DIRECTION, TEST_2, 10, RELOAD_COUNT);
+    vTaskDelay(10000/portTICK_PERIOD_MS);
+        set_periodic_event(direct_loop, EVENTS_DIRECTION, TEST_1, 15, ONLY_ONCE);
+    set_periodic_event(direct_loop, EVENTS_DIRECTION, TEST_2, 10, ONLY_ONCE);
 }
 
 

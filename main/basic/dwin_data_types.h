@@ -193,9 +193,8 @@ typedef struct {
 
 /* data struct timer func*/
 typedef struct periodic_event {
-    SLIST_ENTRY(periodic_event)next;
-    int time;
-    int time_init;
+    size_t time;
+    size_t time_init;
     uint32_t event_id;
     mode_time_func_t mode;
     esp_event_base_t base;
