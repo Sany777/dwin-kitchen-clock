@@ -82,7 +82,7 @@
 #define WAIT_WIFI_EVENT          (1000/portTICK_PERIOD_MS)
 #define TIMEOUT_SEND_EVENTS      (100/portTICK_PERIOD_MS)
 #define TICKS_TO_RUN_LOOP         100
-#define TASK_EVENT_SIZE           5
+#define TASK_EVENT_SIZE           1
 #define DELAY_SLOW_LOOP          (500/portTICK_PERIOD_MS)
 #define DELAY_FAST_LOOP          (20/portTICK_PERIOD_MS)
 #define DEALAY_START_TASK        (1000/portTICK_PERIOD_MS)

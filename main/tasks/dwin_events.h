@@ -165,6 +165,7 @@ void uart_event_task(void *);
 
 
 void init_dwin_events(main_data_t*);
+void check_net_data_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data);
 
 
  static task_dwin_t list_services[SIZE_LIST_TASKS] = 

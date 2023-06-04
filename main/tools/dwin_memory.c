@@ -91,10 +91,9 @@ void read_memory(main_data_t *main_data, const int data_identificator)
 		}
 		case DATA_FLAGS :
 		{
-			// xEventGroupClearBits(dwin_event_group, STORED_FLAGS);
 			uint32_t flags = 0;
 			nvs_get_u32(nvs_handle_dwin, "flag", &flags); 
-			// xEventGroupSetBits(dwin_event_group, flags&STORED_FLAGS);
+			xEventGroupSetBits(dwin_event_group, flags&STORED_FLAGS);
 			break;
 		}
 		case DATA_NOTIF :

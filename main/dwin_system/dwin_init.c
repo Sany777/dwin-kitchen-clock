@@ -21,7 +21,7 @@ void esp_init(void)
     read_all_memory(main_data);
     wifi_init();
     init_dwin_events(main_data);
-  
+
 }
 
 
