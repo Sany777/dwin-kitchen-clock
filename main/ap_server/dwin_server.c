@@ -530,7 +530,13 @@ static esp_err_t handler_set_flag(httpd_req_t *req)
     }
     server_buf[total_len] = 0;
     long flag = atoll(server_buf);
-    xEventGroupSetBits(dwin_event_group, flag&STORED_FLAGS);
+    for(int i=0; i<NUMBER_STORED_FLAGS; i++){
+        if(flag&(1<<i)){
+            xEventGroupSetBits(dwin_event_group, (1<<i));
+        }else {
+            xEventGroupClearBits(dwin_event_group, (1<<i));
+        }
+    }
     write_memory(NULL, DATA_FLAGS);
     httpd_resp_sendstr(req, "Set flags successfully");
     return ESP_OK;

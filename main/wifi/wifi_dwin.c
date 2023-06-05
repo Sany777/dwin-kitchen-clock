@@ -10,7 +10,7 @@ void set_espnow_handler(void* arg, esp_event_base_t event_base,
 {
     static bool init_espnow;
     static bool run_espnow;
-    static esp_event_handler_instance_t *handler_check;
+    static esp_event_handler_instance_t handler_check;
 switch(action){
     case START_ESPNOW :
     {
@@ -26,9 +26,9 @@ switch(action){
             if(mode != WIFI_MODE_STA){
                 start_sta();
                 xEventGroupWaitBits(dwin_event_group,             
-                        BIT_WIFI_STA,                                              
+                        BIT_PROCESS,                                              
                         false, false,
-                        SECOND_WAIT_WIFI_BIT); 
+                        WAIT_PROCEES); 
             }
             ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
                                 direct_loop,
@@ -121,6 +121,7 @@ switch(action){
     case INIT_AP :
     {
         if(mode == WIFI_MODE_AP)break;
+        xEventGroupSetBits(dwin_event_group, BIT_WORK_AP|BIT_PROCESS);
         if(mode != WIFI_MODE_NULL){
             esp_wifi_stop();
             vTaskDelay(200);
@@ -138,7 +139,6 @@ switch(action){
         wifi_config.ap.pmf_cfg.required = false;
         strcpy((char *)wifi_config.ap.ssid, AP_WIFI_SSID);
         strcpy((char *)wifi_config.ap.password, AP_WIFI_PWD);
-        assert(netif);
         esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &ap_handler, main_data);
         esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &ap_handler, main_data);       
         esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_START, &ap_handler, main_data);
@@ -155,6 +155,8 @@ switch(action){
     }
     case START_STA :
     {
+        xEventGroupWaitBits(dwin_event_group, BIT_WORK_AP, false, false, portMAX_DELAY);
+        xEventGroupSetBits(dwin_event_group, BIT_PROCESS);
         if(!init_sta){
             esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_START, &wifi_sta_handler, main_data);
             esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_sta_handler, main_data);
@@ -163,9 +165,7 @@ switch(action){
             init_sta = true;
         }
         if(mode != WIFI_MODE_NULL)esp_wifi_stop();
-
         if(mode == WIFI_MODE_AP && netif){
-            xEventGroupWaitBits(dwin_event_group, BIT_SERVER_STOP, false, false, SECOND_WAIT_WIFI_BIT);
             esp_netif_destroy_default_wifi(netif);
             netif = NULL;
             esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &ap_handler);
@@ -174,12 +174,12 @@ switch(action){
             esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_STOP, &ap_handler);
         }
         if(netif == NULL)netif = esp_netif_create_default_wifi_sta();
+        assert(netif);
         memset(&wifi_config, 0, sizeof(wifi_config));
         strncpy((char *)wifi_config.sta.ssid, name_SSID, MAX_STR_LEN);
         strncpy((char *)wifi_config.sta.password, pwd_WIFI, MAX_STR_LEN);
         wifi_config.sta.sae_pwe_h2e = WIFI_AUTH_WPA2_PSK;
         mode = WIFI_MODE_STA;
-        assert(netif);
         ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
         #if CONFIG_ESPNOW_ENABLE_LONG_RANGE
             ESP_ERROR_CHECK(esp_wifi_set_protocol(ESP_IF_WIFI_STA, WIFI_PROTOCOL_11B|WIFI_PROTOCOL_11G|WIFI_PROTOCOL_11N|WIFI_PROTOCOL_LR));
@@ -214,13 +214,12 @@ switch(action){
 void ap_handler(void* arg, esp_event_base_t event_base,
                             int32_t event_id, void* event_data)
 {
+    static int32_t last_event = WIFI_EVENT_AP_STOP;
     main_data_t *main_data = (main_data_t*)arg;
     if(event_id == WIFI_EVENT_AP_START){
-        if(set_run_webserver(main_data) == ESP_OK){
-            xEventGroupClearBits(dwin_event_group, BIT_SERVER_STOP);
-        }
+        set_run_webserver(main_data);
     } else if (event_id == WIFI_EVENT_AP_STOP){
-        xEventGroupSetBits(dwin_event_group, BIT_SERVER_STOP);
+        xEventGroupClearBits(dwin_event_group, BIT_WORK_AP);
         set_run_webserver(NULL);
     } else if(event_id == WIFI_EVENT_AP_STACONNECTED){
         wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
@@ -236,24 +235,44 @@ void wifi_sta_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
 {
     static int retry_num;
-    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
-        retry_num = 0;
-        esp_wifi_connect();
-    } else if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_STOP){
-        retry_num = RETRY_CONNECT_APSTA;
-    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED && retry_num < RETRY_CONNECT_APSTA) {
-        if(esp_wifi_connect() != ESP_OK){
-            if(retry_num == 0) xEventGroupClearBits(dwin_event_group, BIT_WIFI_STA);
-            retry_num++;
-        }
-    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-        retry_num = 0;
-        EventBits_t xEventGroup = xEventGroupSetBits(dwin_event_group, BIT_WIFI_STA);
-        if(xEventGroup&BIT_SYNC_TIME_ALLOW && !(xEventGroup&BIT_IS_TIME)){
-            start_sntp();
-        }
-        if(!(xEventGroup&BIT_IS_WEATHER)){
-            get_weather();
+    static EventBits_t xEventGroup;
+    xEventGroup = xEventGroupGetBits(dwin_event_group);
+    if(!(xEventGroup&BIT_WORK_AP)){
+        if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+            retry_num = 0;
+            esp_wifi_connect();
+        } else if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_STOP){
+            retry_num = RETRY_CONNECT_APSTA;
+        } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED && retry_num < RETRY_CONNECT_APSTA) {
+            if(esp_wifi_connect() != ESP_OK){
+                retry_num++;
+                if(retry_num == RETRY_CONNECT_APSTA){
+                    if(xEventGroup&BIT_CON_STA_OK) {
+                        xEventGroupClearBits(dwin_event_group, BIT_CON_STA_OK);
+                    }
+                    wifi_event_sta_disconnected_t *event_sta_disconnected = (wifi_event_sta_disconnected_t *) event_data;
+                    if(event_sta_disconnected->reason == WIFI_REASON_NO_AP_FOUND
+                        || event_sta_disconnected->reason == WIFI_REASON_HANDSHAKE_TIMEOUT)
+                    {
+                        if(xEventGroup&BIT_SSID_FOUND){
+                            xEventGroupClearBits(dwin_event_group, BIT_SSID_FOUND);
+                        }
+                    } else {
+                        xEventGroupSetBits(dwin_event_group, BIT_SSID_FOUND);
+                    }
+                    xEventGroupClearBits(dwin_event_group, BIT_PROCESS);
+                }
+            }
+        } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+            retry_num = 0;
+            xEventGroupSetBits(dwin_event_group, BIT_CON_STA_OK|BIT_SSID_FOUND);
+            xEventGroupClearBits(dwin_event_group, BIT_PROCESS);
+            if(xEventGroup&BIT_SYNC_TIME_ALLOW && !(xEventGroup&BIT_IS_TIME)){
+                start_sntp();
+            }
+            if(!(xEventGroup&BIT_WEATHER_OK)){
+                get_weather();
+            }
         }
     }
 }

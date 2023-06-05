@@ -20,7 +20,7 @@ void send_chunc(const char *data, const size_t data_len)
     }
 }
 
-void dwin_print(uint16_t row, uint16_t column, const uint16_t text_color, const uint8_t font) 
+void print_start(uint16_t row, uint16_t column, const uint16_t text_color, const uint8_t font) 
 {
 	column *= font * 8;
 	row *= font * 8;

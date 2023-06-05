@@ -37,7 +37,7 @@
 #define cancel_text_box()			uart_write_bytes(UART_DWIN, CANCEL_TEXT_BOX, sizeof(CANCEL_TEXT_BOX))
 #define clear_screen()				uart_write_bytes(UART_DWIN, CLEAR_SCREEN, sizeof(CLEAR_SCREEN))
 
-void dwin_print(uint16_t row, uint16_t column, 
+void print_start(uint16_t row, uint16_t column, 
 					const uint16_t text_color, 
 					const uint8_t font) ;
 void save_pic(const uint8_t pic);

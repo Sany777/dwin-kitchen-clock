@@ -75,48 +75,48 @@ typedef enum flag_state_device{
     SOUNDS_ALLOW,
     ESPNOW_ALLOW,
     SNTP_ALLOW,
-    IS_WEATHER,
-    IS_CON_STA,
+    SECURITY,
+    WEATHER_OK,
+    CON_STA_OK,
     SENSOR_1_OK,
     SENSOR_2_OK,
 
     SNTP_WORK,
-    WIFI_STA,
-
+    PROCESS_DWIN,
     ESPNOW_CONECT,
     IS_TIME,
     TIMER_RUN,
     RESPONSE_OK,
     RESPONSE_UPDATE,
-    PROCESS_DWIN,
-    SERVER_OK,
-
+    WORK_AP,
+    SSID_FOUND,
     ESPNOW_RUN,
 }flag_state_device_t;
 
 /*events bit*/
+#define BIT_SOUNDS_ALLOW        ( 1 << SOUNDS_ALLOW )
 #define BIT_ESPNOW_ALLOW        ( 1 << ESPNOW_ALLOW )
 #define BIT_SYNC_TIME_ALLOW     ( 1 << SNTP_ALLOW )
-#define BIT_SOUNDS_ALLOW        ( 1 << SOUNDS_ALLOW )
-#define BIT_IS_CON_STA          ( 1 << IS_CON_STA )
+#define BIT_SECURITY            ( 1 << SECURITY )
+#define BIT_CON_STA_OK          ( 1 << CON_STA_OK )
 #define BIT_ESPNOW_RUN          ( 1 << ESPNOW_RUN )
-#define BIT_WIFI_STA            ( 1 << WIFI_STA  )
-#define BIT_SERVER_STOP         ( 1 << SERVER_OK )
+#define BIT_SSID_FOUND          ( 1 << SSID_FOUND  )
+#define BIT_WORK_AP             ( 1 << WORK_AP )
 #define BIT_SNTP_WORK           ( 1 << SNTP_WORK )
 #define BIT_TIMER_RUN           ( 1 << TIMER_RUN )
-#define BIT_IS_WEATHER          ( 1 << IS_WEATHER )
+#define BIT_WEATHER_OK          ( 1 << WEATHER_OK )
 #define BIT_IS_TIME             ( 1 << IS_TIME )
 
 #define BIT_ESPNOW_CONECT       ( 1 << ESPNOW_CONECT )
 #define BIT_DWIN_RESPONSE_OK    ( 1 << RESPONSE_OK )
-#define BIT_PROCESS_DWIN        ( 1 << PROCESS_DWIN )
+#define BIT_PROCESS             ( 1 << PROCESS_DWIN )
 
 #define BIT_INTERNET            ( 1 << INTERNET_OK )
 #define BIT_SEN_1               ( 1 << SENSOR_1_OK )
 #define BIT_SEN_2               ( 1 << SENSOR_2_OK )
+#define STORED_FLAGS            (1UL|BIT_SOUNDS_ALLOW|BIT_SYNC_TIME_ALLOW|BIT_ESPNOW_ALLOW|BIT_SECURITY )
 
-#define STORED_FLAGS       (BIT_SOUNDS_ALLOW|BIT_SYNC_TIME_ALLOW|BIT_ESPNOW_ALLOW)
-
+#define NUMBER_STORED_FLAGS 4
 
 typedef enum index_timer {
     INDEX_HOUR_T,

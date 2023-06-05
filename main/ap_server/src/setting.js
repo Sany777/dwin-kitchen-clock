@@ -1,12 +1,12 @@
 const LIST_DAY = ["Monday","Thusday","Wednesday","Thursday","Friday","Saturday","Sanday"]
 const NOTIF_PER_DAY = 4;
-const INDEX_VARIABLE_STATUS = 2;
+const INDEX_VARIABLE_STATUS = 3;
 const NUMBER_CHECKBOX = 7;
 const FORMS_LIST = [
   [["Network",["SSID", "PWD"]],["text","32"]],
   [["API", ["City", "Key"]],["text","32"]],
   [["Update", ["Firmware"]],["file",]],
-  [["Status", ["Sounds allow","Espnow allow","SNTP allow","Weather ok","WiFi STA ok","Sensor 1 ok","Sensor 2 ok"]],["checkbox",]],
+  [["Status", ["Sounds allow","Espnow allow","SNTP allow","Security","Weather ok","WiFi STA ok","Sensor 1 ok","Sensor 2 ok"]],["checkbox",]],
 ]
 
 function createNotification()
@@ -129,7 +129,6 @@ function createForms()
     containerForms.appendChild(container);
   });
 }
-// [...document.querySelectorAll('[type=checkbox]')].forEach(checkbox => { checkbox.checked = true; })
 
 function updateTime() 
 {

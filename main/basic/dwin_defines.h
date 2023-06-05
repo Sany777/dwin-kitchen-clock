@@ -74,7 +74,8 @@
 #define IS_YEAR(val)                ((val) >= 0 && (val) <= MAX_YEAR)
 
 /* CHECK INPUT KEY*/
-#define KEY_IS_CHAR(key_from_dwin)            ((key_from_dwin) >= '!'&& (key_from_dwin) <= '~')
+#define KEY_IS_CHAR(key_from_dwin)            (((key_from_dwin) >= 'A' && (key_from_dwin) <= 'Z')               \
+                                                    || (key_from_dwin) >= 'a' && (key_from_dwin) <= 'z')
 #define KEY_IS_NUMBER(key_from_dwin)          ((key_from_dwin) >= '0' && (key_from_dwin) <= '9')
 #define KEY_IS_AREA_SCAN_SSID(key_from_dwin)  ((key_from_dwin) >= KEY_START_AREA && (key_from_dwin) <= KEY_START_AREA+MAX_SCAN_LIST_SIZE)
 #define KEY_IS_AREA_CLOCK(key_from_dwin)      ((key_from_dwin) >= KEY_START_AREA && (key_from_dwin) <= KEY_START_AREA+END_AREA_CLOCK)

@@ -76,7 +76,7 @@
 
 /* delay process */
 #define DELAY_SCAN_SSID          (1500/portTICK_PERIOD_MS)
-#define WAIT_SERVICE    (5000/portTICK_PERIOD_MS)
+#define WAIT_SERVICE    (7000/portTICK_PERIOD_MS)
 
 /* events delay*/
 #define WAIT_WIFI_EVENT          (1000/portTICK_PERIOD_MS)
@@ -131,7 +131,7 @@
 #define INITIAL_SIZE_LIST_KEYS 10
 #define SHIFT_DT_TX 12
 #define STEP_DT_TX  3
-#define SECOND_WAIT_WIFI_BIT (pdMS_TO_TICKS(5000))
+#define WAIT_PROCEES (pdMS_TO_TICKS(5000))
 #define FIRST_WAIT_WIFI_BIT  (pdMS_TO_TICKS(1000))
 
 /* Clock */

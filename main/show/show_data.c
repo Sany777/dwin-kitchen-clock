@@ -2,7 +2,7 @@
 
 char *show_buf;
 
-void send_dwin_str(const char * format, ... )
+void send_str(const char * format, ... )
 {
   va_list args;
   va_start (args, format);
@@ -140,7 +140,7 @@ void send_in_frame(uint8_t row,
 	/*frame - 2 sides*/
 	lines += 2;
 	for (uint8_t pos_char = 0, line_str = 0, line = 0; line < lines; line++) {
-		dwin_print(row++, column, color, font);
+		print_start(row++, column, color, font);
 		if (line == 0 || line == lines - 1)	{
 			if (line == 0)
 				send_char(CORNER_TOP_LEFT);

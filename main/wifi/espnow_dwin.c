@@ -77,7 +77,7 @@ for(;;){
             case GIVE_NETWORK :
             {
                 EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
-                if(xEventGroup&BIT_WIFI_STA){
+                if(xEventGroup&BIT_CON_STA_OK){
                     network_package_t *network_package = malloc(SIZE_NETWORK_PACKAGE);
                     if(network_package){
                         max_atempt = MAX_ATEMPT_SEND_DATA;
@@ -201,19 +201,19 @@ if(xQueueReceive(queue_espnow_rx, &data_rx, portMAX_DELAY) == pdTRUE){
                     if(new_device){
                         add_device_inf_to_list(new_device);
                         EventBits_t xEventGroup = xEventGroupSetBits(dwin_event_group, BIT_ESPNOW_CONECT);
-                        if(!(xEventGroup&BIT_WIFI_STA || new_device->type == SENSOR_TEMP_DEVICE)){
-                            memcpy(data_tx.mac, new_device->mac, SIZE_MAC);
+                        memcpy(data_tx.mac, new_device->mac, SIZE_MAC);
+                        if(!(xEventGroup&BIT_CON_STA_OK)){
                             data_tx.action = NEED_NETWORK;
                             xQueueSend(queue_espnow_tx, &data_tx, WAIT_PUSH_ESPNOW_TO_QUEUE);
                             if(!(xEventGroup&BIT_IS_TIME)){
                                 data_tx.action = NEED_TIME;
                                 xQueueSend(queue_espnow_tx, &data_tx, WAIT_PUSH_ESPNOW_TO_QUEUE);
                             }
-                            if(new_device->type != SENSOR_TEMP_DEVICE){
-                                data_tx.action = 0;
-                            } else {
-                                data_tx.action = NEED_TEMP;
-                            }
+                        }
+                        if(new_device->type == SENSOR_TEMP_DEVICE){
+                            data_tx.action = NEED_TEMP;
+                        } else {
+                            data_tx.action = 0;
                         }
                     }
                 }
@@ -258,7 +258,7 @@ if(xQueueReceive(queue_espnow_rx, &data_rx, portMAX_DELAY) == pdTRUE){
         case SIZE_NETWORK_PACKAGE :
         {
             EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
-            if(!(xEventGroup&BIT_WIFI_STA)){
+            if(!(xEventGroup&BIT_CON_STA_OK)){
                 network_package_t *network_package = data_rx.parcel;
                 crc = network_package->crc;
                 network_package->crc = 0;

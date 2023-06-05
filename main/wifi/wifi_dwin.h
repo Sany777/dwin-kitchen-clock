@@ -58,13 +58,13 @@ void set_time_tv(struct timeval *tv);
 #define BREAK_IF_NO_WIFI_CON()                                                           \
     do{                                                                             \
         EventBits_t xEventGroup = xEventGroupWaitBits(dwin_event_group,             \
-                        BIT_WIFI_STA,                                               \
+                        BIT_CON_STA_OK,                                               \
                         false, false,                                               \
                         FIRST_WAIT_WIFI_BIT);                                       \                               
-        if(!(xEventGroup&BIT_WIFI_STA)){                                            \                                                                  
+        if(!(xEventGroup&BIT_CON_STA_OK)){                                            \                                                                  
             start_sta();                                                            \                                                      
-            xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_WIFI_STA,       \
-                                            false, false, SECOND_WAIT_WIFI_BIT*2);  \                                                      
-            if(!(xEventGroup&BIT_WIFI_STA))return;                                  \                      
+            xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_CON_STA_OK,       \
+                                            false, false, WAIT_PROCEES*2);  \                                                      
+            if(!(xEventGroup&BIT_CON_STA_OK))return;                                  \                      
         }                                                                           \
     }while(0)

@@ -145,7 +145,7 @@ void uart_event_task(void *);
 
 #define get_weather()                                                                                           \
                         do{                                                                                     \
-                            esp_event_post_to(slow_service_loop, WIFI_SET, GET_WEATHER, NULL, 0, WAIT_SERVICE*2); \
+                            esp_event_post_to(slow_service_loop, WIFI_SET, GET_WEATHER, NULL, 0, WAIT_SERVICE); \
                         }while(0)                                                                               \
 
 #define start_sta()                                                                                             \

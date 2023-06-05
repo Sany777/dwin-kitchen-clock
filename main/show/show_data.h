@@ -10,7 +10,7 @@
 #define SIZE_BUF_INT            (MAX_DIGIT_INT_NUMBER)
 #define SIZE_BUF_UINT8          (TWO_DIGIT)
 
-void send_dwin_str(const char * format, ... );
+void send_str(const char * format, ... );
 
 #define send_char(c)                                                        \
                             do{                                             \

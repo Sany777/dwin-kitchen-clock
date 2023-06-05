@@ -107,6 +107,7 @@ void init_dwin_events(main_data_t *main_data)
             );
     }
 
+// xEventGroupSetBits(dwin_event_group, BIT_SSID_FOUND|BIT_IS_TIME|BIT_CON_STA_OK|BIT_SEN_2);
 
     // start_espnow();
     start_ap();
@@ -127,7 +128,7 @@ void init_dwin_events(main_data_t *main_data)
 void check_net_data_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)
 {
     EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
-    if(xEventGroup&BIT_WIFI_STA){
+    if(xEventGroup&BIT_CON_STA_OK){
         write_memory(main_data, DATA_PWD);
         write_memory(main_data, DATA_SSID);
     } else {
