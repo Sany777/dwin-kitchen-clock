@@ -18,7 +18,6 @@
 
 #include "dwin_common.h"
 
-#define MY_IP "http://192.168.4.1";
 
 
 /* GET */

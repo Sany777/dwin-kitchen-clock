@@ -216,20 +216,18 @@ void ap_handler(void* arg, esp_event_base_t event_base,
 {
     main_data_t *main_data = (main_data_t*)arg;
     if(event_id == WIFI_EVENT_AP_START){
-        show_server(NULL, "Start server");
         if(set_run_webserver(main_data) == ESP_OK){
             xEventGroupClearBits(dwin_event_group, BIT_SERVER_STOP);
         }
     } else if (event_id == WIFI_EVENT_AP_STOP){
         xEventGroupSetBits(dwin_event_group, BIT_SERVER_STOP);
         set_run_webserver(NULL);
-        show_server(NULL, "Stop server");
     } else if(event_id == WIFI_EVENT_AP_STACONNECTED){
         wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
-        show_server(event->mac, "join.");
+        esp_event_post_to(show_loop, EVENTS_SHOW, STATION_JOINE, event->mac, sizeof(event->mac), TIMEOUT_SEND_EVENTS);
     } else if(event_id == WIFI_EVENT_AP_STADISCONNECTED){
         wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
-        show_server(event->mac, "leave.");
+        esp_event_post_to(show_loop, EVENTS_SHOW, STATION_LEAVE, event->mac, sizeof(event->mac), TIMEOUT_SEND_EVENTS);
     }
 }
 

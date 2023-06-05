@@ -77,7 +77,11 @@
     "dwin_defines.h": "c",
     "algorithm": "c",
     "deque": "c",
-    "vector": "c"
+    "vector": "c",
+    "screen_handlers.h": "c",
+    "cstdio": "c",
+    "show_screen_handlers.h": "c",
+    "sstream": "c"
   },
   "idf.flashType": "UART",
   "idf.portWin": "COM7",

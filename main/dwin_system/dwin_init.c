@@ -6,6 +6,8 @@ void esp_init(void)
 {
     main_data_t *main_data = (main_data_t *) calloc(1, sizeof(main_data_t));
     assert(main_data);
+    show_buf = malloc(SIZE_SHOW_BUF);
+    assert(show_buf);
     main_data->weather_data = calloc(1, sizeof(weather_data_t));
     assert(main_data->weather_data);
     dwin_event_group = xEventGroupCreate();

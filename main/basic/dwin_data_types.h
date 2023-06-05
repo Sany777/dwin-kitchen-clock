@@ -66,7 +66,9 @@ enum events{
     UPDATE_TIME_FROM_ETHER,
     UPDATE_TIME_FROM_MS,
     GET_DATA_FROM_DEVICE,
-    DATA_SHOW
+    DATA_SHOW,
+    STATION_JOINE,
+    STATION_LEAVE
 };
 
 typedef enum flag_state_device{

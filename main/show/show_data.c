@@ -1,6 +1,18 @@
 #include "show_data.h"
 
-void show_server(uint8_t *mac, char *str)
+char *show_buf;
+
+void send_dwin_str(const char * format, ... )
+{
+  va_list args;
+  va_start (args, format);
+  vsnprintf (show_buf, SIZE_SHOW_BUF, format, args);
+  va_end (args);
+  uart_write_bytes(UART_DWIN, show_buf, strlen(show_buf));
+}
+
+
+void show_mac(uint8_t *mac, char *str)
 {
     if(mac){
         ESP_LOGI(TAG, "Station "MACSTR" %s",

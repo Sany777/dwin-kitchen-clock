@@ -116,14 +116,15 @@
 
 #define VARIABLE_VALUE '\0'
 
+/* AP */
 #define AP_WIFI_SSID      "NASA"
-#define AP_WIFI_PWD      "esp32first"
+#define AP_WIFI_PWD      "dwinSecond"
+#define MY_IP "http://192.168.4.1"
 
+/* weather service*/
 #define NUMBER_DATA_WEATHER 5
 #define MAX_LEN_DESCRIPTION 10
 #define LEN_BUF_DESCRIPTION (MAX_LEN_DESCRIPTION+1)
-
-/* client weather */
 #define SIZE_URL_BUF 250
 #define FIRST_URL "https://api.openweathermap.org/data/2.5/forecast?q="
 #define SECOND_URL "&units=metric&cnt=5&appid="
@@ -132,6 +133,7 @@
 #define STEP_DT_TX  3
 #define SECOND_WAIT_WIFI_BIT (pdMS_TO_TICKS(5000))
 #define FIRST_WAIT_WIFI_BIT  (pdMS_TO_TICKS(1000))
+
 /* Clock */
 #define FORMAT_CLOCK_DEFAULT "EET-2EEST,M3.5.0/3,M10.5.0/4"
 #define SYNCH_10_HOUR 36000000
@@ -140,3 +142,4 @@
 #define SIZE_BUF_FORMAT_CLOCK (sizeof(FORMAT_CLOCK_DEFAULT)+2)
 
 #define SIZE_UART_EVENTS 5
+#define SIZE_SHOW_BUF 200

@@ -14,14 +14,15 @@
 #include "wifi_dwin.h"
 
 /*screen handlers*/
-// dwin_handler_t setting_handler;
-// dwin_handler_t search_screen_handler;
-// dwin_handler_t ap_handler;
-// dwin_handler_t device_screen_handler;
-// dwin_handler_t main_screen_handler;
-// dwin_handler_t clock_handler;
-// dwin_handler_t set_color_screen_handler;
-// dwin_handler_t notification_screen_handler;
-// dwin_handler_t timer_screen_handler;
+dwin_handler_t setting_handler;
+dwin_handler_t search_handler;
+dwin_handler_t ap_handler;
+dwin_handler_t device_handler;
+dwin_handler_t main_handler;
+dwin_handler_t weather_detail_handler;
+dwin_handler_t clock_handler;
+dwin_handler_t customization_handler;
+dwin_handler_t notification_handler;
+dwin_handler_t timer_handler;
 
 

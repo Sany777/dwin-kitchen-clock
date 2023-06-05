@@ -1,72 +1,138 @@
-// #include "show_screen_handlers.h"
+#include "show_screen_handlers.h"
+
+const int FONT_STANDART = 3, FONT_INFO = 2, FONT_SECOND_INFO = 1, FONT_BUTTON = 4;
+
+void show_ap_handler(void* main_data, 
+                        esp_event_base_t base,
+                        int32_t state, 
+                        void* event_data)
+{
+    dwin_print(1, 2, WHITE, FONT_STANDART);
+    if(!event_data){
+        send_dwin_str(
+                "Connect to the AP with the name %s, enter the %s paswword and and go to the address in your browser %s",
+                AP_WIFI_SSID,
+                AP_WIFI_PWD,
+                MY_IP);
+    } else {
+        uint8_t *mac = (uint8_t *)event_data;
+        if(state == STATION_JOINE){
+           send_dwin_str( 
+                "Station "MACSTR" join.", MAC2STR(mac));
+        } else {
+             send_dwin_str(
+                    "Station "MACSTR" leave.", MAC2STR(mac));
+        }
+    }
+    print_end();
+}
 
 
-// static const size_t FONT_STANDART = 3, FONT_INFO = 2, FONT_SECOND_INFO = 1, FONT_BUTTON = 4;
 
-// void show_ap_handler(void* handler_args, 
-//                                     esp_event_base_t base,
-//                                     int32_t conected_device, 
-//                                     void* event_data) 
-// {
-//     wifi_ap_record_t *wifi_record = (wifi_ap_record_t*)event_data;
-//     static const  main_data_t *main_data = NULL; 
+void show_ssid_handler(void* main_data, 
+                                esp_event_base_t base, 
+                                int32_t ssid_number, 
+                                void* event_data) 
+{
+    wifi_ap_record_t *wifi_record = (wifi_ap_record_t*)event_data;
+    dwin_print(1, 3, LEMON, FONT_STANDART);
+    if(ssid_number == 0) {
+         send_dwin_str("\n\nNo networks found");
+    } else {
+        send_dwin_str("Find %d SSID \r\n  Name      Signal  Auth.", (int)ssid_number);
+    }
+    print_end();
+    for(int i=0; i<ssid_number; i++) {
+        vTaskDelay(DELAY_SHOW_ITEM/2);
+        dwin_print(1+i, 0, GET_COLOR_AREA(i), FONT_INFO);
+        send_dwin_str(" %d. %10.10s %u %8.8s", 
+                    i, 
+                    (char*) wifi_record->ssid, 
+                    (uint8_t) wifi_record->rssi, 
+                    get_auth_mode(wifi_record->authmode));
+        wifi_record++;
+        print_end();
+    }
+}
 
 
 
+void show_setting_handler(void* main_data, 
+                            esp_event_base_t base, 
+                            int32_t id, 
+                            void* event_data) 
+{
+    // for(uint8_t i=0; i<6; i++) {
+    //     vTaskDelay(DELAY_SHOW_ITEM);
+    //     switch (i) {
+    //         case 0 :
+    //             dwin_print(0, 0, COLOUR_DISABLE, FONT_SECOND_INFO);
+    //             send_dwin_str("| Lighting |");
+    //             break;
+    //         case 1 :
+    //             dwin_print(0, 7, DATA_PREPARING ? COLOUR_DISABLE : COLOUR_ENABLE, FONT_SECOND_INFO);
+    //             if(DATA_PREPARING) {
+    //                 switch(state_WIFI) {
+    //                     // case WL_CONNECTED : send_main_data("WIFI connected"); break;
+    //                     // case WL_NO_SSID_AVAIL : send_main_data("SSID no available"); break;
+    //                     // case WL_CONNECT_FAILED : send_main_data("wrong password WIFI"); break;
+    //                     // default : send_main_data("disconected"); break;
+    //                 }
+    //                 if(internet_OK) {
+    //                     send_main_data("| server OK");
+    //                 } else {
+    //                     send_main_data("| server lost");
+    //                 }
+    //             } else {
+    //                 send_main_data("Сonnection attempt");
+    //             }
+    //             break;
+    //         case 2:
+    //             dwin_print(2, 1, GET_COLOUR_AREA(i), FONT_STANDART);
+    //             send_str_dwin("SSID  : ");
+    //             send_str_dwin(name_SSID);
+    //             break;
+    //         case 3:
+    //             dwin_print(3, 1, GET_COLOUR_AREA(i), FONT_STANDART);
+    //             send_str_dwin("Password : ");
+    //             if(area_SCREEN == AREA_PASSWORD) {
+    //                 send_str_dwin(pwd_WIFI);
+    //             } else {
+    //                 send_str_dwin("*****");
+    //             }
+    //             break;
+    //         case 4:
+    //             dwin_print(4, 1, GET_COLOUR_AREA(i), FONT_STANDART);
+    //             send_str_dwin("Name city : ");
+    //             send_str_dwin(name_CITY);
+    //             break;
+    //         case 5:
+    //             dwin_print(5, 1, GET_COLOUR_AREA(i), FONT_STANDART);
+    //             send_str_dwin("Key ");
+    //             if(area_SCREEN == AREA_API) {
+    //                 send_str_dwin(api_KEY);
+    //             } else {
+    //                 send_str_dwin("*****");
+    //             }
+    //             break;
+    //         default : break;
+    //     }
+    //     dwin_end_print();
+    // }
+}
 
 
-
-
-// }
-
-
-// void show_ssid_handler(void* handler_args, 
+// void show_device_handler(void* main_data, 
 //                                 esp_event_base_t base, 
 //                                 int32_t conected_device, 
 //                                 void* event_data) 
 // {
-//     wifi_ap_record_t *wifi_record = (wifi_ap_record_t*)event_data;
 //     static const  main_data_t *main_data = NULL; 
-//     if(main_data == NULL) main_data = (main_data_t *)handler_args;
-//     vTaskDelay(DELAY_SHOW_ITEM);
-//     dwin_print(1, 3, LEMON, FONT_STANDART);
-//     if(conected_device == 0) {
-//         send_main_data("\n\n\nNo networks found'myEOF'");
-//         dwin_end_print();
-//         return;
-//     }
-//     if(wifi_record == NULL)return;
-//     send_main_data("Find 'myEOF'");
-//     send_non_zero(conected_device);
-//     send_main_data(" networks'myEOF'");
-//     send_main_data("\r\n  Name     Signal  Auth.'myEOF'");
-//     dwin_end_print();
-//     for(uint8_t i=0; i<conected_device; i++) {
-//         vTaskDelay(DELAY_SHOW_ITEM/2);
-//         dwin_print(1+i, 2, GET_COLOUR_AREA(i), FONT_INFO);
-//         send_non_zero(i+1);
-//         send_str_dwin((char)wifi_record->ssid);
-//         send_str_dwin(get_auth_mode(wifi_record->authmode));
-//         if(wifi_record->rssi > -50) send_str_dwin("  excellent");
-//         else if(wifi_record->rssi > -70)send_str_dwin(" good");
-//         else send_str_dwin("   bad");
-//         wifi_record++;
-//         dwin_end_print();
-//     }
-// }
-
-
-// void show_device_handler(void* handler_args, 
-//                                 esp_event_base_t base, 
-//                                 int32_t conected_device, 
-//                                 void* event_data) 
-// {
-//     static const  main_data_t *main_data = NULL; 
-//     // if(main_data == NULL) main_data = (main_data_t *)handler_args;
+//     // if(main_data == NULL) main_data = (main_data_t *)main_data;
 //     // device_inf_t *list_devices = (device_inf_t*) &main_data->list_devices;
 //     // if(device == NULL) {
 //     //     dwin_print(4, 3, WHITE, FONT_STANDART);
-//     //     send_main_data("No ones devices finding'myEOF'");
+//     //     send_main_data("No ones devices finding");
 //     //     dwin_end_print();
 //     // }
 
@@ -76,7 +142,7 @@
 //     //     switch(i){
 //     //         case 0 :
 //     //             dwin_print(1, 2, WHITE, FONT_STANDART);
-//     //             send_main_data("Sensor devices           Timer devices'myEOF'");
+//     //             send_main_data("Sensor devices           Timer devices");
 //     //             dwin_end_print();
 //     //             break;
 //     //         case 1 :
@@ -84,7 +150,7 @@
 //     //                 if(area_SCREEN == count_device) send_str_dwin("[");
 //     //                 dwin_print(2+count_device, 0, get_FLAG_STATE(device_state)?LEMON:BLUE, FONT_INFO);
 //     //                 send_non_zero(count_device+1);
-//     //                 send_main_data(". 'myEOF'");
+//     //                 send_main_data(". ");
 //     //                 send_str_dwin(name_cur_device);
 //     //                 if(area_SCREEN == count_device) send_str_dwin("]");
 //     //                 dwin_end_print();
@@ -107,7 +173,7 @@
 //     //                 if(area_SCREEN == count_device+AREA_TIMER_DEVICE_1) send_str_dwin("[");
 //     //                 dwin_print(2+count_device, 0, get_FLAG_STATE(device_state)?LEMON:BLUE, FONT_INFO);
 //     //                 send_non_zero(count_device+1);
-//     //                 send_main_data(". 'myEOF'");
+//     //                 send_main_data(". ");
 //     //                 send_str_dwin(name_cur_device);
 //     //                 if(area_SCREEN == count_device) send_str_dwin("]");
 //     //                 dwin_end_print();
@@ -122,7 +188,7 @@
 // }
 
 
-// void show_rename_device_handler(void* handler_args, 
+// void show_rename_device_handler(void* main_data, 
 //                                         esp_event_base_t base, 
 //                                         int32_t id, 
 //                                         void* event_data) 
@@ -145,10 +211,10 @@
 //     }
 // }
 
-// void show_notify_handler(void* handler_args, esp_event_base_t base, int32_t day, void* event_data) 
+// void show_notify_handler(void* main_data, esp_event_base_t base, int32_t day, void* event_data) 
 // {
 //     static const  main_data_t *main_data = NULL; 
-//     if(main_data == NULL)  main_data = (main_data_t *)handler_args;
+//     if(main_data == NULL)  main_data = (main_data_t *)main_data;
 //     static uint8_t tmp;
 //     uint8_t last_notif = NUMBER_NOTIFICATION_PER_DAY;
     
@@ -205,13 +271,13 @@
 //     }
 // }
 
-// void show_custom_handler(void* handler_args, 
+// void show_custom_handler(void* main_data, 
 //                                     esp_event_base_t base, 
 //                                     int32_t id, 
 //                                     void* event_data) 
 // {
 //     static const  main_data_t *main_data = NULL;  
-//     if(main_data == NULL) main_data = (main_data_t *)handler_args;
+//     if(main_data == NULL) main_data = (main_data_t *)main_data;
 //     static uint16_t color_item, color_area;
 //     int i=0;
 //     vTaskDelay(DELAY_SHOW_ITEM);
@@ -239,81 +305,17 @@
 //     dwin_end_print();
 // }
 
-// void show_setting_handler(void* handler_args, 
-//                                     esp_event_base_t base, 
-//                                     int32_t id, 
-//                                     void* event_data) 
-// {
-//     static const  main_data_t *main_data = NULL; 
-//     if(main_data == NULL) main_data = (main_data_t *)handler_args;
-//     for(uint8_t i=0; i<6; i++) {
-//         vTaskDelay(DELAY_SHOW_ITEM);
-//         switch (i) {
-//             case 0 :
-//                 dwin_print(0, 0, COLOUR_DISABLE, FONT_SECOND_INFO);
-//                 send_main_data("| Lighting |'myEOF'");
-//                 break;
-//             case 1 :
-//                 dwin_print(0, 7, DATA_PREPARING ? COLOUR_DISABLE : COLOUR_ENABLE, FONT_SECOND_INFO);
-//                 if(DATA_PREPARING) {
-//                     switch(state_WIFI) {
-//                         // case WL_CONNECTED : send_main_data("WIFI connected'myEOF''myEOF'"); break;
-//                         // case WL_NO_SSID_AVAIL : send_main_data("SSID no available'myEOF'"); break;
-//                         // case WL_CONNECT_FAILED : send_main_data("wrong password WIFI'myEOF'"); break;
-//                         // default : send_main_data("disconected"); break;
-//                     }
-//                     if(internet_OK) {
-//                         send_main_data("| server OK'myEOF'");
-//                     } else {
-//                         send_main_data("| server lost'myEOF'");
-//                     }
-//                 } else {
-//                     send_main_data("Сonnection attempt'myEOF'");
-//                 }
-//                 break;
-//             case 2:
-//                 dwin_print(2, 1, GET_COLOUR_AREA(i), FONT_STANDART);
-//                 send_str_dwin("SSID  : ");
-//                 send_str_dwin(name_SSID);
-//                 break;
-//             case 3:
-//                 dwin_print(3, 1, GET_COLOUR_AREA(i), FONT_STANDART);
-//                 send_str_dwin("Password : 'myEOF'");
-//                 if(area_SCREEN == AREA_PASSWORD) {
-//                     send_str_dwin(pwd_WIFI);
-//                 } else {
-//                     send_str_dwin("*****");
-//                 }
-//                 break;
-//             case 4:
-//                 dwin_print(4, 1, GET_COLOUR_AREA(i), FONT_STANDART);
-//                 send_str_dwin("Name city : ");
-//                 send_str_dwin(name_CITY);
-//                 break;
-//             case 5:
-//                 dwin_print(5, 1, GET_COLOUR_AREA(i), FONT_STANDART);
-//                 send_str_dwin("Key ");
-//                 if(area_SCREEN == AREA_API) {
-//                     send_str_dwin(api_KEY);
-//                 } else {
-//                     send_str_dwin("*****");
-//                 }
-//                 break;
-//             default : break;
-//         }
-//         dwin_end_print();
-//     }
-// }
 
 
 
-// void show_clock_handler(void* handler_args, 
+
+// void show_clock_handler(void* main_data, 
 //                                     esp_event_base_t base, 
 //                                     int32_t id, 
 //                                     void* event_data)
 // {
 //     static const  main_data_t *main_data = NULL; 
-//     if(main_data == NULL) main_data = (main_data_t *)handler_args;
+//     if(main_data == NULL) main_data = (main_data_t *)main_data;
 //     for(uint8_t i=0; i<6; i++) {
 //         vTaskDelay(DELAY_SHOW_ITEM);
 //         switch (i) {
@@ -321,43 +323,43 @@
 //                 dwin_print(0, 2, COLOUR_DISABLE, FONT_INFO);
 //                 if(DATA_PREPARING) {
 //                     sync_TIME
-//                     ? send_main_data("autoupdate time'myEOF'")
-//                     : send_main_data("manual update time'myEOF'");
+//                     ? send_main_data("autoupdate time")
+//                     : send_main_data("manual update time");
 //                     internet_OK
-//                     ? send_main_data(" SNTP ok'myEOF'")
-//                     : send_main_data(" SNTP fail'myEOF'");
+//                     ? send_main_data(" SNTP ok")
+//                     : send_main_data(" SNTP fail");
 //                 } else {
-//                     send_main_data("Waiting update data...'myEOF'");
+//                     send_main_data("Waiting update data...");
 //                 }
 //                 break;
 //             case 1:
 //                 dwin_print(3, 1, GET_COLOUR_AREA(i), FONT_STANDART);
-//                 send_main_data("year 20'myEOF'");
+//                 send_main_data("year 20");
 //                 send_two_number(cur_YEAR);
 //                 break;
 //             case 2:
 //                 dwin_print(3, 9, GET_COLOUR_AREA(i), FONT_STANDART);
-//                 send_main_data("month 'myEOF'");
+//                 send_main_data("month ");
 //                 send_two_number(cur_MONTH);
 //                 break;
 //             case 3:
 //                 dwin_print(3, 15, GET_COLOUR_AREA(i), FONT_STANDART);
-//                 send_main_data("day 'myEOF'");
+//                 send_main_data("day ");
 //                 send_two_number(cur_DAY);
 //                 break;
 //             case 4:
 //                 dwin_print(5, 1, GET_COLOUR_AREA(i), FONT_STANDART);
-//                 send_main_data("hour 'myEOF'");
+//                 send_main_data("hour ");
 //                 send_two_number(cur_HOUR);
 //                 break;
 //             case 5:
 //                 dwin_print(5, 9, GET_COLOUR_AREA(i), FONT_STANDART);
-//                 send_main_data("min 'myEOF'");
+//                 send_main_data("min ");
 //                 send_two_number(cur_MIN);
 //                 break;
 //             case 6:
 //                 dwin_print(5, 15, GET_COLOUR_AREA(i), FONT_STANDART);
-//                 send_main_data("sec 'myEOF'");
+//                 send_main_data("sec ");
 //                 send_two_number(cur_SEC);
 //                 break;
 //             default : break;
@@ -368,13 +370,13 @@
 
 
 
-// void show_main_handler(void* handler_args, 
+// void show_main_handler(void* main_data, 
 //                                 esp_event_base_t base, 
 //                                 int32_t data_sensor, 
 //                                 void* event_data) 
 // {
 //     static const  main_data_t *main_data = NULL; 
-//     if(main_data == NULL) main_data = (main_data_t *)handler_args;
+//     if(main_data == NULL) main_data = (main_data_t *)main_data;
 //     weather_t *data_weather = event_data;
 //     size_t count = data_weather != NULL ? 5 : 3;
 //     for(uint32_t i=0; i<count; i++) {
@@ -393,15 +395,15 @@
 //                 if(data_weather == NULL && data_sensor == NO_TEMP_SENSOR)return;
 //                 dwin_print(0, 1, color_INFO, FONT_INFO);
 //                 if(data_sensor != NO_TEMP_SENSOR) {
-//                     send_main_data(" inside    t*C     'myEOF'");
+//                     send_main_data(" inside    t*C     ");
 //                     send_temperature(data_sensor);
 //                 }
 //                 if(data_weather != NULL) {
-//                     send_main_data("\n outside     t*C     'myEOF'");
+//                     send_main_data("\n outside     t*C     ");
 //                     send_temperature(temp_OUTDOR);
-//                     send_main_data("'myEOF'\n feels like     t*C   'myEOF'");
+//                     send_main_data("\n feels like     t*C   ");
 //                     send_temperature(temp_FEELS_LIKE);
-//                     send_main_data("'myEOF'\n rain           %     'myEOF'");
+//                     send_main_data("\n rain           %     ");
 //                     send_temperature(PoP);
 //                 }
 //                 break;
@@ -411,9 +413,9 @@
 //                 break;
 //             case 4:
 //                 dwin_print(20, 12, color_INFO, FONT_SECOND_INFO);
-//                 send_main_data("sunrise  'myEOF'");
+//                 send_main_data("sunrise  ");
 //                 send_clock(sunrise_HOUR, sunrise_MIN);
-//                 send_main_data("sunset  'myEOF'");
+//                 send_main_data("sunset  ");
 //                 send_clock(sunset_HOUR, sunset_MIN);
 //                 break;
 //         default   : break;
@@ -424,13 +426,13 @@
 
 
 
-// void show_timer_handler(void* handler_args, 
+// void show_timer_handler(void* main_data, 
 //                                     esp_event_base_t base, 
 //                                     int32_t run, 
 //                                     void* event_data) 
 // {
 //     static const  main_data_t *main_data = NULL; 
-//     if(main_data == NULL) main_data = (main_data_t *)handler_args;
+//     if(main_data == NULL) main_data = (main_data_t *)main_data;
 //     uint8_t *timer_data = (uint8_t *)event_data;
 //     if(timer_data == NULL)return;
 //     vTaskDelay(DELAY_SHOW_ITEM);
@@ -441,12 +443,12 @@
 //         uint8_t column = timer_HOUR ? 1 : timer_MIN ? 2 : 4;
 //         dwin_print(column, 1, color_CLOCK, 6);
 //         if(send_non_zero(timer_HOUR)) {
-//             send_main_data(" : 'myEOF'");
+//             send_main_data(" : ");
 //             send_two_number(timer_MIN);
-//             send_main_data(" : 'myEOF'");
+//             send_main_data(" : ");
 //             send_two_number(timer_SEC);
 //         } else if(send_non_zero(timer_MIN)) {
-//             send_main_data(" : 'myEOF'");
+//             send_main_data(" : ");
 //             send_two_number(timer_SEC);
 //         } else {
 //             send_number(timer_SEC);

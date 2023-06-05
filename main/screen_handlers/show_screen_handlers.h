@@ -1,16 +1,8 @@
-// #pragma once
+#pragma once
 
-// #include "stddef.h"
+#include "dwin_common.h"
 
-
-// #include "dwin_config.h"
-// #include "dwin_data_types.h"
-// #include "screen_keys.h"
-// #include "dwin_defines.h"
-
-// #include "dwin_drivers.h"
-
-
+dwin_handler_t show_ap_handler;
 
 // void welcome();
 // dwin_handler_t show_ssid_handler;
@@ -22,7 +14,6 @@
 // dwin_handler_t show_clock_handler;
 // dwin_handler_t show_main_handler;
 // dwin_handler_t show_timer_handler;
-// dwin_handler_t show_ap_handler;
 
 
 // static const char *MES_ON = " [ON]";
