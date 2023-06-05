@@ -1,9 +1,12 @@
 const LIST_DAY = ["Monday","Thusday","Wednesday","Thursday","Friday","Saturday","Sanday"]
 const NOTIF_PER_DAY = 4;
+const INDEX_VARIABLE_STATUS = 2;
+const NUMBER_CHECKBOX = 7;
 const FORMS_LIST = [
   [["Network",["SSID", "PWD"]],["text","32"]],
   [["API", ["City", "Key"]],["text","32"]],
   [["Update", ["Firmware"]],["file",]],
+  [["Status", ["Sounds allow","Espnow allow","SNTP allow","Weather ok","WiFi STA ok","Sensor 1 ok","Sensor 2 ok"]],["checkbox",]],
 ]
 
 function createNotification()
@@ -68,6 +71,15 @@ function getSetting()
             inp.value =  value[iter++] + value[iter++] + ":" + value[iter++]+value[iter++];
           }
         }
+       } else if(key === "Status"){
+        const flags = Number(value);
+        [...document.querySelectorAll('[type=checkbox]')].forEach((checkbox, i) =>{
+            const state = flags&(1<<i);
+            if(state){
+                if(i> INDEX_VARIABLE_STATUS)checkbox.disabled = false;
+                checkbox.checked = true;
+                if(i> INDEX_VARIABLE_STATUS)checkbox.disabled = true;
+            }});
        } else {
          const input = document.getElementById(key);
          if(input)input.value = value;
@@ -95,26 +107,29 @@ function createForms()
     const submit = document.createElement("input");
     submit.value = "Submit";
     submit.type = "submit";
-    listInput.forEach(inputName=>{
+    listInput.forEach((inputName, i)=>{
       const label = document.createElement("label");
       label.innerText = inputName;
       const input = document.createElement("input");
       input.type = type;
       input.id = inputName;
       input.name = inputName;
-      input.value = "";
       if(type === "text"){
+        input.value = "";
         input.maxLength = length;
         input.placeholder = "Enter "+ inputName;
+      } else if(type == "checkbox" && i > INDEX_VARIABLE_STATUS){
+        input.disabled = true;
       }
       label.appendChild(input);
       form.appendChild(label);
-    })
+    });
     form.appendChild(submit);
     container.appendChild(fieldset);
     containerForms.appendChild(container);
   });
 }
+// [...document.querySelectorAll('[type=checkbox]')].forEach(checkbox => { checkbox.checked = true; })
 
 function updateTime() 
 {

@@ -31,8 +31,7 @@ void write_memory(main_data_t *main_data, const int data_identificator)
 		case DATA_FLAGS :
 		{
 			EventBits_t uxBits = xEventGroupGetBits(dwin_event_group);
-			uint32_t flags = (uint32_t)uxBits&STORED_FLAGS;
-			nvs_set_i32(nvs_handle_dwin, "flag", flags); 
+			nvs_set_u32(nvs_handle_dwin, "flag", uxBits); 
 			break;
 		}
 		case DATA_COLOUR :

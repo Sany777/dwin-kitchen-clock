@@ -71,19 +71,19 @@ enum events{
 
 typedef enum flag_state_device{
     SOUNDS_ALLOW,
-    SYNC_TIME_ALLOW,
     ESPNOW_ALLOW,
+    SNTP_ALLOW,
+    IS_WEATHER,
+    IS_CON_STA,
+    SENSOR_1_OK,
+    SENSOR_2_OK,
 
     SNTP_WORK,
-    IS_WEATHER,
+    WIFI_STA,
 
     ESPNOW_CONECT,
     IS_TIME,
     TIMER_RUN,
-    INTERNET_OK,
-    WIFI_STA,
-    SENSOR_1_OK,
-    SENSOR_2_OK,
     RESPONSE_OK,
     RESPONSE_UPDATE,
     PROCESS_DWIN,
@@ -94,9 +94,9 @@ typedef enum flag_state_device{
 
 /*events bit*/
 #define BIT_ESPNOW_ALLOW        ( 1 << ESPNOW_ALLOW )
-#define BIT_SYNC_TIME_ALLOW     ( 1 << SYNC_TIME_ALLOW )
+#define BIT_SYNC_TIME_ALLOW     ( 1 << SNTP_ALLOW )
 #define BIT_SOUNDS_ALLOW        ( 1 << SOUNDS_ALLOW )
-
+#define BIT_IS_CON_STA          ( 1 << IS_CON_STA )
 #define BIT_ESPNOW_RUN          ( 1 << ESPNOW_RUN )
 #define BIT_WIFI_STA            ( 1 << WIFI_STA  )
 #define BIT_SERVER_STOP         ( 1 << SERVER_OK )

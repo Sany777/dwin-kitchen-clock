@@ -42,6 +42,8 @@ function sendData(formName)
   const  js = {};
   const arr = [];
   let data = null;
+  let flags = 0;
+  let i=0;
   const childsList = document.forms[formName];
   if(childsList){
     for(const child of childsList){
@@ -70,8 +72,17 @@ function sendData(formName)
         } else if(child.type === "textarea"){
           data = value+"";
           break;
+        } else if(child.type === "checkbox"){
+          if(child.disabled){
+            data = flags;
+            break;
+          }
+          if(child.checked){
+            flags |= 1<<i;
+          }
+          i++;
         }
-        }
+      }
     }
   }
   if(data === js){

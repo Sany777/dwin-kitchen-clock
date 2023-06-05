@@ -489,12 +489,14 @@ static esp_err_t handler_get_data(httpd_req_t *req)
     if(notif_send == NULL){
         DWIN_RESP_ERR(req, "Not enough storage", err);
     }
+    EventBits_t uxBits = xEventGroupGetBits(dwin_event_group);
     httpd_resp_set_type(req, "application/json");
     cJSON *root = cJSON_CreateObject();
     cJSON_AddStringToObject(root, "SSID", name_SSID);
     cJSON_AddStringToObject(root, "PWD", pwd_WIFI);
     cJSON_AddStringToObject(root, "Key", api_KEY);
     cJSON_AddStringToObject(root, "City", name_CITY);
+    cJSON_AddNumberToObject(root, "Status", uxBits);
     for(size_t i=0, i_s=0; i<SIZE_NOTIFICATION; i++){
         notif_send[i_s++] = notification_DATA[i]/10+'0';
         notif_send[i_s++] = notification_DATA[i]%10+'0';
@@ -510,6 +512,27 @@ static esp_err_t handler_get_data(httpd_req_t *req)
     free((void *)data_info);
     free(notif_send);
     cJSON_Delete(root);
+    return ESP_OK;
+err:
+    return ESP_FAIL;
+}
+
+static esp_err_t handler_set_flag(httpd_req_t *req)
+{
+    const int total_len = req->content_len;
+    char * const server_buf = (char *)req->user_ctx;
+    if(total_len > SCRATCH_SIZE){
+        DWIN_RESP_ERR(req, "Content too long", err);
+    }
+    const int received = httpd_req_recv(req, server_buf, total_len);
+    if (received != total_len) {
+        DWIN_RESP_ERR(req, "Data not read", err);
+    }
+    server_buf[total_len] = 0;
+    long flag = atoll(server_buf);
+    xEventGroupSetBits(dwin_event_group, flag&STORED_FLAGS);
+    write_memory(NULL, DATA_FLAGS);
+    httpd_resp_sendstr(req, "Set flags successfully");
     return ESP_OK;
 err:
     return ESP_FAIL;
@@ -551,7 +574,7 @@ esp_err_t set_run_webserver(main_data_t *main_data)
         server_buf = malloc(SCRATCH_SIZE);
         assert(server_buf);
         httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-        config.max_uri_handlers = 28;
+        config.max_uri_handlers = 29;
         config.uri_match_fn = httpd_uri_match_wildcard;
         esp_err_t e = httpd_start(&server, &config);
         if (e != ESP_OK){
@@ -563,6 +586,13 @@ esp_err_t set_run_webserver(main_data_t *main_data)
         server_buf = NULL;
         return err;
     } 
+    httpd_uri_t send_flags= {
+        .uri      = "/Status",
+        .method   = HTTP_POST,
+        .handler  = handler_set_flag,
+        .user_ctx = server_buf
+    };
+    httpd_register_uri_handler(server, &send_flags);
 
     httpd_uri_t send_raw = {
         .uri      = "/sendraw",
