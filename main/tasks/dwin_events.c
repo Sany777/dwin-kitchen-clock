@@ -80,22 +80,8 @@ void init_dwin_events(main_data_t *main_data)
                                 (void *)main_data,
                                 NULL
                             ));
-    ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                            direct_loop,
-                            EVENTS_DIRECTION,
-                            TEST_1,
-                            test_handler,
-                            (void *)main_data,
-                            NULL
-                        ));
-    ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-        direct_loop,
-        EVENTS_DIRECTION,
-        TEST_2,
-        test2_handler,
-        (void *)main_data,
-        NULL
-    ));
+
+
     for(int i=0; i<SIZE_LIST_TASKS; i++){
             xTaskCreate(
                 list_services[i].pTask, 

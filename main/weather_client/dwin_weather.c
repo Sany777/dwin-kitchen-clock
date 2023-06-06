@@ -53,16 +53,21 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 }
 
 
-
 void get_weather_handler(void* args, esp_event_base_t base, int32_t key, void* event_data)
 {
-    main_data_t *main_data = (main_data_t*)args;
+    weather_PIC = NO_WEATHER_PIC;
     if(strnlen(api_KEY, SIZE_BUF) == MAX_STR_LEN && strnlen(name_CITY, SIZE_BUF) != 0){
-        EventBits_t xEventGroup = xEventGroupWaitBits(
+        main_data_t *main_data = (main_data_t*)args;
+        EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);                                                                 
+        if(!(xEventGroup&BIT_CON_STA_OK)){
+            start_sta();
+            vTaskDelay(DELAY_CHANGE_CNTX);
+            xEventGroup = xEventGroupWaitBits(
                         dwin_event_group, 
-                        BIT_PROCESS,      
+                        BIT_PROCESS,   
                         false, false, 
-                        WAIT_PROCEES);                                                                 
+                        WAIT_PROCEES); 
+        }
         if(xEventGroup&BIT_CON_STA_OK){
             char *url_buf = (char*)calloc(1, SIZE_URL_BUF);
             assert(url_buf);
@@ -119,7 +124,6 @@ void get_weather_handler(void* args, esp_event_base_t base, int32_t key, void* e
                         temp_FEELS_LIKE[i] = (atof(temp_feel[i]))*10;
                         PoP[i] = (uint8_t) atoi(pop[i]);
                     }
-                    ESP_LOGI(TAG, "Get weather : temp %d.%d", temp_OUTDOOR[0]/10, temp_OUTDOOR[0]%10);
                     if(dt_txt)free(dt_txt);
                     if(pop)free(pop);
                     if(sunrise)free(sunrise);
@@ -135,7 +139,9 @@ void get_weather_handler(void* args, esp_event_base_t base, int32_t key, void* e
             free(url_buf);
             free(local_response_buffer);
         }
+        }
     }
+    esp_event_post_to(direct_loop, EVENTS_DIRECTION, UPDATE_DATA_COMPLETE, NULL, 0, WAIT_WIFI_EVENT);
 }
 
 char ** find_str_key(char *buf, const size_t buf_len, const char *key)

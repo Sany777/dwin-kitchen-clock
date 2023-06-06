@@ -67,6 +67,7 @@ enum events{
     UPDATE_TIME_FROM_MS,
     GET_DATA_FROM_DEVICE,
     DATA_SHOW,
+    UPDATE_DATA_COMPLETE,
     STATION_JOINE,
     STATION_LEAVE
 };
@@ -246,5 +247,6 @@ typedef struct {
     uint8_t notif[SIZE_NOTIFICATION];
     weather_data_t *weather_data;
     sensor_data_t *sensor_data[NUMBER_SENSOR];
+    struct tm time;
 } main_data_t;
 

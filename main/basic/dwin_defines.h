@@ -18,7 +18,7 @@
 
 /*for main_data instance*/
 #define area_SCREEN             (((main_data_t *)main_data)->area)
-#define selected_VALUE_CLOCK    (((main_data_t *)main_data)->cur_time[area_SCREEN])
+#define dwin_time                (((main_data_t *)main_data)->time)
 #define pwd_WIFI                (((main_data_t *)main_data)->pwd_wifi)
 #define name_SSID               (((main_data_t *)main_data)->ssid_name)
 #define name_CITY               (((main_data_t *)main_data)->city_name)
@@ -75,7 +75,7 @@
 
 /* CHECK INPUT KEY*/
 #define KEY_IS_CHAR(key_from_dwin)            (((key_from_dwin) >= 'A' && (key_from_dwin) <= 'Z')               \
-                                                    || (key_from_dwin) >= 'a' && (key_from_dwin) <= 'z')
+                                                    || ((key_from_dwin) >= 'a' && (key_from_dwin) <= 'z'))
 #define KEY_IS_NUMBER(key_from_dwin)          ((key_from_dwin) >= '0' && (key_from_dwin) <= '9')
 #define KEY_IS_AREA_SCAN_SSID(key_from_dwin)  ((key_from_dwin) >= KEY_START_AREA && (key_from_dwin) <= KEY_START_AREA+MAX_SCAN_LIST_SIZE)
 #define KEY_IS_AREA_CLOCK(key_from_dwin)      ((key_from_dwin) >= KEY_START_AREA && (key_from_dwin) <= KEY_START_AREA+END_AREA_CLOCK)

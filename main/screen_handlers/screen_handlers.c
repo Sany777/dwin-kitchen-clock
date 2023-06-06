@@ -23,9 +23,9 @@ void search_screen_handler(void* main_data, esp_event_base_t base, int32_t key, 
             init = true;
         }
         esp_event_post_to(fast_service_loop, WIFI_SET, START_SCAN_NETWORKS, NULL, 0, TIMEOUT_SEND_EVENTS);
-        ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
+        ESP_ERROR_CHECK(esp_wifi_scan_GET_ap_num(&ap_count));
         if(ap_count > MAX_SCAN_LIST_SIZE)ap_count = MAX_SCAN_LIST_SIZE;
-        ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_count, ap_info));
+        ESP_ERROR_CHECK(esp_wifi_scan_GET_ap_records(&ap_count, ap_info));
     } else if(KEY_IS_AREA_SCAN_SSID(key)) {
         if(area_SCREEN == GET_AREA_VALUE(key)) {
             strncpy(name_SSID, (const char*)ap_info[area_SCREEN].ssid, MAX_STR_LEN);
@@ -61,7 +61,7 @@ void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* 
 {
     static uint8_t pos, max;
     static char *selected_buf;
-    static pic = SETTING_LOW_LETTER_PIC;
+    static int pic = SETTING_LOW_LETTER_PIC;
     if(key == KEY_CLOCK_SCREEN){
         return;
     }
@@ -71,15 +71,15 @@ void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* 
         area_SCREEN = GET_AREA_VALUE(key);
         switch(area_SCREEN) {
             case AREA_PASSWORD : selected_buf = pwd_WIFI; max = MAX_STR_LEN; break;
-            case AREA_CITY     : selected_buf = name_CITY; max = MAX_STR_LEN; break;
-            case AREA_API      : selected_buf = api_KEY; max = MAX_STR_LEN; break;
-            case AREA_SSID     : selected_buf = name_SSID; max = MAX_STR_LEN; break;
+            case AREA_CITY    : selected_buf = name_CITY; max = MAX_STR_LEN; break;
+            case AREA_API     : selected_buf = api_KEY; max = MAX_STR_LEN; break;
+            case AREA_SSID    : selected_buf = name_SSID; max = MAX_STR_LEN; break;
             default : break;
         }
         pos = strlen(selected_buf);
     } else if(key == KEY_SYNC) {
         start_sta();
-        get_weather();
+        GET_weather();
     } else if(key == KEY_ENTER) {
         write_memory(main_data, DATA_API);
         write_memory(main_data, DATA_CITY);
@@ -96,18 +96,13 @@ void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* 
             selected_buf[pos--] = 0;
         } else if(key == KEY_DELETE) {
             selected_buf[0] = 0;
+            pos = 0;
         } else if(KEY_IS_SYMBOL(key)){
             if(pos < max) {
                 if(area_SCREEN == AREA_CITY){
-                    if(KEY_IS_CHAR(key) || key == '-'){
-                        if(pos == 0){
-                            if(key != '-'){
-                                if(key >= 'a') key = key - 'a' + 'A';
-                                selected_buf[pos++] = key;
-                            }
-                        } else {
-                            selected_buf[pos++] = key;
-                        }
+                    if(KEY_IS_CHAR(key) || key == '-' && pos != 0 ){
+                        if(pos == 0 && key >= 'a' && key <= 'z') key = key + 'A' - 'a';
+                        selected_buf[pos++] = key;
                     }
                 } else {
                     selected_buf[pos++] = key;
@@ -115,7 +110,6 @@ void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* 
             }
         }
     }
-    dwin_set_pic(pic);
     esp_event_post_to(show_loop, 
                     EVENTS_SHOW, 
                     KEY_UPDATE_SCREEN, 
@@ -124,81 +118,147 @@ void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* 
                     TIMEOUT_SEND_EVENTS);
 }
 
+enum state_task{
+    NO_CHANGE,
+    INIT_TASK,
+    DEINIT_TASK,
+    INIT_FAIL,
+    INIT_OK,
+};
+
 void main_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {
-// 	
-//     static weather_t *data_weather = NULL;
-//     static temperature_t temperature_indoor = NO_TEMP_SENSOR;
-//     static bool menu_active = false;
-//     if(key == KEY_DELETE_DATA) {
-//         if(data_weather) free(data_weather);
-//         return;
-//     }
-
-//     if(key == KEY_INIT) {
-//         if(data_weather == NULL)data_weather = calloc(1, sizeof(weather_t));
-//     } else if(key == KEY_CLOSE) {
-//         menu_active = !menu_active;
-//         if(menu_active) {
-
-//           dwin_set_pic(MENU_PIC);
-//           return;
-//         } 
-//     }
-
-//     dwin_set_pic(SEARCH_PIC);
-//     bool is_data_weather = data_weather != NULL && data_weather->weather_pic;
-//     esp_event_post_to(show_loop,
-//                 EVENTS_SHOW, 
-//                 (int32_t)temperature_indoor, 
-//                 is_data_weather 
-//                  ? data_weather
-//                  : NULL,
-//                 is_data_weather 
-//                  ? sizeof(weather_t *)
-//                  : 0, 
-//                 TIMEOUT_SEND_EVENTS);
-// }
-
-// void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
-// {
-//     
-
-//     if(KEY_IS_AREA_CLOCK(key)) {
-//         area_SCREEN = GET_AREA_VALUE(key);
-//     } else if(KEY_IS_NUMBER(key)) {
-//         selected_VALUE_CLOCK = get_NEW_TWO_DIGIT_VALUE(selected_VALUE_CLOCK, get_NUMBER(key));
-//         switch(area_SCREEN) {
-//             case AREA_YEAR  : if(!is_YEAR(selected_VALUE_CLOCK)) selected_VALUE_CLOCK = 0; break;
-//             case AREA_MONTH : if(!is_MONTH(selected_VALUE_CLOCK)) selected_VALUE_CLOCK = 1; break;
-//             case AREA_DAY   : if(!is_DAY(selected_VALUE_CLOCK)) selected_VALUE_CLOCK = 1; break;
-//             case AREA_HOUR  : if(IS_HOUR(selected_VALUE_CLOCK)) selected_VALUE_CLOCK = 0; break;
-//             case AREA_MIN   : if(!is_MIN_OR_SEC(selected_VALUE_CLOCK)) selected_VALUE_CLOCK = 0; break;
-//             case AREA_SEC   : if(!is_MIN_OR_SEC(selected_VALUE_CLOCK)) selected_VALUE_CLOCK = 0; break;
-//             default:break;
-//         }
-//     } else if(key == KEY_ENTER) {
-//         dwin_clock_set(main_data);
-//     } else if(key == KEY_SYNC) {
-//         set_TOGGLE_STATE(SYNC_TIME);
-//         if(sync_TIME) {
-
-//         } else {
-//             dwin_clock_get();
-//         }
-//         set_OFF_STATE(DATA_PREPARING);
-//     } else if(key == KEY_INIT) {
-//         dwin_clock_on(20, 300, WHITE, 2);
-//         dwin_set_pic(CLOCK_PIC);
-//         set_OFF_STATE(DATA_PREPARING);
-//         dwin_clock_get();
-//     } 
+    static uint8_t step, last_step;
+    if(key == KEY_INIT){
+        step = INIT_TASK;
+    } else if(key == KEY_CLOSE) {
+        menu_active != menu_active;        
+        if(menu_active){
+            step = DEINIT_TASK;
+        } else {
+            step = INIT_TASK;
+        }
+    } else  if(key == UPDATE_DATA_COMPLETE){
+        dwin_set_pic(weather_PIC);
+        if(weather_PIC != NO_WEATHER_PIC){
+            if(mode != INIT_OK) mode = INIT_OK;
+        } else if(mode != INIT_FAIL){
+            mode = INIT_FAIL;
+        }
+    }
+if(last_step != step){
+    last_step = step;
+    switch(step){
+        case INIT_TASK :
+        {
+            set_periodic_event(slow_service_loop,
+                        WIFI_SET,
+                        GET_WEATHER,
+                        DELAI_FIRST_UPDATE_WEATHER,
+                        ONLY_ONCE);
+            set_periodic_event(show_loop,
+                        EVENTS_SHOW, 
+                        DATA_SHOW, 
+                        DELAI_UPDATE_TIME_ON_SCREEN, 
+                        RELOAD_COUNT);
+            break;
+        }
+        case DEINIT_TASK :
+        {
+            remove_periodic_event(slow_service_loop, WIFI_SET, GET_WEATHER);
+            remove_periodic_event(EVENTS_SHOW, DATA_SHOW);
+        }
+        case INIT_FAIL :
+        {
+            set_periodic_event(slow_service_loop, 
+                                WIFI_SET, 
+                                GET_WEATHER, 
+                                DELAI_UPDATE_WEATHER_FAIL, 
+                                RELOAD_COUNT);
+            break;
+        }
+        case INIT_OK :
+        {
+            set_periodic_event(slow_service_loop, 
+                                    WIFI_SET, 
+                                    GET_WEATHER, 
+                                    DELAI_UPDATE_WEATHER, 
+                                    RELOAD_COUNT);
+            break;
+        }
+            default : break;
+        }
     
+    }
+    if(step != DEINIT_TASK){
+        esp_event_post_to(show_loop, 
+                EVENTS_SHOW, 
+                KEY_UPDATE_SCREEN, 
+                NULL, 
+                0, 
+                TIMEOUT_SEND_EVENTS);
+    }
+}
 
-//     dwin_set_pic(SEARCH_PIC);
-//     esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
-
-
+void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
+{
+    if(KEY_IS_AREA_CLOCK(key)) {
+        area_SCREEN = GET_AREA_VALUE(key);
+    } else if(KEY_IS_NUMBER(key)) {
+        switch(area_SCREEN) {
+            case AREA_YEAR : 
+            {
+                dwin_time.tm_year = GET_NEW_TWO_DIGIT_VALUE(dwin_time.tm_year, GET_NUMBER(key));
+                if(!IS_YEAR(dwin_time.tm_year)) dwin_time.tm_year = 0; break;
+                break;
+            }
+            case AREA_MONTH :
+            {
+                dwin_time.tm_mon = GET_NEW_TWO_DIGIT_VALUE(dwin_time.tm_mon, GET_NUMBER(key));
+                if(!IS_MONTH(dwin_time.tm_mon)) dwin_time.tm_mon = 1;
+                break;
+            }
+            case AREA_DAY  : 
+            {
+                dwin_time.tm_mday = GET_NEW_TWO_DIGIT_VALUE(dwin_time.tm_mday, GET_NUMBER(key));
+                if(!IS_DAY(dwin_time.tm_mday)) dwin_time.tm_mday = 1;
+                break;
+            }
+            case AREA_HOUR : 
+            {
+                dwin_time.tm_hour = GET_NEW_TWO_DIGIT_VALUE(dwin_time.tm_hour, GET_NUMBER(key));
+                if(!IS_HOUR(dwin_time.tm_hour)) dwin_time.tm_hour = 0;
+                break; 
+            }
+            case AREA_MIN  : 
+            {
+                dwin_time.tm_min = GET_NEW_TWO_DIGIT_VALUE(dwin_time.tm_min, GET_NUMBER(key));
+                if(!IS_MIN_OR_SEC(dwin_time.tm_min)) dwin_time.tm_min = 0; 
+                break; 
+            }
+            case AREA_SEC  : 
+            {
+                dwin_time.tm_sec = GET_NEW_TWO_DIGIT_VALUE(dwin_time.tm_sec, GET_NUMBER(key));
+                if(!IS_MIN_OR_SEC(dwin_time.tm_sec)) dwin_time.tm_sec = 0;
+                break; 
+            }
+            default:break;
+        }
+    } else if(key == KEY_ENTER) {
+        dwin_clock_set(&dwin_time);
+    } else if(key == KEY_SYNC) {
+        EventBits_t xEventGroup = 
+                    xEventGroupGetBits(dwin_event_group);                                                                 
+        if(xEventGroup&BIT_SYNC_TIME_ALLOW){
+            xEventGroupClearBits(dwin_event_group, BIT_SYNC_TIME_ALLOW);
+        } else {
+            xEventGroupSetBits(dwin_event_group, BIT_SYNC_TIME_ALLOW);
+        }
+        write_memory(main_data, DATA_FLAGS); 
+    } else if(key == KEY_INIT) {
+        start_sntp();
+    }
+    esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
 }
 
 void set_color_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
@@ -208,8 +268,7 @@ void set_color_screen_handler(void* main_data, esp_event_base_t base, int32_t ke
 
 
 void notification_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
-{
-    	
+{  	
     static uint8_t new_value, cur_day;
     if(key == KEY_CLOSE) {
         return;
@@ -217,16 +276,40 @@ void notification_screen_handler(void* main_data, esp_event_base_t base, int32_t
     if(KEY_IS_AREA_NOTIF(key)) {
         area_SCREEN = GET_AREA_VALUE(key);
     } else if(KEY_IS_DAY(key)) {
-        cur_day = get_DAY(key);
+        cur_day = GET_DAY(key);
     } else if(KEY_IS_AREA_TOGGLE_DAY(key)) {
-        set_TOGGLE_ACTIVE_DAY(get_DAY_TOGGLE(key));
+        TOOGLE_NOTIF(GET_DAY_TOGGLE(key));
     } else if(KEY_IS_NUMBER(key)) {
-        new_value = get_NUMBER(key);
-        if(is_AREA_HOUR) {
-            if(is_HOUR(new_value)) {
-                cur_CLOCK[area_SCREEN] = new_value;
+        switch(area_SCREEN){
+            case AREA_HOUR : 
+            {
+                if(!IS_HOUR(new_val)) new_val = 0;
+                dwin_time.tm_hour = new_val;
+                break; 
             }
-        } else if(is_MIN_OR_SEC(new_value)) {
+            case AREA_MIN  : 
+            {
+                if(!IS_MIN_OR_SEC(new_val)) new_val = 0; 
+                dwin_time.tm_min = new_val;
+                break; 
+            }
+            case AREA_SEC  : 
+            {
+                if(!IS_MIN_OR_SEC(new_val)) new_val = 0;
+                dwin_time.tm_sec = new_val;
+                break; 
+            }
+        }
+
+
+
+
+        new_value = GET_NUMBER(key);
+        if(IS_AREA_HOUR) {
+            if(IS_HOUR(new_value)) {
+                notification_DATA[area_SCREEN] = new_value;
+            }
+        } else if(IS_MIN_OR_SEC(new_value)) {
             cur_CLOCK[area_SCREEN] = new_value;
         }
     } else if(key == KEY_ENTER) {
@@ -281,26 +364,26 @@ void timer_screen_handler(void* main_data, esp_event_base_t base, int32_t key, v
     //         new_area = GET_AREA_VALUE(key);
     //         if(new_area == area_SCREEN) {
     //             switch(new_area) {
-    //                 case AREA_HOUR  :   timer_HOUR += 1; 
+    //                 case AREA_HOUR :   timer_HOUR += 1; 
     //                                     if(IS_HOUR(timer_HOUR)){timer_HOUR = 0;} break;
-    //                 case AREA_MIN   :   timer_MIN += 5;
-    //                                     if(!is_MIN_OR_SEC(timer_MIN)) {timer_MIN = 0;} break;
-    //                 case AREA_SEC   :   timer_SEC += 10; 
-    //                                     if(!is_MIN_OR_SEC(timer_SEC)) {timer_SEC = 0;} break;
+    //                 case AREA_MIN  :   timer_MIN += 5;
+    //                                     if(!IS_MIN_OR_SEC(timer_MIN)) {timer_MIN = 0;} break;
+    //                 case AREA_SEC  :   timer_SEC += 10; 
+    //                                     if(!IS_MIN_OR_SEC(timer_SEC)) {timer_SEC = 0;} break;
     //                 default : break;
     //             }
     //         } else {
     //             area_SCREEN = new_area;
     //         } 
     //     } else if(KEY_IS_NUMBER(key)) {
-    //         uint8_t number = get_NUMBER(key);
+    //         uint8_t number = GET_NUMBER(key);
     //         switch(area_SCREEN) {
-    //             case AREA_HOUR  :   timer_HOUR = get_NEW_TWO_DIGIT_VALUE(timer_HOUR, number); 
+    //             case AREA_HOUR :   timer_HOUR = GET_NEW_TWO_DIGIT_VALUE(timer_HOUR, number); 
     //                                 if(IS_HOUR(timer_HOUR)){timer_HOUR = 0;} break;
-    //             case AREA_MIN   :   timer_MIN = get_NEW_TWO_DIGIT_VALUE(timer_MIN, number);
-    //                                 if(!is_MIN_OR_SEC(timer_MIN)){timer_MIN = 0;} break;
-    //             case AREA_SEC   :   timer_SEC = get_NEW_TWO_DIGIT_VALUE(timer_SEC, number); 
-    //                                 if(!is_MIN_OR_SEC(timer_SEC)){timer_SEC = 0;} break;
+    //             case AREA_MIN  :   timer_MIN = GET_NEW_TWO_DIGIT_VALUE(timer_MIN, number);
+    //                                 if(!IS_MIN_OR_SEC(timer_MIN)){timer_MIN = 0;} break;
+    //             case AREA_SEC  :   timer_SEC = GET_NEW_TWO_DIGIT_VALUE(timer_SEC, number); 
+    //                                 if(!IS_MIN_OR_SEC(timer_SEC)){timer_SEC = 0;} break;
     //             default : break;
     //         }
     //     } 
