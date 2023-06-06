@@ -1,7 +1,7 @@
 #include "dwin_server.h"
 #include "stdlib.h"
 
-#define LEN_DATA_SEND_NOTIF (SIZE_NOTIFICATION*2+1)
+#define LEN_DATA_SEND_NOTIF (SIZE_BUF_NOTIFICATION*2+1)
 #define BASE_RESPONSE_SAVE "Save image to position"
 #define LEN_RESPONSE_SAVE (sizeof(BASE_RESPONSE_SAVE))
 #define BASE_PATH_SAVE_PIC "/sevepic"
@@ -497,7 +497,7 @@ static esp_err_t handler_get_data(httpd_req_t *req)
     cJSON_AddStringToObject(root, "Key", api_KEY);
     cJSON_AddStringToObject(root, "City", name_CITY);
     cJSON_AddNumberToObject(root, "Status", uxBits);
-    for(size_t i=0, i_s=0; i<SIZE_NOTIFICATION; i++){
+    for(size_t i=0, i_s=0; i<SIZE_BUF_NOTIFICATION; i++){
         notif_send[i_s++] = notification_DATA[i]/10+'0';
         notif_send[i_s++] = notification_DATA[i]%10+'0';
     }
@@ -548,8 +548,8 @@ err:
 static esp_err_t notif_handler(httpd_req_t *req)
 {
     const int total_len = req->content_len;
-    if(total_len > LEN_DATA_SEND_NOTIF){
-        DWIN_RESP_ERR(req, "Content too long", err);
+    if(total_len > LEN_DATA_SEND_NOTIF || total_len%6){
+        DWIN_RESP_ERR(req, "Wrong data format", err);
     }
     char * const server_buf = malloc(LEN_DATA_SEND_NOTIF);
         if(server_buf == NULL){
@@ -560,8 +560,19 @@ static esp_err_t notif_handler(httpd_req_t *req)
     if (received != total_len) {
         DWIN_RESP_ERR(req, "Data not read", err);
     }
-    for(size_t i=0, i_notif = 0; i_notif<SIZE_NOTIFICATION && i<total_len; i_notif++, i+=2){
-        notification_DATA[i_notif] = GET_NUMBER(server_buf[i])*10 + GET_NUMBER(server_buf[i+1]);
+    for(size_t i=0, num_notif = 0, day=0;  total_len > i+6; ){
+        SET_NOTIF_HOUR(num_notif, day, GET_NUMBER(server_buf[i++])*10 + GET_NUMBER(server_buf[i++]));
+        SET_NOTIF_MIN(num_notif, day, GET_NUMBER(server_buf[i++])*10 + GET_NUMBER(server_buf[i++]));
+        SET_NOTIF_SEC(num_notif, day, GET_NUMBER(server_buf[i++])*10 + GET_NUMBER(server_buf[i++]));
+        if(num_notif < NOTIF_PER_DAY-1){
+            num_notif++
+        } else {
+            day++;
+            if(day == SIZE_WEEK){
+                break;
+            }
+            num_notif = 0;
+        }   
     }
     write_memory(main_data, DATA_NOTIF);
     httpd_resp_sendstr(req, "Update notification");

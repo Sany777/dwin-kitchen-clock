@@ -67,9 +67,10 @@ enum events{
     UPDATE_TIME_FROM_MS,
     GET_DATA_FROM_DEVICE,
     DATA_SHOW,
+    TIMER_SHOW,
     UPDATE_DATA_COMPLETE,
     STATION_JOINE,
-    STATION_LEAVE
+    STATION_LEAVE,
 };
 
 typedef enum flag_state_device{
@@ -244,7 +245,7 @@ typedef struct {
     char city_name[SIZE_BUF];
     char buf_api[SIZE_BUF];
     uint8_t colors_interface[SIZE_COLOURS_INTERFACE];
-    uint8_t notif[SIZE_NOTIFICATION];
+    uint8_t notif_data[SIZE_BUF_NOTIFICATION];
     weather_data_t *weather_data;
     sensor_data_t *sensor_data[NUMBER_SENSOR];
     struct tm time;

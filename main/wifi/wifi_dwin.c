@@ -164,7 +164,6 @@ switch(action){
             esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_STOP, &wifi_sta_handler, main_data);
             init_sta = true;
         }
-        if(mode != WIFI_MODE_NULL)esp_wifi_stop();
         if(mode == WIFI_MODE_AP && netif){
             esp_netif_destroy_default_wifi(netif);
             netif = NULL;

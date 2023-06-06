@@ -70,6 +70,10 @@ typedef enum area_notifications{
     AREA_MIN_2,
     AREA_MIN_3,
     AREA_MIN_4,
+    AREA_SEC_1,
+    AREA_SEC_2,
+    AREA_SEC_3,
+    AREA_SEC_4,
     END_AREA_NOTIFICATIONS
 } area_notifications_t;
 
@@ -102,9 +106,9 @@ typedef enum area_settings{
 
 /* KEY BUTTON */
 typedef enum Main_buttons{
-    KEY_DELETE = 0x7F,
-    KEY_ENTER,
-    KEY_BACSPACE,
+    KEY_DELETE = 0x7F,  
+    KEY_ENTER,  // Start
+    KEY_BACSPACE,  // Stop
     KEY_SYNC,
     KEY_MAIN_SCREEN,
     KEY_CLOCK_SCREEN,

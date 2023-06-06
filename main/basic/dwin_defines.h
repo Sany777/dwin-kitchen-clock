@@ -18,13 +18,14 @@
 
 /*for main_data instance*/
 #define area_SCREEN             (((main_data_t *)main_data)->area)
-#define dwin_time                (((main_data_t *)main_data)->time)
+#define dwin_time               (((main_data_t *)main_data)->time)
 #define pwd_WIFI                (((main_data_t *)main_data)->pwd_wifi)
 #define name_SSID               (((main_data_t *)main_data)->ssid_name)
 #define name_CITY               (((main_data_t *)main_data)->city_name)
 #define api_KEY                 (((main_data_t *)main_data)->buf_api)
 #define colors_INTERFACE        (((main_data_t *)main_data)->colors_interface)
-#define notification_DATA       (((main_data_t *)main_data)->notif)
+#define notification_DATA       (((main_data_t *)main_data)->notif_hour)
+
 
 /*GET INPUT VALUE*/
 #define GET_AREA_VALUE(key_from_dwin)             ((key_from_dwin)-KEY_START_AREA)
@@ -40,25 +41,76 @@
 
 
 /*NOTIFICATIONS*/
-#define FIRST_MIN_MEMBER                               (SIZE_NOTIFICATION/2)
-#define GET_NOTIF_HOUR(_number_notif, _day_week)       (notification_DATA[(_day_week)*NOTIF_PER_DAY+_number_notif])
-#define GET_NOTIF_MIN(_number_notif, _day_week)        (notification_DATA[FIRST_MIN_MEMBER+_day_week*NOTIF_PER_DAY+_number_notif])
+#define SHIFT_MIN (SIZE_WEEK*NOTIF_PER_DAY)
+#define MEMBER_IN_NOTIF 3
+#define SHIFT_SEC (SIZE_WEEK*NOTIF_PER_DAY*2)
 
-#define NOTIF_ACTIVE(val)                               (val < 99)
-#define SET_OFF_NOTIF(val)                               do{ \
-                                                            if(NOTIF_ACTIVE(val))val+=100; \
-                                                        }while(0)
-#define SET_ON_NOTIF(val)                               do{ \
-                                                            if(!NOTIF_ACTIVE(val))val-=100; \
-                                                        }while(0)
-#define TOOGLE_NOTIF(val)                               do{ \
-                                                            if(NOTIF_ACTIVE(val))val+=100; \
-                                                            else val-=100; \
-                                                        }while(0)
+#define GET_NOTIF_HOUR(_number_notif, _day_week)       (notification_DATA[(_day_week)*(SIZE_WEEK)+_number_notif])
+#define VALUE_NOTIF_HOUR(_number_notif, _day_week)     ((notification_HOUR[(_day_week)*(SIZE_WEEK)+_number_notif])%100)
+#define VALUE_NOTIF_MIN(_number_notif, _day_week)      (notification_DATA[(SHIFT_MIN)+(_day_week)*(SIZE_WEEK)+_number_notif] )
+#define VALUE_NOTIF_SEC(_number_notif, _day_week)      (notification_DATA[SHIFT_SEC+(_day_week)*(SIZE_WEEK)+_number_notif])
+#define IS_DAY_ACTIVE(_day)                            (GET_NOTIF_HOUR(0, _day) < 99)
+#define IS_NOTIF_ACTIVE(_notif, _day)                  (GET_NOTIF_HOUR(_notif, _day) < 99)
+#define GET_NOTIF_NUMBER(_area)                        (_area/MEMBER_IN_NOTIF)
+#define GET_NOTIF_TYPE_DATA(_area,_type_data)          (_area%MEMBER_IN_NOTIF)
 
-#define SET_NOTIF_HOUR(number_notif, day_week, value)   (notification_DATA[day_week*NOTIF_PER_DAY+number_notif] = value+100)
-#define SET_NOTIF_MIN(number_notif, day_week, value)    (notification_DATA[FIRST_MIN_MEMBER + day_week*NOTIF_PER_DAY+number_notif] = value)
-#define SET_NOTIF_CUR_AREA(value)                       (notification_DATA[area_SCREEN] = value+100)         
+#define SET_OFF_DAY_NOTIF(_day_week)                                \
+    do{                                                             \
+        for(int i=0; i<SIZE_NOTIFICATION; i++){                     \
+            if(IS_NOTIF_ACTIVE(i, (_day_week))){                    \
+                GET_NOTIF_HOUR(i, (_day_week)) += 100;              \
+            }                                                       \
+        }                                                           \
+    }while(0) 
+
+#define SET_ON_DAY_NOTIF(_day_week)                                 \
+    do{                                                             \
+        for(int i=0; SIZE_NOTIFICATION>i; i++){                     \
+            if(!IS_NOTIF_ACTIVE(i, (_day_week))){                   \
+                GET_NOTIF_HOUR(i, (_day_week)) %=100;               \
+            }                                                       \
+        }                                                           \
+    }while(0) 
+
+#define TOOGLE_NOTIF(_notif, _day)                                  \
+    do{                                                             \
+        if(IS_NOTIF_ACTIVE(day, _notif)){                           \
+            GET_NOTIF_HOUR(i, (_day_week)) +=100;                   \
+        } else {                                                    \
+            GET_NOTIF_HOUR(i, (_day_week)) %=100;                   \
+        }                                                           \
+    }while(0) 
+
+#define TOOGLE_DAY_NOTIF(_day_week)                                 \
+    do{                                                             \
+        if(IS_DAY_ACTIVE(_day_week)){                               \
+            SET_OFF_DAY_NOTIF(_day_week);                           \
+        } else {                                                    \
+            SET_ON_DAY_NOTIF(_day_week);                            \
+        }                                                           \
+    }while(0) 
+
+#define SET_NOTIF_HOUR(_number_notif, _day_week, _value)            \    
+    do{                                                             \
+        if(IS_NOTIF_ACTIVE(day, _notif)){                           \
+            GET_NOTIF_HOUR(i, (_day_week)) = _value;                \
+        } else {                                                    \
+            GET_NOTIF_HOUR(i, (_day_week)) = _value + 100;          \
+        }                                                           \
+    }while(0) 
+
+#define SET_NOTIF_MIN(_number_notif, _day_week,_value)              \  
+    do{                                                             \
+        VALUE_NOTIF_MIN(_number_notif, _day_week) = _value;         \
+    }while(0) 
+
+#define SET_NOTIF_SEC(_number_notif,_day_week,_value)               \   
+    do{                                                             \
+        VALUE_NOTIF_SEC(_number_notif,_day_week) = _value;          \
+    }while(0) 
+
+
+
 
 /*TIMER*/
 #define timer_MIN                   (timer_data[INDEX_MIN_T])
