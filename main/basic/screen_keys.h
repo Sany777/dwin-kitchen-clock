@@ -32,62 +32,29 @@ typedef enum area_clock{
     AREA_HOUR,
     AREA_MIN,
     AREA_SEC,
+    AREA_HOUR_OFFSET,
     END_AREA_CLOCK,
 } area_clock_t;
 
-typedef enum area_stop_timers{ 
-    AREA_HOUR_ON_1,
-    AREA_HOUR_OFF_1,
-    AREA_HOUR_ON_2,
-    AREA_HOUR_OFF_2,
-    AREA_MIN_ON_1,
-    AREA_MIN_OFF_1,
-    AREA_MIN_ON_2,
-    AREA_MIN_OFF_2,
-    END_AREA_TIMERS
-} area_stop_timers_t;
 
-typedef enum area_run_timer{
-    AREA_TOGLE,
-    AREA_STOP,
-    END_AREA_RUN_TIMER
-} area_run_timer_t;
-
-typedef enum area_stop_timer{
+typedef enum area_timer{
     AREA_TIMER_HOUR,
     AREA_TIMER_MIN,
     AREA_TIMER_SEC,
-    AREA_TIMER_TOGLE,
-    END_AREA_STOP_TIMER
+    END_AREA_TIMER
 } area_stop_timer_t;
 
 typedef enum area_notifications{
     AREA_HOUR_1,
-    AREA_HOUR_2,
-    AREA_HOUR_3,
-    AREA_HOUR_4,
     AREA_MIN_1,
+    AREA_HOUR_2,
     AREA_MIN_2,
+    AREA_HOUR_3,
     AREA_MIN_3,
+    AREA_HOUR_4,
     AREA_MIN_4,
-    AREA_SEC_1,
-    AREA_SEC_2,
-    AREA_SEC_3,
-    AREA_SEC_4,
     END_AREA_NOTIFICATIONS
 } area_notifications_t;
-
-typedef enum area_devices{
-    AREA_SENSOR_1_OK,
-    AREA_SENSOR_2_OK,
-    AREA_SENSOR_3_OK,
-    AREA_SENSOR_4_OK,
-    AREA_TIMER_DEVICE_1,
-    AREA_TIMER_DEVICE_2,
-    AREA_TIMER_DEVICE_3,
-    AREA_TIMER_DEVICE_4,
-    END_AREA_DEVICES
-} area_devices_t;
 
 typedef enum area_custom{
     AREA_DESC_COLOUR,
@@ -107,23 +74,22 @@ typedef enum area_settings{
 /* KEY BUTTON */
 typedef enum Main_buttons{
     KEY_DELETE = 0x7F,  
-    KEY_ENTER,  // Start
-    KEY_BACKSPACE,  // Stop
-    KEY_SYNC,
-    KEY_MAIN_SCREEN,
+    KEY_ENTER,          
+    KEY_BACKSPACE,      
+    KEY_SYNC,           
+    KEY_MAIN_SCREEN,    
     KEY_CLOCK_SCREEN,
     KEY_MENU_SCREEN,
     KEY_DEVICE_SCREEN,
     KEY_TIMER_SCREEN,
     KEY_SETTING_SCREEN_LOWER,
-    KEY_SETTING_SCREEN_UPER,
+    KEY_SETTING_SCREEN_UP,
     KEY_SETTING_SCREEN_SYMB,
     KEY_SEARCH_SSID_SCREEN,
     KEY_CUSTOM_SCREEN,
     KEY_NOTIF_SCREEN,
     KEY_SETING_SERVER_SCREEN,
     KEY_BRIGHT,
-    KEY_DELETE_DATA,
     KEY_INIT,
     KEY_UPDATE_SCREEN,
     CHECK_NET_DATA,
@@ -132,28 +98,28 @@ typedef enum Main_buttons{
 
 /*additional keys*/
 #define KEY_INIT KEY_DELETE
+#define KEY_START KEY_ENTER
 #define KEY_PAUSA KEY_BACKSPACE
 #define KEY_CLOSE KEY_MAIN_SCREEN
-#define DELETE_DATA REMOVE_TAS
+#define KEY_CONNECT KEY_SYNC
 
 #define START_SCREEN_TASKS_KEYS KEY_MAIN_SCREEN
 #define END_SCREEN_TASKS_KEYS KEY_SETING_SERVER_SCREEN
 
-
 /* CHAINING KEYS FOR CHOICE DISPLAY UNIT */
-#define MAX_TOGGLE_UNIT_ON_SCREEN 10
-#define MAX_AREA_UNIT_ON_SCREEN 20
 
-#define KEY_START_AREA 1
+#define KEY_START_AREA              1
+#define MAX_AREA_UNIT_ON_SCREEN     20
+#define END_AREA_TIMERS             (KEY_START_AREA+MAX_AREA_UNIT_ON_SCREEN)
 // start x15
-#define KEY_START_TOGGLE_AREA KEY_START_AREA + MAX_AREA_UNIT_ON_SCREEN
+#define KEY_START_TOGGLE_AREA       (KEY_START_AREA+MAX_AREA_UNIT_ON_SCREEN)
+#define MAX_TOGGLE_UNIT_ON_SCREEN   10
 // start x91
-#define KEY_START_DAY KEY_END_BUTTONS
+#define KEY_START_DAY               KEY_END_BUTTONS
 // start x98
-#define KEY_START_TOGLE_DAY (KEY_START_DAY + SIZE_WEEK)
+#define KEY_START_TOGLE_DAY         (KEY_START_DAY+SIZE_WEEK)
 
 /* PIC INDEX */
-
 typedef enum{
     NO_WEATHER_PIC,
     SETTING_LOW_LETTER_PIC,

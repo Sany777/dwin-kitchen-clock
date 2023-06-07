@@ -3,7 +3,7 @@
 
 
 
-void write_memory(main_data_t *main_data, const int data_identificator) 
+void write_memory(void *main_data, const int data_identificator) 
 {
 	nvs_handle_t nvs_handle_dwin;
     DWIN_SHOW_ERR(nvs_open("nvs", NVS_READWRITE, &nvs_handle_dwin));
@@ -44,7 +44,12 @@ void write_memory(main_data_t *main_data, const int data_identificator)
 			nvs_set_blob(nvs_handle_dwin, "notif", notification_DATA, SIZE_NOTIFICATION);							  	
 			break;
 		}
-		
+		case DATA_OFFSET :
+		{
+			int32_t* offset = (int32_t *)main_data;
+			nvs_set_i32(nvs_handle_dwin, "offset", *offset);
+			break; 
+		}
 		default : break;
 	}
 	DWIN_SHOW_ERR(nvs_commit(nvs_handle_dwin));
@@ -52,7 +57,7 @@ void write_memory(main_data_t *main_data, const int data_identificator)
 }
 
 
-void read_memory(main_data_t *main_data, const int data_identificator) 
+void read_memory(void *main_data, const int data_identificator) 
 {
 	nvs_handle_t nvs_handle_dwin;
 	DWIN_SHOW_ERR(nvs_open("nvs", NVS_READWRITE, &nvs_handle_dwin));
@@ -101,7 +106,11 @@ void read_memory(main_data_t *main_data, const int data_identificator)
 			nvs_get_blob(nvs_handle_dwin, "notif", (uint8_t *)notification_DATA, &len); 						  	
 			break;
 		}
-		
+		case DATA_OFFSET :
+		{
+			nvs_get_i32(nvs_handle_dwin, "offset", (int32_t *)main_data);
+			break; 
+		}
 		default : break;
 	}
 	nvs_close(nvs_handle_dwin);
@@ -109,7 +118,7 @@ void read_memory(main_data_t *main_data, const int data_identificator)
 
 void read_all_memory(main_data_t *main_data) 
 {
-	for(uint8_t i=0; i<END_DATA_IDENTEFIER; i++) {
+	for(uint8_t i=0; i<END_DATA_IDENTEFIER_FOR_CICLE; i++) {
 		read_memory(main_data, i);
 	}
 }

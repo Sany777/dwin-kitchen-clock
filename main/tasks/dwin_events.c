@@ -1,5 +1,6 @@
 #include "dwin_events.h"
 
+void test_clock_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data);
 void test_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)
 {
     static int count;
@@ -81,7 +82,14 @@ void init_dwin_events(main_data_t *main_data)
                                 NULL
                             ));
 
-
+    ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
+                                slow_service_loop,
+                                EVENTS_SERVICE,
+                                SHOW_TIME,
+                                test_clock_handler,
+                                (void *)main_data,
+                                NULL
+                            ));
     for(int i=0; i<SIZE_LIST_TASKS; i++){
             xTaskCreate(
                 list_services[i].pTask, 
@@ -105,6 +113,13 @@ void init_dwin_events(main_data_t *main_data)
     // vTaskDelay(10000/portTICK_PERIOD_MS);
     // start_espnow();
 
+    set_periodic_event(
+        slow_service_loop,
+        EVENTS_SERVICE,
+        SHOW_TIME,
+        1,
+        RELOAD_COUNT
+    );
 }
 
 
@@ -125,9 +140,7 @@ void check_net_data_handler(void* main_data, esp_event_base_t base, int32_t new_
 
 void test_clock_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)                                                     
 {
-    time_t time_raw;
-    time(&time_raw);
-    printf(" every 1 sec time ::: %s", ctime(&time_raw));
+    send_str(" asctime ::: %s", asctime(get_time_tm()));
 }
 
 void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)

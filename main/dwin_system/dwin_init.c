@@ -21,9 +21,10 @@ void esp_init(void)
       ESP_ERROR_CHECK(nvs_flash_erase());
       ESP_ERROR_CHECK(nvs_flash_init());
     }
+    int offset;
+    read_memory(&offset, DATA_OFFSET);
+    set_timezone(offset);
     init_uart();
-    setenv("TZ", FORMAT_CLOCK_DEFAULT, 1);
-    tzset();
     read_all_memory(main_data);
     wifi_init();
     init_dwin_events(main_data);

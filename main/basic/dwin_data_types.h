@@ -65,6 +65,7 @@ enum events{
     UPDATE_TIME_FROM_UART,
     UPDATE_TIME_FROM_ETHER,
     UPDATE_TIME_FROM_MS,
+    SHOW_TIME,
     GET_DATA_FROM_DEVICE,
     DATA_SHOW,
     TIMER_SHOW,
@@ -134,7 +135,8 @@ typedef enum data_identification{
 	DATA_SSID,
 	DATA_NOTIF,
 	DATA_FLAGS,
-	END_DATA_IDENTEFIER
+	END_DATA_IDENTEFIER_FOR_CICLE,
+    DATA_OFFSET,
 } data_identification_t;
 
 /*package espnow*/

@@ -97,7 +97,7 @@ void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* 
         write_memory(main_data, DATA_SSID);
     } else if(key == KEY_SETTING_SCREEN_LOWER) {
         pic = SETTING_LOW_LETTER_PIC;
-    } else if(key == KEY_SETTING_SCREEN_UPER) {
+    } else if(key == KEY_SETTING_SCREEN_UP) {
         pic = SETTING_UP_LETTER_PIC;
     } else if(key == KEY_SETTING_SCREEN_SYMB) {
         pic = SETTING_SYMBOL_PIC;
@@ -209,6 +209,7 @@ if(last_step != step){
 
 void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {
+    static int offset = -100;
     if(KEY_IS_AREA_CLOCK(key)) {
         area_SCREEN = GET_AREA_VALUE(key);
     } else if(KEY_IS_NUMBER(key)) {
@@ -249,10 +250,17 @@ void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* ev
                 if(!IS_MIN_OR_SEC(dwin_time->tm_sec)) dwin_time->tm_sec = 0;
                 break; 
             }
+            case AREA_HOUR_OFFSET :
+            {
+                offset = GET_NEW_TWO_DIGIT_VALUE(offset, GET_NUMBER(key));
+                if(!IS_HOUR(offset))offset = 0;
+            }
             default:break;
         }
     } else if(key == KEY_ENTER) {
-        dwin_clock_set(&dwin_time);
+        set_timezone(offset);
+        write_memory(main_data, DATA_OFFSET);
+        set_time_tm(dwin_time, true);
     } else if(key == KEY_SYNC) {
         EventBits_t xEventGroup = 
                     xEventGroupGetBits(dwin_event_group);                                                                 
@@ -263,9 +271,12 @@ void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* ev
         }
         write_memory(main_data, DATA_FLAGS); 
     } else if(key == KEY_INIT) {
+        if(offset == -100){
+            read_memory(&offset, DATA_OFFSET);
+        }
         start_sntp();
     }
-    esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
+    esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, &offset, sizeof(offset), TIMEOUT_SEND_EVENTS);
 }
 
 void set_color_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)

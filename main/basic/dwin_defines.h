@@ -53,8 +53,8 @@
 #define SET_OFF_DAY_NOTIF(_day_week)                                \
     do{                                                             \
         for(int notif=0; NOTIF_PER_DAY>notif; notif++){             \
-            if(IS_NOTIF_ACTIVE(notif, (_day_week))){                \
-                GET_NOTIF_HOUR(notif, (_day_week)) += 100;          \
+            if(IS_NOTIF_ACTIVE((notif), (_day_week))){                \
+                GET_NOTIF_HOUR((notif), (_day_week)) += 100;          \
             }                                                       \
         }                                                           \
     }while(0) 
@@ -62,8 +62,8 @@
 #define SET_ON_DAY_NOTIF(_day_week)                                 \
     do{                                                             \
         for(int notif=0; NOTIF_PER_DAY>notif; notif++){             \
-            if(!IS_NOTIF_ACTIVE(notif, (_day_week))){               \
-                GET_NOTIF_HOUR(notif, (_day_week)) %=100;           \
+            if(!IS_NOTIF_ACTIVE((notif), (_day_week))){             \
+                GET_NOTIF_HOUR((notif), (_day_week)) %=100;         \
             }                                                       \
         }                                                           \
     }while(0) 
@@ -95,9 +95,9 @@
         }                                                                   \
     }while(0) 
 
-#define SET_NOTIF_MIN(_number_notif, _day_week, _value)              \  
-    do{                                                             \
-        VALUE_NOTIF_MIN((_number_notif), (_day_week)) = _value;         \
+#define SET_NOTIF_MIN(_number_notif, _day_week, _value)                     \  
+    do{                                                                     \
+        VALUE_NOTIF_MIN((_number_notif), (_day_week)) = (_value);             \
     }while(0) 
 
 
