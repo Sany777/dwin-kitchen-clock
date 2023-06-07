@@ -34,9 +34,9 @@ void write_memory(void *main_data, const int data_identificator)
 			nvs_set_u32(nvs_handle_dwin, "flag", uxBits); 
 			break;
 		}
-		case DATA_COLOUR :
+		case DATA_COLOR :
 		{
-			nvs_set_blob(nvs_handle_dwin, "color", colors_INTERFACE, SIZE_COLOURS_INTERFACE); 
+			nvs_set_blob(nvs_handle_dwin, "color", colors_INTERFACE, SIZE_COLORS_INTERFACE); 
 			break;
 		}	
 		case DATA_NOTIF :
@@ -75,9 +75,9 @@ void read_memory(void *main_data, const int data_identificator)
 			nvs_get_str(nvs_handle_dwin, "api", api_KEY, &len); 
 			break;
 		}
-		case DATA_COLOUR :
+		case DATA_COLOR :
 		{
-			len = SIZE_COLOURS_INTERFACE;
+			len = SIZE_COLORS_INTERFACE;
 			nvs_get_blob(nvs_handle_dwin, "color", (uint8_t *)colors_INTERFACE, &len); 
 			break;
 		}

@@ -29,7 +29,7 @@
 #define MAX_DWIN_DATA 249
 
 
-#define BACKGROUND_COLOUR WHITE
+#define BACKGROUND_COLOR WHITE
 
 /* size buffer */
 
@@ -44,7 +44,7 @@
 #define MAX_STR_LEN         SIZE_API
 #define SIZE_BUF            (MAX_STR_LEN+1)
 #define SIZE_BRIGHT         1
-#define SIZE_COLOURS_INTERFACE           3
+#define SIZE_COLORS_INTERFACE           3
 
 #define NOTIF_PER_DAY 4
 #define SIZE_NOTIFICATION       (SIZE_WEEK*NOTIF_PER_DAY*2)
@@ -146,6 +146,6 @@
 #define SIZE_BUF_FORMAT_CLOCK (sizeof(FORMAT_CLOCK_DEFAULT)+2)
 
 #define SIZE_UART_EVENTS 5
-#define SIZE_SHOW_BUF 200
+#define SIZE_SHOW_BUF 250
 
 #define DELAY_CHANGE_CNTX 100

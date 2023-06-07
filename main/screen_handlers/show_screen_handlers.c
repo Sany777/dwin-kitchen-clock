@@ -2,6 +2,46 @@
 
 const int FONT_STANDART = 3, FONT_INFO = 2, FONT_SECOND_INFO = 1, FONT_BUTTON = 4;
 
+const char *MES_ON = " [ON]";
+const char *MES_OFF = " [OFF]";
+
+const char *WEEK_DAY[SIZE_WEEK] = {
+    "Mon", 
+    "Tue", 
+    "Wed", 
+    "Thu", 
+    "Fri", 
+    "Sat", 
+    "Sun", 
+};
+
+const char *WEEK_ALL_NAME[SIZE_WEEK] = {
+    "Monday", 
+    "Tuesday", 
+    "Wednesday", 
+    "Thursday", 
+    "Friday", 
+    "Saturday", 
+    "Sunday"
+};
+
+const size_t SIZE_MASSAGE_CUSTOM = 10;
+
+static const char* massage_custom [] = {
+    "Clock", 
+    "Desc", 
+    "Info", 
+    "WHITE", 
+    "BLUE", 
+    "RED", 
+    "VIOLET", 
+    "LEMON", 
+    "GREY",
+    "Set\tcolor"
+};
+
+
+
 void show_ap_handler(void* main_data, 
                         esp_event_base_t base,
                         int32_t state, 
@@ -68,8 +108,8 @@ void show_setting_handler(void* main_data,
         switch (i) {
             case 0 :
                 print_start(0, 7, xEventGroup&BIT_PROCESS 
-                                ? COLOUR_ENABLE
-                                : COLOUR_DISABLE,
+                                ? COLOR_ENABLE
+                                : COLOR_DISABLE,
                                 FONT_SECOND_INFO);
                 if(xEventGroup&BIT_PROCESS){
                     send_str("Connection attempt...");
@@ -78,7 +118,7 @@ void show_setting_handler(void* main_data,
                     if(xEventGroup&BIT_WEATHER_OK) {
                         send_str("| server OK");
                     } else {
-                        send_str("|bad api data for openweather.com");
+                        send_str("|bad key or no Ethernet");
                     }
                 } else if(xEventGroup&BIT_SSID_FOUND){
                     send_str(" Wrong password WiFi");
@@ -107,7 +147,7 @@ void show_setting_handler(void* main_data,
                 if(area_SCREEN == AREA_API) {
                     send_str(api_KEY);
                 } else {
-                    send_str("*** api openweather.com key ***");
+                    send_str("*** Key for openweather.com ***");
                 }
                 break;
             default : break;
@@ -117,188 +157,99 @@ void show_setting_handler(void* main_data,
 }
 
 
-// void show_device_handler(void* main_data, 
-//                                 esp_event_base_t base, 
-//                                 int32_t conected_device, 
-//                                 void* event_data) 
-// {
-//     static const  main_data_t *main_data = NULL; 
-//     // if(main_data == NULL) main_data = (main_data_t *)main_data;
-//     // device_inf_t *list_devices = (device_inf_t*) &main_data->list_devices;
-//     // if(device == NULL) {
-//     //     print_start(4, 3, WHITE, FONT_STANDART);
-//     //     send_str("No ones devices finding");
-//     //     dwin_end_print();
-//     // }
 
-//     // char* name_cur_device = device->name_device_sensor[0];
-//     // for(uint8_t i=0; i<5; i++) {
-//     //     vTaskDelay(DELAY_SHOW_ITEM);
-//     //     switch(i){
-//     //         case 0 :
-//     //             print_start(1, 2, WHITE, FONT_STANDART);
-//     //             send_str("Sensor devices           Timer devices");
-//     //             dwin_end_print();
-//     //             break;
-//     //         case 1 :
-//     //             for(uint8_t count_device=0, device_state=START_FLAG_SENSORS && name_cur_device != NULL; count_device<MAX_SLAVE_DEVICES; count_device++,device_state++,name_cur_device++) {
-//     //                 if(area_SCREEN == count_device) send_str("[");
-//     //                 print_start(2+count_device, 0, get_FLAG_STATE(device_state)?LEMON:BLUE, FONT_INFO);
-//     //                 send_non_zero(count_device+1);
-//     //                 send_str(". ");
-//     //                 send_str(name_cur_device);
-//     //                 if(area_SCREEN == count_device) send_str("]");
-//     //                 dwin_end_print();
-//     //             }
-//     //             break;
-//     //         case 2 :
-//     //             send_in_frame(1, 1, FONT_INFO, WHITE, "RENAME");
-//     //             send_in_frame(
-//     //                 1, 
-//     //                 1, 
-//     //                 FONT_INFO, 
-//     //                 WHITE, 
-//     //                 get_FLAG_STATE(area_SCREEN+START_FLAG_SENSORS)
-//     //                 ? "CONNECT"
-//     //                 : "DISCONNECT");
-//     //                 break;
-//     //         case 3 :
-//     //             name_cur_device = device->name_device_timer[0];
-//     //             for(uint8_t count_device=0, device_state=START_FLAG_TIMERS; count_device<MAX_SLAVE_DEVICES && name_cur_device; count_device++,device_state++,name_cur_device++) {
-//     //                 if(area_SCREEN == count_device+AREA_TIMER_DEVICE_1) send_str("[");
-//     //                 print_start(2+count_device, 0, get_FLAG_STATE(device_state)?LEMON:BLUE, FONT_INFO);
-//     //                 send_non_zero(count_device+1);
-//     //                 send_str(". ");
-//     //                 send_str(name_cur_device);
-//     //                 if(area_SCREEN == count_device) send_str("]");
-//     //                 dwin_end_print();
-//     //             }
-//     //             break;
-//     //         case 4 :
-//     //             if(area_SCREEN >= AREA_TIMER_DEVICE_1)send_in_frame(1, 1, FONT_INFO, WHITE, "CONFIGURE");
-//     //             break;
-//     //         default: break;
-//     //     }
-//     // }
-// }
+void show_notify_handler(void* main_data, esp_event_base_t base, int32_t cur_day, void* event_data) 
+{
 
-
-// void show_rename_device_handler(void* main_data, 
-//                                         esp_event_base_t base, 
-//                                         int32_t id, 
-//                                         void* event_data) 
-// {
-//     const device_info_show_t *device = (device_info_show_t*) event_data;
-//     if(device == NULL)return;
-//     for(uint8_t i=0; i<2; i++) {
-//         vTaskDelay(DELAY_SHOW_ITEM);
-//         switch(i){
-//             case 0 :
-//                 print_start(1, 4, WHITE, FONT_STANDART);
-//                 send_str(device_descr[device->type]);
-//                 break;
-//             case 1 :
-//                 print_start(3, 2, WHITE, FONT_STANDART);
-//                 send_str(device->name);
-//                 break;
-//         }
-//         dwin_end_print();
-//     }
-// }
-
-// void show_notify_handler(void* main_data, esp_event_base_t base, int32_t day, void* event_data) 
-// {
-//     static const  main_data_t *main_data = NULL; 
-//     if(main_data == NULL)  main_data = (main_data_t *)main_data;
-//     static uint8_t tmp;
-//     uint8_t last_notif = NUMBER_NOTIFICATION_PER_DAY;
+    uint8_t tmp;
+    uint8_t last_notif = NUMBER_NOTIFICATION_PER_DAY;
     
-//     for(uint8_t i=0; i<6; i++) {
-//         vTaskDelay(DELAY_SHOW_ITEM);
-//         switch(i){
-//             case 0 :
-//                 for(uint8_t day_count=0; day_count<SIZE_WEEK; day_count++) {
-//                     print_start(2+day_count, 0, day == day_count ? WHITE : BLUE, FONT_INFO);
-//                     send_str(WEEK_DAY[day_count]);
-//                     send_str(is_ACTIVE_DAY(day_count) ? MES_ON : MES_OFF);
-//                     dwin_end_print();
-//                 }
-//                 print_start(9, 0, VIOLET, FONT_INFO);
-//                 send_str("\tFor\tall\tdays");
-//                 break;
-//             case 1 :
-//                 send_in_frame(1, 1, FONT_INFO, is_ACTIVE_DAY(day)?COLOUR_ENABLE:COLOUR_DISABLE, WEEK_WHOLE_NAME[day]);
-//                 break;
-//             case 2 :
-//                 for(int count_hour=0, area=0; count_hour<last_notif; count_hour++, area++) {
-//                     tmp = GET_NOTIF_HOUR(day, count_hour);
-//                     print_start(2+count_hour, 6, GET_COLOR_AREA(area), FONT_STANDART);
-//                     if(IS_HOUR(tmp)){
-//                         send_str("\t\t+");
-//                         last_notif = count_hour;
-//                     } else {
-//                         send_str("\t\t-\t");
-//                         send_two_number(tmp);
-//                         send_str("\t\t:");
-//                     }
-//                     dwin_end_print();
-//                 }
-//                 break;
-//             case 3 :
-//                 for(int area=AREA_MIN_1, count_min=0; count_min<last_notif; count_min++, area++) {
-//                     tmp = GET_NOTIF_MIN(day, count_min);
-//                     print_start(2+count_min, 12, GET_COLOR_AREA(area), FONT_STANDART);
-//                     send_two_number(tmp);
-//                 }
-//                 break;
-//             case 4 :
-//                 print_start(0, 1, color_CLOCK, FONT_INFO);
-//                 send_clock(cur_HOUR, cur_MIN);
-//                 break;
-//             case 5 :
-//                 print_start(4, 9, COLOUR_DISABLE, FONT_BUTTON);
-//                 if(is_ACTIVE_DAY(day))send_str("SET\tOFF");
-//                 else send_str("SET\tON");
-//                 break;
-//             default: break;
-//         }
-//         dwin_end_print();
-//     }
-// }
+    for(uint8_t i=0; i<6; i++) {
+        vTaskDelay(DELAY_SHOW_ITEM);
+        switch(i){
+            case 0 :
+                for(uint8_t day_count=0; day_count<SIZE_WEEK; day_count++) {
+                    print_start(2+day_count, 0, cur_day == day_count ? WHITE : BLUE, FONT_INFO);
+                    send_str(WEEK_DAY[day_count]);
+                    send_str(cur_day == day_count ? MES_ON : MES_OFF);
+                    dwin_end_print();
+                }
+                break;
+            case 1 :
+                send_in_frame(1, 1, FONT_INFO, 
+                                    cur_day == day_count ? COLOR_ENABLE : COLOR_DISABLE, 
+                                    WEEK_ALL_NAME[day]);
+                break;
+            case 2 :
+                for(int count_hour=0, area=0; count_hour<last_notif; count_hour++, area++) {
+                    tmp = GET_NOTIF_HOUR(day, count_hour);
+                    print_start(2+count_hour, 6, GET_COLOR_AREA(area), FONT_STANDART);
+                    if(IS_HOUR(tmp)){
+                        send_str("\t\t+");
+                        last_notif = count_hour;
+                    } else {
+                        send_str("\t\t-\t");
+                        send_two_number(tmp);
+                        send_str("\t\t:");
+                    }
+                    dwin_end_print();
+                }
+                break;
+            case 3 :
+                for(int area=AREA_MIN_1, count_min=0; count_min<last_notif; count_min++, area++) {
+                    tmp = GET_NOTIF_MIN(day, count_min);
+                    print_start(2+count_min, 12, GET_COLOR_AREA(area), FONT_STANDART);
+                    send_two_number(tmp);
+                }
+                break;
+            case 4 :
+                print_start(0, 1, color_CLOCK, FONT_INFO);
+                send_clock(cur_HOUR, cur_MIN);
+                break;
+            case 5 :
+                print_start(4, 9, COLOR_DISABLE, FONT_BUTTON);
+                if(is_ACTIVE_DAY(day))send_str("SET\tOFF");
+                else send_str("SET\tON");
+                break;
+            default: break;
+        }
+        dwin_end_print();
+    }
+}
 
-// void show_custom_handler(void* main_data, 
-//                                     esp_event_base_t base, 
-//                                     int32_t id, 
-//                                     void* event_data) 
-// {
-//     static const  main_data_t *main_data = NULL;  
-//     if(main_data == NULL) main_data = (main_data_t *)main_data;
-//     static uint16_t color_item, color_area;
-//     int i=0;
-//     vTaskDelay(DELAY_SHOW_ITEM);
-//     for(; i<SIZE_COLOURS_INTERFACE; ) {
-//         color_area = GET_COLOUR(colors_INTERFACE[i]);
-//         print_start(1, i*5, color_area, FONT_STANDART);
-//         if(area_SCREEN == i)send_str("[");
-//         send_str(massage_custom[i]);
-//         if(area_SCREEN == i)send_str("]");
-//         dwin_end_print();
-//         i++;
-//     }
-//     color_area = GET_COLOUR(colors_INTERFACE[area_SCREEN]);
-//     vTaskDelay(DELAY_SHOW_ITEM);
-//     for(int color_it=0; color_it<SIZE_USED_COLOURS; color_it++) {
-//         color_item = GET_COLOUR(color_it),
-//         print_start(i+1, 1, color_item, FONT_STANDART);
-//         if(color_item == color_area)send_str("<--");
-//         send_str(massage_custom[i]);
-//         dwin_end_print();
-//         i++;
-//     }
-//     print_start(4, 9, COLOUR_DISABLE, FONT_BUTTON);
-//     send_str(massage_custom[i]);
-//     dwin_end_print();
-// }
+void show_custom_handler(void* main_data, 
+                                    esp_event_base_t base, 
+                                    int32_t id, 
+                                    void* event_data) 
+{
+    static const  main_data_t *main_data = NULL;  
+    if(main_data == NULL) main_data = (main_data_t *)main_data;
+    static uint16_t color_item, color_area;
+    int i=0;
+    vTaskDelay(DELAY_SHOW_ITEM);
+    for(; i<SIZE_COLORS_INTERFACE; ) {
+        color_area = GET_COLOR(colors_INTERFACE[i]);
+        print_start(1, i*5, color_area, FONT_STANDART);
+        if(area_SCREEN == i)send_str("[");
+        send_str(massage_custom[i]);
+        if(area_SCREEN == i)send_str("]");
+        dwin_end_print();
+        i++;
+    }
+    color_area = GET_COLOR(colors_INTERFACE[area_SCREEN]);
+    vTaskDelay(DELAY_SHOW_ITEM);
+    for(int color_it=0; color_it<SIZE_USED_COLORS; color_it++) {
+        color_item = GET_COLOR(color_it),
+        print_start(i+1, 1, color_item, FONT_STANDART);
+        if(color_item == color_area)send_str("<--");
+        send_str(massage_custom[i]);
+        dwin_end_print();
+        i++;
+    }
+    print_start(4, 9, COLOR_DISABLE, FONT_BUTTON);
+    send_str(massage_custom[i]);
+    dwin_end_print();
+}
 
 
 
@@ -315,7 +266,7 @@ void show_setting_handler(void* main_data,
 //         vTaskDelay(DELAY_SHOW_ITEM);
 //         switch (i) {
 //             case 0:
-//                 print_start(0, 2, COLOUR_DISABLE, FONT_INFO);
+//                 print_start(0, 2, COLOR_DISABLE, FONT_INFO);
 //                 if(DATA_PREPARING) {
 //                     sync_TIME
 //                     ? send_str("autoupdate time")

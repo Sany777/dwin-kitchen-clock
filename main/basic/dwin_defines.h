@@ -33,28 +33,30 @@
 #define GET_DAY(key_from_dwin)                    ((key_from_dwin)-KEY_START_DAY)
 #define GET_NUMBER(key_from_dwin)                 ((key_from_dwin)-'0')
 #define GET_NEW_TWO_DIGIT_VALUE(old_val, in_val)  (((old_val) % 10) * 10+(in_val))
-#define GET_COLOUR(item)                          (USED_COLOURS[item])
+#define GET_COLOR(item)                          (USED_COLORS[item])
 #define KEY_IS_SET_TASK(key_from_dwin)            ((key_from_dwin) >= START_SCREEN_TASKS_KEYS && \
                                                             (key_from_dwin) <= END_SCREEN_TASKS_KEYS)
 #define GET_SCREEN_TASK(key_from_dwin)            ((key_from_dwin)-START_SCREEN_TASKS_KEYS)
 
 
 /*NOTIFICATIONS*/
+/* structure notification_DATA[]:  HOUR (1/2 SIZE Notif) : MIN (1/2 SIZE Notif) */
 #define SHIFT_MIN (NOTIF_PER_DAY*SIZE_WEEK)
+#define MEMBER_IN_NOTIF 2
 
 #define GET_NOTIF_HOUR(_number_notif, _day_week)       (notification_DATA[(_day_week)*(NOTIF_PER_DAY)+(_number_notif)])
 #define VALUE_NOTIF_HOUR(_number_notif, _day_week)     (GET_NOTIF_HOUR(_number_notif, _day_week)%100)
 #define VALUE_NOTIF_MIN(_number_notif, _day_week)      (notification_DATA[(SHIFT_MIN)+(_day_week)*(NOTIF_PER_DAY)*+(_number_notif)])
 #define IS_DAY_ACTIVE(_day)                            (GET_NOTIF_HOUR(0, _day) < 99)
 #define IS_NOTIF_ACTIVE(_notif, _day)                  (GET_NOTIF_HOUR(_notif, _day) < 99)
-#define GET_NOTIF_NUMBER(_area)                        ((_area)/(NOTIF_PER_DAY))
-#define GET_NOTIF_TYPE_DATA(_area)                     ((_area)%(NOTIF_PER_DAY))
+#define GET_NOTIF_NUMBER(_area)                        ((_area)/(MEMBER_IN_NOTIF))
+#define GET_NOTIF_TYPE_DATA(_area)                     ((_area)%(MEMBER_IN_NOTIF))
 
 #define SET_OFF_DAY_NOTIF(_day_week)                                \
     do{                                                             \
         for(int notif=0; NOTIF_PER_DAY>notif; notif++){             \
-            if(IS_NOTIF_ACTIVE((notif), (_day_week))){                \
-                GET_NOTIF_HOUR((notif), (_day_week)) += 100;          \
+            if(IS_NOTIF_ACTIVE((notif), (_day_week))){              \
+                GET_NOTIF_HOUR((notif), (_day_week)) += 100;        \
             }                                                       \
         }                                                           \
     }while(0) 
@@ -97,11 +99,8 @@
 
 #define SET_NOTIF_MIN(_number_notif, _day_week, _value)                     \  
     do{                                                                     \
-        VALUE_NOTIF_MIN((_number_notif), (_day_week)) = (_value);             \
+        VALUE_NOTIF_MIN((_number_notif), (_day_week)) = (_value);           \
     }while(0) 
-
-
-
 
 
 /*TIMER*/
@@ -118,43 +117,50 @@
 #define IS_YEAR(val)                ((val) >= 0 && (val) <= MAX_YEAR)
 
 /* CHECK INPUT KEY*/
-#define KEY_IS_CHAR(key_from_dwin)            (((key_from_dwin) >= 'A' && (key_from_dwin) <= 'Z')               \
+#define KEY_IS_CHAR(key_from_dwin)            (((key_from_dwin) >= 'A' && (key_from_dwin) <= 'Z') \
                                                     || ((key_from_dwin) >= 'a' && (key_from_dwin) <= 'z'))
 #define KEY_IS_NUMBER(key_from_dwin)          ((key_from_dwin) >= '0' && (key_from_dwin) <= '9')
-#define KEY_IS_AREA_SCAN_SSID(key_from_dwin)  ((key_from_dwin) >= KEY_START_AREA && (key_from_dwin) <= KEY_START_AREA+MAX_SCAN_LIST_SIZE)
-#define KEY_IS_AREA_CLOCK(key_from_dwin)      ((key_from_dwin) >= KEY_START_AREA && (key_from_dwin) <= KEY_START_AREA+END_AREA_CLOCK)
-#define KEY_IS_AREA_TIMERS(key_from_dwin)     ((key_from_dwin) >= KEY_START_AREA && (key_from_dwin) <= KEY_START_AREA+END_AREA_TIMERS)
-#define KEY_IS_AREA_STOP_TIMER(key_from_dwin) ((key_from_dwin) >= KEY_START_AREA && (key_from_dwin) <= KEY_START_AREA+END_AREA_STOP_TIMERS)
-#define KEY_IS_AREA_NOTIF(key_from_dwin)      ((key_from_dwin) >= KEY_START_AREA && (key_from_dwin) <= KEY_START_AREA+END_AREA_NOTIFICATIONS)
-#define KEY_IS_AREA_CUSTOM(key_from_dwin)     ((key_from_dwin) >= KEY_START_AREA && (key_from_dwin) <= KEY_START_AREA+END_AREA_COLOURS)
-#define KEY_IS_AREA_SETTING(key_from_dwin)    ((key_from_dwin) >= KEY_START_AREA && (key_from_dwin) <= KEY_START_AREA+END_AREA_SETTINGS)
+#define KEY_IS_AREA_SCAN_SSID(key_from_dwin)  ((key_from_dwin) >= KEY_START_AREA \
+                                                    && (key_from_dwin) <= KEY_START_AREA+MAX_SCAN_LIST_SIZE)
+#define KEY_IS_AREA_CLOCK(key_from_dwin)      ((key_from_dwin) >= KEY_START_AREA \
+                                                    && (key_from_dwin) <= KEY_START_AREA+END_AREA_CLOCK)
+#define KEY_IS_AREA_TIMERS(key_from_dwin)     ((key_from_dwin) >= KEY_START_AREA \
+                                                    && (key_from_dwin) <= KEY_START_AREA+END_AREA_TIMERS)
+#define KEY_IS_AREA_STOP_TIMER(key_from_dwin) ((key_from_dwin) >= KEY_START_AREA \
+                                                    && (key_from_dwin) <= KEY_START_AREA+END_AREA_STOP_TIMERS)
+#define KEY_IS_AREA_NOTIF(key_from_dwin)      ((key_from_dwin) >= KEY_START_AREA \
+                                                    && (key_from_dwin) <= KEY_START_AREA+END_AREA_NOTIFICATIONS)
+#define KEY_IS_AREA_CUSTOM(key_from_dwin)     ((key_from_dwin) >= KEY_START_AREA \
+                                                    && (key_from_dwin) <= KEY_START_AREA+END_AREA_COLORS)
+#define KEY_IS_AREA_SETTING(key_from_dwin)    ((key_from_dwin) >= KEY_START_AREA \
+                                                    && (key_from_dwin) <= KEY_START_AREA+END_AREA_SETTINGS)
 #define KEY_IS_SYMBOL(key_from_dwin)          ((key_from_dwin) >= '!'&& (key_from_dwin) <= '~')
-#define KEY_IS_AREA_TOGGLE(key_from_dwin)     ((key_from_dwin) >= KEY_START_TOGGLE_AREA && \
-                                                (key_from_dwin) <= (KEY_START_TOGGLE_AREA+MAX_TOGGLE_UNIT_ON_SCREEN))
-#define KEY_IS_AREA_TOGGLE_DAY(key_from_dwin) ((key_from_dwin) >= KEY_START_TOGLE_DAY && \
-                                                (key_from_dwin) <= (KEY_START_TOGLE_DAY+SIZE_WEEK))
-#define KEY_IS_DAY(key_from_dwin)             ((key_from_dwin) >= KEY_START_DAY && \
-                                                (key_from_dwin) <= KEY_START_DAY+SIZE_WEEK)
+#define KEY_IS_AREA_TOGGLE(key_from_dwin)     ((key_from_dwin) >= KEY_START_TOGGLE_AREA \
+                                                    && (key_from_dwin) <= (KEY_START_TOGGLE_AREA+MAX_TOGGLE_UNIT_ON_SCREEN))
+#define KEY_IS_AREA_TOGGLE_DAY(key_from_dwin) ((key_from_dwin) >= KEY_START_TOGLE_DAY \
+                                                    && (key_from_dwin) <= (KEY_START_TOGLE_DAY+SIZE_WEEK))
+#define KEY_IS_DAY(key_from_dwin)             ((key_from_dwin) >= KEY_START_DAY \
+                                                    && (key_from_dwin) <= KEY_START_DAY+SIZE_WEEK)
 
-#define color_CLOCK                           (USED_COLOURS[colors_INTERFACE[AREA_CLOCK_COLOUR]])
-#define color_DESC                            (USED_COLOURS[colors_INTERFACE[AREA_DESC_COLOUR]])
-#define color_INFO                            (USED_COLOURS[colors_INTERFACE[AREA_INFO_COLOUR]])
-#define GET_COLOR_AREA(n)                     ((n) == (area_SCREEN) ? COLOUR_ENABLE : COLOUR_DISABLE)
+#define color_CLOCK                           (USED_COLORS[colors_INTERFACE[AREA_CLOCK_COLOR]])
+#define color_DESC                            (USED_COLORS[colors_INTERFACE[AREA_DESC_COLOR]])
+#define color_INFO                            (USED_COLORS[colors_INTERFACE[AREA_INFO_COLOR]])
+#define GET_COLOR_AREA(n)                     ((n) == (area_SCREEN) ? COLOR_ENABLE : COLOR_DISABLE)
 
-#define GET_HEX(num)                    (num + 6 * (num / 10))
-#define GET_DEC(num)                    (num - 6 * (num / 16))
+#define GET_HEX(num)                          (num + 6 * (num / 10))
+#define GET_DEC(num)                          (num - 6 * (num / 16))
 
 
 #ifndef MIN
     #define MIN(a, b)((a) > (b)? (b): (a))
 #endif
 
-static const char *TAG = "dwin";
+static const char *TAG = "show errore";
 
 #define DWIN_SHOW_ERR(a)                                                                           \
                                 do {                                                               \
                                     if (ESP_OK != (a)) {                                           \
-                                        ESP_LOGE(TAG, "err :%s", esp_err_to_name(a));              \ 
+                                        ESP_LOGE(TAG, " %s", esp_err_to_name(a));              \ 
                                     }                                                              \
                                 } while (0)
 

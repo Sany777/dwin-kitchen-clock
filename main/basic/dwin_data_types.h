@@ -114,7 +114,7 @@ typedef enum flag_state_device{
 #define BIT_DWIN_RESPONSE_OK    ( 1 << RESPONSE_OK )
 #define BIT_PROCESS             ( 1 << PROCESS_DWIN )
 
-#define BIT_INTERNET            ( 1 << INTERNET_OK )
+#define BIT_ETHERNET            ( 1 << ETHERNET_OK )
 #define BIT_SEN_1               ( 1 << SENSOR_1_OK )
 #define BIT_SEN_2               ( 1 << SENSOR_2_OK )
 #define STORED_FLAGS            (1UL|BIT_SOUNDS_ALLOW|BIT_SYNC_TIME_ALLOW|BIT_ESPNOW_ALLOW|BIT_SECURITY )
@@ -130,7 +130,7 @@ typedef enum index_timer {
 typedef enum data_identification{
 	DATA_PWD,
 	DATA_API,
-	DATA_COLOUR,
+	DATA_COLOR,
 	DATA_CITY,
 	DATA_SSID,
 	DATA_NOTIF,
@@ -248,7 +248,7 @@ typedef struct {
     char ssid_name[SIZE_BUF];
     char city_name[SIZE_BUF];
     char buf_api[SIZE_BUF];
-    uint8_t colors_interface[SIZE_COLOURS_INTERFACE];
+    uint8_t colors_interface[SIZE_COLORS_INTERFACE];
     uint8_t *notif_data;
     weather_data_t *weather_data;
     sensor_data_t *sensor_data[NUMBER_SENSOR];

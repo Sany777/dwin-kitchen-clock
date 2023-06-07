@@ -111,7 +111,8 @@
     "dwin_timer.h": "c",
     "screen_keys.h": "c",
     "esp_system.h": "c",
-    "limits": "c"
+    "limits": "c",
+    "cstdarg": "c"
   },
   "idf.port": "/dev/ttyUSB0",
   "idf.flashType": "UART",

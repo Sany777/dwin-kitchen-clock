@@ -25,8 +25,8 @@ void print_start(uint16_t row, uint16_t column, const uint16_t text_color, const
 	column *= font * 8;
 	row *= font * 8;
     PRINT[PRINT_FONT] = font;
-    PRINT[PRINT_COLOUR_1] = text_color>>8;
-    PRINT[PRINT_COLOUR_2] = text_color<<8;
+    PRINT[PRINT_COLOR_1] = text_color>>8;
+    PRINT[PRINT_COLOR_2] = text_color<<8;
 	PRINT[PRINT_COL_1] = column>>8;
     PRINT[PRINT_COL_2] = column<<8;
     PRINT[PRINT_ROW_1] = row>>8;

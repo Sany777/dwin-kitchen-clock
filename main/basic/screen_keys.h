@@ -5,7 +5,7 @@
 #include "dwin_config.h"
 
 
-/*COLOURS*/
+/*COLORS*/
 #define WHITE  0xFFFF
 #define BLACK  0x0000
 #define CAEN   0x0410
@@ -15,13 +15,13 @@
 #define LEMON  0x07E0
 #define RED    0xF800
 
-#define NUMBER_COLOURS END_AREA_COLOURS
+#define NUMBER_COLORS END_AREA_COLORS
 
-#define SIZE_USED_COLOURS 7
-static const uint16_t USED_COLOURS[SIZE_USED_COLOURS] = {WHITE, CAEN, BLUE, GREY, VIOLET, LEMON, RED};
+#define SIZE_USED_COLORS 7
+static const uint16_t USED_COLORS[SIZE_USED_COLORS] = {WHITE, CAEN, BLUE, GREY, VIOLET, LEMON, RED};
 
-#define COLOUR_ENABLE RED 
-#define COLOUR_DISABLE WHITE
+#define COLOR_ENABLE RED 
+#define COLOR_DISABLE WHITE
 
 
 /*AREAS ON THE SCREEN*/
@@ -57,10 +57,10 @@ typedef enum area_notifications{
 } area_notifications_t;
 
 typedef enum area_custom{
-    AREA_DESC_COLOUR,
-    AREA_CLOCK_COLOUR,
-    AREA_INFO_COLOUR,
-    END_AREA_COLOURS
+    AREA_DESC_COLOR,
+    AREA_CLOCK_COLOR,
+    AREA_INFO_COLOR,
+    END_AREA_COLORS
 } area_custom_t;
 
 typedef enum area_settings{
@@ -142,7 +142,7 @@ typedef enum{
     WEAT_CLEAR_DAY_PIC,
     SEARCH_PIC,
     NOTIF_PIC,
-    CUSTOM_COLOURS_PIC,
+    CUSTOM_COLORS_PIC,
     MENU_PIC,
     DEVICE_PIC,
     END_LIST_PIC

@@ -212,6 +212,35 @@ void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_s
 }
 
 
+void timer_run_handler(void* data, esp_event_base_t base, int32_t key, void* event_data)
+{
+    int8_t *timer_data = (uint8_t*)data;
+    static int count_buzer = NUMBER_SIG_BUZ;
+    if(timer_SEC == 0 && timer_MIN == 0 && timer_HOUR){
+        if(count_buzer){
+            dwin_buzer(LOUD_BUZZER);
+            count_buzer--;
+        } else {
+            esp_event_post_to(direct_loop, EVENTS_DIRECTION, KEY_INIT, NULL, 0, TIMEOUT_SEND_EVENTS);
+            count_buzer = NUMBER_SIG_BUZ;
+            return;
+        }
+    } else {
+        timer_SEC--;
+        if(timer_SEC < 0){
+            timer_SEC = 0;
+            timer_MIN--;
+            if(timer_MIN < 0){
+                timer_MIN = 0;
+                timer_HOUR--;
+                if(timer_HOUR < 0){
+                    timer_HOUR = 0;
+                }
+            }
+        }
+    }
+    esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, timer_data, sizeof(timer_data), TIMEOUT_SEND_EVENTS);
+}
 
 void direction_task(void *pv)
 {

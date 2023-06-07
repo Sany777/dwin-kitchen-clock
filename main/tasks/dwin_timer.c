@@ -12,7 +12,7 @@ size_t size_list = 0;
 
 void resize_list()
 {
-    // taskENTER_CRITICAL(&periodic_timers_s);
+    taskENTER_CRITICAL(&periodic_timers_s);
     if(number_event == 0){
         if(list_periodic_events){
             free(list_periodic_events);
@@ -34,7 +34,7 @@ void resize_list()
             list_periodic_events = new_list_periodic_events;
         }
     }
-    // taskEXIT_CRITICAL(&periodic_timers_s);
+    taskEXIT_CRITICAL(&periodic_timers_s);
 }
 
 void remove_periodic_event(esp_event_base_t base, int32_t event_id)
@@ -66,7 +66,7 @@ esp_err_t  set_periodic_event(esp_event_loop_handle_t event_loop,
                                 size_t sec, 
                                 mode_time_func_t mode)
 {
-    // taskENTER_CRITICAL(&periodic_timers_s);
+    taskENTER_CRITICAL(&periodic_timers_s);
     if(size_list < number_event+1){
         periodic_event_t *new_list_periodic_events = calloc(size_list + STEP_RESIZE, sizeof(periodic_event_t));
         DWIN_CHECK_NULL_AND_GO(new_list_periodic_events, "no create new_list_periodic_events", err);
@@ -107,10 +107,10 @@ esp_err_t  set_periodic_event(esp_event_loop_handle_t event_loop,
     if(!esp_timer_is_active(periodic_timer)){
         DWIN_CHECK_AND_GO(esp_timer_start_periodic(periodic_timer, 1000000), err);
     }
-    // taskEXIT_CRITICAL(&periodic_timers_s);
+    taskEXIT_CRITICAL(&periodic_timers_s);
     return ESP_OK;
 err:
-    // taskEXIT_CRITICAL(&periodic_timers_s);
+    taskEXIT_CRITICAL(&periodic_timers_s);
     return ESP_FAIL;
 }
 

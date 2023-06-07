@@ -54,8 +54,8 @@ enum index_byte_print {
     PRINT_ROW_1,
     PRINT_ROW_2,
     PRINT_FONT=8,
-    PRINT_COLOUR_1,
-    PRINT_COLOUR_2,
+    PRINT_COLOR_1,
+    PRINT_COLOR_2,
 };
 
 /****************************** FULL DWIN COMMANDS **********************************/

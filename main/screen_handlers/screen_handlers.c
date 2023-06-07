@@ -61,7 +61,7 @@ void ap_handler(void* main_data, esp_event_base_t base, int32_t key, void* event
 
 void device_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {
-  
+
 }
 
 void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
@@ -110,8 +110,8 @@ void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* 
         } else if(KEY_IS_SYMBOL(key)){
             if(pos < max) {
                 if(area_SCREEN == AREA_CITY){
-                    if((KEY_IS_CHAR(key) || key == '-')
-                        && pos != 0 )
+                    if( KEY_IS_CHAR(key) 
+                       || (key == '-' && pos != 0))
                     {
                         if(pos == 0 && key >= 'a' && key <= 'z') key = key + 'A' - 'a';
                         selected_buf[pos++] = key;
@@ -281,7 +281,21 @@ void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* ev
 
 void set_color_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {
- 
+    if(key == KEY_INIT){
+        area_SCREEN = AREA_DESC_COLOR;
+    } else if(KEY_IS_AREA_CUSTOM(key)){
+        area_SCREEN = GET_AREA_VALUE(key);
+    } else if(KEY_IS_AREA_TOGGLE(key)){
+        uint8_t index_color = GET_AREA_VALUE_TOGGLE(key);
+        if(index_color < SIZE_COLORS_INTERFACE){
+            colors_INTERFACE[area_SCREEN] = GET_COLOR[index_color];
+        }
+    } else if(key == KEY_ENTER){
+        write_memory(main_data, DATA_COLOR);
+    }
+    if(key != KEY_CLOSE){
+        esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
+    }
 }
 
 
@@ -333,55 +347,53 @@ void notification_screen_handler(void* main_data, esp_event_base_t base, int32_t
     esp_event_post_to(show_loop, EVENTS_SHOW, cur_day, NULL, 0, TIMEOUT_SEND_EVENTS);
 }
 
-void show_timer_handler (void* main_data, esp_event_base_t base, int32_t key, void* event_data)
-{
 
-
-}
 void timer_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {
     static uint8_t new_area;
-    static uint8_t *timer_data;
-    static esp_event_handler_instance_t handler_show;
+    static int8_t *timer_data;
+    static esp_event_handler_instance_t run_handler;
     if(key == KEY_CLOSE) {
         if(handler_show){
             ESP_ERROR_CHECK(esp_event_handler_instance_unregister_with(
                     slow_service_loop,
-                    ESP_EVENT_ANY_BASE,
-                    ESP_EVENT_ANY_ID,
-                    handler_show
+                    EVENTS_SHOW,
+                    TIMER_SHOW,
+                    run_handler
                 ));
-            handler_show = NULL;
+            run_handler = NULL;
         }
         return;
     }
-    if(key == KEY_ENTER){
+    if(key == KEY_START){
         set_periodic_event(
-            show_loop,
+            slow_service_loop,
             EVENTS_SHOW, 
             TIMER_SHOW, 
             1,
             RELOAD_COUNT);
         return;
     }
-    if(key == KEY_BACKSPACE){
+    if(key == KEY_PAUSA){
         remove_periodic_event(EVENTS_SHOW, TIMER_SHOW);
 
     } else if(key == KEY_INIT) {
         area_SCREEN = AREA_MIN;
-        if(!handler_show){
-            if(!timer_data){
-                timer_data = malloc(SIZE_TIMER);
-                if(!timer_data)return;
-            }
+        if(!timer_data){
+            timer_data = malloc(SIZE_TIMER);
+            if(!timer_data)return;
+        }
+        if(!run_handler){
             ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
                     slow_service_loop,
                     EVENTS_SHOW,
                     TIMER_SHOW,
-                    show_timer_handler,
+                    timer_run_handler,
                     (void *)timer_data,
-                    &handler_show
+                    &run_handler
                 ));
+        } else {
+            remove_periodic_event(EVENTS_SHOW, TIMER_SHOW);
         }
         timer_HOUR = 0;
         timer_MIN = 10;
