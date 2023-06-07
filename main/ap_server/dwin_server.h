@@ -29,6 +29,14 @@ extern "C" {
 
 #define MAX_LEN_COMMAND_DWIN 249
 
+
+#define DWIN_CHECK_FALSE_AND_GO(a, goto_tag)                                                                                             \
+                                            do{                                                                                    \
+                                                if (!(a)) {                                                                                              \
+                                                    goto goto_tag;                                                                  \
+                                                }                                                                                   \
+                                            } while(0)
+
 #define DWIN_CHECK_NULL_AND_GO(ptr, str, goto_tag)                                                                                  \
                                             do{                                                                                     \
                                                 if (ptr == NULL) {                                                                  \

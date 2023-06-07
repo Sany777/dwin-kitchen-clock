@@ -222,9 +222,11 @@ void ap_handler(void* arg, esp_event_base_t event_base,
         set_run_webserver(NULL);
     } else if(event_id == WIFI_EVENT_AP_STACONNECTED){
         wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
+        dwin_set_pic(NO_WEATHER_PIC);
         esp_event_post_to(show_loop, EVENTS_SHOW, STATION_JOINE, event->mac, sizeof(event->mac), TIMEOUT_SEND_EVENTS);
     } else if(event_id == WIFI_EVENT_AP_STADISCONNECTED){
         wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
+        dwin_set_pic(NO_WEATHER_PIC);
         esp_event_post_to(show_loop, EVENTS_SHOW, STATION_LEAVE, event->mac, sizeof(event->mac), TIMEOUT_SEND_EVENTS);
     }
 }

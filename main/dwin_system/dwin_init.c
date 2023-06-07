@@ -10,8 +10,12 @@ void esp_init(void)
     assert(show_buf);
     main_data->weather_data = calloc(1, sizeof(weather_data_t));
     assert(main_data->weather_data);
+    main_data->time = calloc(1, sizeof(struct tm));
+    assert(main_data->time);
     dwin_event_group = xEventGroupCreate();
     assert(dwin_event_group);
+    main_data->notif_data = calloc(1,SIZE_BUF_NOTIFICATION);
+    assert(main_data->notif_data);
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
       ESP_ERROR_CHECK(nvs_flash_erase());

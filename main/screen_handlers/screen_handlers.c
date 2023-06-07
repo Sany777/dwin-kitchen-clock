@@ -30,9 +30,9 @@ void search_screen_handler(void* main_data, esp_event_base_t base, int32_t key, 
             init = true;
         }
         esp_event_post_to(fast_service_loop, WIFI_SET, START_SCAN_NETWORKS, NULL, 0, TIMEOUT_SEND_EVENTS);
-        ESP_ERROR_CHECK(esp_wifi_scan_GET_ap_num(&ap_count));
+        ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
         if(ap_count > MAX_SCAN_LIST_SIZE)ap_count = MAX_SCAN_LIST_SIZE;
-        ESP_ERROR_CHECK(esp_wifi_scan_GET_ap_records(&ap_count, ap_info));
+        ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_count, ap_info));
     } else if(KEY_IS_AREA_SCAN_SSID(key)) {
         if(area_SCREEN == GET_AREA_VALUE(key)) {
             strncpy(name_SSID, (const char*)ap_info[area_SCREEN].ssid, MAX_STR_LEN);
@@ -52,7 +52,6 @@ void ap_handler(void* main_data, esp_event_base_t base, int32_t key, void* event
 {
     if(key == KEY_INIT) {
         start_ap();
-        dwin_set_pic(NO_WEATHER_PIC);
         esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
     } else if(key == KEY_CLOSE) {
         esp_wifi_stop();
@@ -69,7 +68,7 @@ void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* 
 {
     static uint8_t pos, max;
     static char *selected_buf;
-    static int pic = SETTING_LOW_LETTER_PIC;
+    static int pic;
 
     if(key == KEY_INIT) {
         area_SCREEN = END_AREA_SETTINGS;
@@ -90,7 +89,7 @@ void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* 
         pos = strlen(selected_buf);
     } else if(key == KEY_SYNC) {
         start_sta();
-        GET_weather();
+        get_weather();
     } else if(key == KEY_ENTER) {
         write_memory(main_data, DATA_API);
         write_memory(main_data, DATA_CITY);
@@ -103,7 +102,7 @@ void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* 
     } else if(key == KEY_SETTING_SCREEN_SYMB) {
         pic = SETTING_SYMBOL_PIC;
     } else if(selected_buf) {
-        if(key == KEY_BACSPACE) {
+        if(key == KEY_BACKSPACE) {
             selected_buf[pos--] = 0;
         } else if(key == KEY_DELETE) {
             selected_buf[0] = 0;
@@ -111,7 +110,9 @@ void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* 
         } else if(KEY_IS_SYMBOL(key)){
             if(pos < max) {
                 if(area_SCREEN == AREA_CITY){
-                    if(KEY_IS_CHAR(key) || key == '-' && pos != 0 ){
+                    if((KEY_IS_CHAR(key) || key == '-')
+                        && pos != 0 )
+                    {
                         if(pos == 0 && key >= 'a' && key <= 'z') key = key + 'A' - 'a';
                         selected_buf[pos++] = key;
                     }
@@ -133,10 +134,12 @@ void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* 
 void main_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {
     static uint8_t step, last_step;
+    static bool menu_active;
     if(key == KEY_INIT){
         step = INIT_TASK;
     } else if(key == KEY_CLOSE) {
-        menu_active != menu_active;        
+        if(menu_active)menu_active = false;
+        else menu_active = true;     
         if(menu_active){
             step = DEINIT_TASK;
         } else {
@@ -145,9 +148,9 @@ void main_screen_handler(void* main_data, esp_event_base_t base, int32_t key, vo
     } else  if(key == UPDATE_DATA_COMPLETE){
         dwin_set_pic(weather_PIC);
         if(weather_PIC != NO_WEATHER_PIC){
-            if(mode != INIT_OK) mode = INIT_OK;
-        } else if(mode != INIT_FAIL){
-            mode = INIT_FAIL;
+            if(step != INIT_OK) step = INIT_OK;
+        } else if(step != INIT_FAIL){
+            step = INIT_FAIL;
         }
     }
 if(last_step != step){
@@ -212,38 +215,38 @@ void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* ev
         switch(area_SCREEN) {
             case AREA_YEAR : 
             {
-                dwin_time.tm_year = GET_NEW_TWO_DIGIT_VALUE(dwin_time.tm_year, GET_NUMBER(key));
-                if(!IS_YEAR(dwin_time.tm_year)) dwin_time.tm_year = 0; break;
+                dwin_time->tm_year = GET_NEW_TWO_DIGIT_VALUE(dwin_time->tm_year, GET_NUMBER(key));
+                if(!IS_YEAR(dwin_time->tm_year)) dwin_time->tm_year = 0;
                 break;
             }
             case AREA_MONTH :
             {
-                dwin_time.tm_mon = GET_NEW_TWO_DIGIT_VALUE(dwin_time.tm_mon, GET_NUMBER(key));
-                if(!IS_MONTH(dwin_time.tm_mon)) dwin_time.tm_mon = 1;
+                dwin_time->tm_mon = GET_NEW_TWO_DIGIT_VALUE(dwin_time->tm_mon, GET_NUMBER(key));
+                if(!IS_MONTH(dwin_time->tm_mon)) dwin_time->tm_mon = 1;
                 break;
             }
             case AREA_DAY  : 
             {
-                dwin_time.tm_mday = GET_NEW_TWO_DIGIT_VALUE(dwin_time.tm_mday, GET_NUMBER(key));
-                if(!IS_DAY(dwin_time.tm_mday)) dwin_time.tm_mday = 1;
+                dwin_time->tm_mday = GET_NEW_TWO_DIGIT_VALUE(dwin_time->tm_mday, GET_NUMBER(key));
+                if(!IS_DAY(dwin_time->tm_mday)) dwin_time->tm_mday = 1;
                 break;
             }
             case AREA_HOUR : 
             {
-                dwin_time.tm_hour = GET_NEW_TWO_DIGIT_VALUE(dwin_time.tm_hour, GET_NUMBER(key));
-                if(!IS_HOUR(dwin_time.tm_hour)) dwin_time.tm_hour = 0;
+                dwin_time->tm_hour = GET_NEW_TWO_DIGIT_VALUE(dwin_time->tm_hour, GET_NUMBER(key));
+                if(!IS_HOUR(dwin_time->tm_hour)) dwin_time->tm_hour = 0;
                 break; 
             }
             case AREA_MIN  : 
             {
-                dwin_time.tm_min = GET_NEW_TWO_DIGIT_VALUE(dwin_time.tm_min, GET_NUMBER(key));
-                if(!IS_MIN_OR_SEC(dwin_time.tm_min)) dwin_time.tm_min = 0; 
+                dwin_time->tm_min = GET_NEW_TWO_DIGIT_VALUE(dwin_time->tm_min, GET_NUMBER(key));
+                if(!IS_MIN_OR_SEC(dwin_time->tm_min)) dwin_time->tm_min = 0; 
                 break; 
             }
             case AREA_SEC  : 
             {
-                dwin_time.tm_sec = GET_NEW_TWO_DIGIT_VALUE(dwin_time.tm_sec, GET_NUMBER(key));
-                if(!IS_MIN_OR_SEC(dwin_time.tm_sec)) dwin_time.tm_sec = 0;
+                dwin_time->tm_sec = GET_NEW_TWO_DIGIT_VALUE(dwin_time->tm_sec, GET_NUMBER(key));
+                if(!IS_MIN_OR_SEC(dwin_time->tm_sec)) dwin_time->tm_sec = 0;
                 break; 
             }
             default:break;
@@ -281,10 +284,10 @@ void notification_screen_handler(void* main_data, esp_event_base_t base, int32_t
         cur_day = 0;
         cur_notif = 0;
         cur_type_data = AREA_HOUR;
-    }else if(KEY_IS_AREA_NOTIF(key)) {
+    } else if(KEY_IS_AREA_NOTIF(key)) {
         area_SCREEN = GET_AREA_VALUE(key);
         cur_notif = GET_NOTIF_NUMBER(area_SCREEN);
-        GET_NOTIF_TYPE_DATA(area_SCREEN, cur_type_data);
+        cur_type_data = GET_NOTIF_TYPE_DATA(area_SCREEN);
     } else if(KEY_IS_DAY(key)) {
         cur_day = GET_DAY(key);
     } else if(KEY_IS_AREA_TOGGLE_DAY(key)) {
@@ -305,15 +308,7 @@ void notification_screen_handler(void* main_data, esp_event_base_t base, int32_t
                 uint8_t new_min = VALUE_NOTIF_MIN(cur_notif, cur_day);
                 new_min = GET_NEW_TWO_DIGIT_VALUE(new_min, number);
                 if(!IS_MIN_OR_SEC(new_min)) new_min = 0;
-                SET_NOTIF_MIN(cur_notif, cur_day, new_val);
-                break; 
-            }
-            case AREA_SEC  : 
-            {
-                uint8_t new_sec = VALUE_NOTIF_SEC(cur_notif, cur_day);
-                new_sec = GET_NEW_TWO_DIGIT_VALUE(new_sec, number);
-                if(!IS_MIN_OR_SEC(new_sec)) new_sec = 0;
-                SET_NOTIF_MIN(cur_notif, cur_day, new_sec);
+                SET_NOTIF_MIN(cur_notif, cur_day, new_min);
                 break; 
             }
             default:break;
@@ -335,13 +330,15 @@ void show_timer_handler (void* main_data, esp_event_base_t base, int32_t key, vo
 void timer_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {
     static uint8_t new_area;
+    static uint8_t *timer_data;
     static esp_event_handler_instance_t handler_show;
     if(key == KEY_CLOSE) {
         if(handler_show){
             ESP_ERROR_CHECK(esp_event_handler_instance_unregister_with(
+                    slow_service_loop,
+                    ESP_EVENT_ANY_BASE,
+                    ESP_EVENT_ANY_ID,
                     handler_show
-                    EVENTS_SHOW,
-                    TIMER_SHOW,
                 ));
             handler_show = NULL;
         }
@@ -356,18 +353,22 @@ void timer_screen_handler(void* main_data, esp_event_base_t base, int32_t key, v
             RELOAD_COUNT);
         return;
     }
-    if(key == BACKSPACE){
+    if(key == KEY_BACKSPACE){
         remove_periodic_event(EVENTS_SHOW, TIMER_SHOW);
 
     } else if(key == KEY_INIT) {
         area_SCREEN = AREA_MIN;
         if(!handler_show){
+            if(!timer_data){
+                timer_data = malloc(SIZE_TIMER);
+                if(!timer_data)return;
+            }
             ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                    slow_loop,
+                    slow_service_loop,
                     EVENTS_SHOW,
                     TIMER_SHOW,
                     show_timer_handler,
-                    (void *)main_data,
+                    (void *)timer_data,
                     &handler_show
                 ));
         }
@@ -394,14 +395,25 @@ void timer_screen_handler(void* main_data, esp_event_base_t base, int32_t key, v
             area_SCREEN = new_area;
         } 
     } else if(KEY_IS_NUMBER(key)) {
-        uint8_t number = GET_NUMBER(key);
         switch(area_SCREEN) {
-            case AREA_HOUR :   timer_HOUR = GET_NEW_TWO_DIGIT_VALUE(timer_HOUR, number); 
-                                if(IS_HOUR(timer_HOUR)){timer_HOUR = 0;} break;
-            case AREA_MIN  :   timer_MIN = GET_NEW_TWO_DIGIT_VALUE(timer_MIN, number);
-                                if(!IS_MIN_OR_SEC(timer_MIN)){timer_MIN = 0;} break;
-            case AREA_SEC  :   timer_SEC = GET_NEW_TWO_DIGIT_VALUE(timer_SEC, number); 
-                                if(!IS_MIN_OR_SEC(timer_SEC)){timer_SEC = 0;} break;
+            case AREA_HOUR : 
+            {
+              timer_HOUR = GET_NEW_TWO_DIGIT_VALUE(timer_HOUR, GET_NUMBER(key)); 
+              if(!IS_HOUR(timer_HOUR))timer_HOUR = 0; 
+              break;
+            }
+            case AREA_MIN  : 
+            {
+                timer_MIN = GET_NEW_TWO_DIGIT_VALUE(timer_MIN, GET_NUMBER(key));
+                if(!IS_MIN_OR_SEC(timer_MIN))timer_MIN = 0;
+                break;
+            }
+            case AREA_SEC  :
+            {
+               timer_SEC = GET_NEW_TWO_DIGIT_VALUE(timer_SEC, GET_NUMBER(key)); 
+               if(!IS_MIN_OR_SEC(timer_SEC))timer_SEC = 0;
+               break;
+            }  
             default : break;
         }
     }

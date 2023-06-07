@@ -108,7 +108,7 @@ typedef enum area_settings{
 typedef enum Main_buttons{
     KEY_DELETE = 0x7F,  
     KEY_ENTER,  // Start
-    KEY_BACSPACE,  // Stop
+    KEY_BACKSPACE,  // Stop
     KEY_SYNC,
     KEY_MAIN_SCREEN,
     KEY_CLOCK_SCREEN,
@@ -132,7 +132,7 @@ typedef enum Main_buttons{
 
 /*additional keys*/
 #define KEY_INIT KEY_DELETE
-#define KEY_PAUSA KEY_BACSPACE
+#define KEY_PAUSA KEY_BACKSPACE
 #define KEY_CLOSE KEY_MAIN_SCREEN
 #define DELETE_DATA REMOVE_TAS
 

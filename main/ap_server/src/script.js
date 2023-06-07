@@ -64,13 +64,8 @@ function sendData(formName)
             break;
         } else if(child.type === "time"){
             if(!data)data = arr;
-            let arr_time = value.split(':');
-            let hour = +arr_time[0];
-            let min = +arr_time[1];
-            let sec = +arr_time[2];
-            arr.push(Math.trunc(hour/10)+""+hour%10+"");
-            arr.push(Math.trunc(min/10)+""+min%10+"");
-            arr.push(Math.trunc(sec/10)+""+sec%10+"");
+            const arr_time = value.split(':');
+            arr.push(arr_time[0], arr_time[1]);
         } else if(child.type === "textarea"){
           data = value+"";
           break;

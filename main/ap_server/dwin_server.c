@@ -482,7 +482,7 @@ err:
 }
 
 
-static esp_err_t handler_get_data(httpd_req_t *req)
+static esp_err_t handler_give_data(httpd_req_t *req)
 {
     main_data_t * main_data = (main_data_t *)req->user_ctx;
     char *notif_send = malloc(LEN_DATA_SEND_NOTIF);
@@ -497,9 +497,23 @@ static esp_err_t handler_get_data(httpd_req_t *req)
     cJSON_AddStringToObject(root, "Key", api_KEY);
     cJSON_AddStringToObject(root, "City", name_CITY);
     cJSON_AddNumberToObject(root, "Status", uxBits);
-    for(size_t i=0, i_s=0; i<SIZE_BUF_NOTIFICATION; i++){
-        notif_send[i_s++] = notification_DATA[i]/10+'0';
-        notif_send[i_s++] = notification_DATA[i]%10+'0';
+    for(uint32_t day=0, notif=0, i_s=0, hour=0, min=0; i_s<LEN_DATA_SEND_NOTIF; notif++){
+        hour = VALUE_NOTIF_HOUR(notif, day);
+        min = VALUE_NOTIF_MIN(notif, day);
+        if(!IS_HOUR(hour)){
+            hour = 10;
+        }
+        if(!IS_MIN_OR_SEC(min)){
+            min = 0;
+        }
+        notif_send[i_s++] = hour/10 +'0';
+        notif_send[i_s++] = hour%10 +'0';
+        notif_send[i_s++] = min/10 +'0';
+        notif_send[i_s++] = min%10 + '0';
+        if(notif == NOTIF_PER_DAY){
+            notif = 0;
+            day++;
+        }
     }
     notif_send[LEN_DATA_SEND_NOTIF-1] = 0;
     cJSON_AddStringToObject(root, "Notification", notif_send);
@@ -545,10 +559,10 @@ err:
 }
 
 
-static esp_err_t notif_handler(httpd_req_t *req)
+static esp_err_t set_notif_handler(httpd_req_t *req)
 {
     const int total_len = req->content_len;
-    if(total_len > LEN_DATA_SEND_NOTIF || total_len%6){
+    if(total_len != LEN_DATA_SEND_NOTIF-1){
         DWIN_RESP_ERR(req, "Wrong data format", err);
     }
     char * const server_buf = malloc(LEN_DATA_SEND_NOTIF);
@@ -558,26 +572,32 @@ static esp_err_t notif_handler(httpd_req_t *req)
     main_data_t * main_data = (main_data_t *)req->user_ctx;
     const int received = httpd_req_recv(req, server_buf, total_len);
     if (received != total_len) {
-        DWIN_RESP_ERR(req, "Data not read", err);
+        DWIN_RESP_ERR(req, "Data not read", _err);
     }
-    for(size_t i=0, num_notif = 0, day=0;  total_len > i+6; ){
-        SET_NOTIF_HOUR(num_notif, day, GET_NUMBER(server_buf[i++])*10 + GET_NUMBER(server_buf[i++]));
-        SET_NOTIF_MIN(num_notif, day, GET_NUMBER(server_buf[i++])*10 + GET_NUMBER(server_buf[i++]));
-        SET_NOTIF_SEC(num_notif, day, GET_NUMBER(server_buf[i++])*10 + GET_NUMBER(server_buf[i++]));
-        if(num_notif < NOTIF_PER_DAY-1){
-            num_notif++
-        } else {
+    for(uint8_t i=0, num_notif = 0, day=0,val=0; total_len > i; num_notif++){
+        val = GET_NUMBER(server_buf[i])*10 + GET_NUMBER(server_buf[i+1]);
+        if(!IS_HOUR(val)){
+           DWIN_RESP_ERR(req, "Value hour is wrong", _err); 
+        }
+        SET_NOTIF_HOUR(num_notif, day, val);
+        i += 2;
+        val = GET_NUMBER(server_buf[i])*10 + GET_NUMBER(server_buf[i+1]);
+        if(!IS_MIN_OR_SEC(val)){
+           DWIN_RESP_ERR(req, "Value minute is wrong", _err); 
+        }
+        SET_NOTIF_MIN(num_notif, day, val);
+        i += 2;
+        if(num_notif == NOTIF_PER_DAY){
             day++;
-            if(day == SIZE_WEEK){
-                break;
-            }
             num_notif = 0;
-        }   
+        }
     }
     write_memory(main_data, DATA_NOTIF);
     httpd_resp_sendstr(req, "Update notification");
     free(server_buf);
     return ESP_OK;
+_err:
+    free(server_buf);
 err:
     return ESP_FAIL;
 }
@@ -643,7 +663,7 @@ esp_err_t set_run_webserver(main_data_t *main_data)
     httpd_uri_t get_setting = {
         .uri      = "/data?",
         .method   = HTTP_GET,
-        .handler  = handler_get_data,
+        .handler  = handler_give_data,
         .user_ctx = main_data
     };
     httpd_register_uri_handler(server, &get_setting);
@@ -804,7 +824,7 @@ esp_err_t set_run_webserver(main_data_t *main_data)
      httpd_uri_t notif_uri = {
         .uri      = "/Notification",
         .method   = HTTP_POST,
-        .handler  = notif_handler,
+        .handler  = set_notif_handler,
         .user_ctx = main_data
     };
     httpd_register_uri_handler(server, &notif_uri);

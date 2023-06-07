@@ -238,6 +238,8 @@ typedef struct sensor_data{
     char name[0];
 } __attribute__((packed))sensor_data_t;
 
+
+
 typedef struct {
     uint8_t area;
     char pwd_wifi[SIZE_BUF];
@@ -245,9 +247,8 @@ typedef struct {
     char city_name[SIZE_BUF];
     char buf_api[SIZE_BUF];
     uint8_t colors_interface[SIZE_COLOURS_INTERFACE];
-    uint8_t notif_data[SIZE_BUF_NOTIFICATION];
+    uint8_t *notif_data;
     weather_data_t *weather_data;
     sensor_data_t *sensor_data[NUMBER_SENSOR];
-    struct tm time;
+    struct tm *time;
 } main_data_t;
-

@@ -35,6 +35,7 @@ function createNotification()
       input.type = "time";
       input.name = "notif_"+day+"_"+row;
       input.value = "";
+      input.required = true;
       td.appendChild(input);
       tr_data.appendChild(td);
     }
