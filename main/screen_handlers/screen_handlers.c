@@ -11,7 +11,7 @@ enum state_task{
 void search_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {
     static wifi_ap_record_t* ap_info; 
-    static uint16_t ap_count;
+    static uint16_t ap_count, ap_count_show;
     static bool init;
     if(key == KEY_CLOSE) {
         if(init){
@@ -33,6 +33,7 @@ void search_screen_handler(void* main_data, esp_event_base_t base, int32_t key, 
         ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
         if(ap_count > MAX_SCAN_LIST_SIZE)ap_count = MAX_SCAN_LIST_SIZE;
         ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_count, ap_info));
+        ap_count_show = ap_count;
     } else if(KEY_IS_AREA_SCAN_SSID(key)) {
         if(area_SCREEN == GET_AREA_VALUE(key)) {
             strncpy(name_SSID, (const char*)ap_info[area_SCREEN].ssid, MAX_STR_LEN);
@@ -43,9 +44,12 @@ void search_screen_handler(void* main_data, esp_event_base_t base, int32_t key, 
         } else {
             if(GET_AREA_VALUE(key) < ap_count) area_SCREEN = GET_AREA_VALUE(key);
         }
+    } else if(key == KEY_NEXT && ap_count > MAX_SSID_PEER_SCREEN){
+        /* next or previous page */
+        ap_count_show *= -1;
     }
     dwin_set_pic(SEARCH_PIC);
-    esp_event_post_to(show_loop, EVENTS_SHOW, ap_count, ap_info, sizeof(ap_info), TIMEOUT_SEND_EVENTS);
+    esp_event_post_to(show_loop, EVENTS_SHOW, ap_count_show, ap_info, sizeof(ap_info), TIMEOUT_SEND_EVENTS);
 }
 
 void ap_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
@@ -69,13 +73,20 @@ void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* 
     static uint8_t pos, max;
     static char *selected_buf;
     static int pic;
-
+    static bool need_write;
     if(key == KEY_INIT) {
         area_SCREEN = END_AREA_SETTINGS;
         selected_buf = NULL;
         key = KEY_START_AREA;
+        pic = KEY_SETTING_SCREEN_LOWER;
     } else if(key == KEY_CLOSE) {
-    
+        if(need_write){
+            write_memory(main_data, DATA_API);
+            write_memory(main_data, DATA_CITY);
+            write_memory(main_data, DATA_PWD);
+            write_memory(main_data, DATA_SSID);
+            need_write = false;
+        }
         return;
     } else if(KEY_IS_AREA_SETTING(key)) {
         area_SCREEN = GET_AREA_VALUE(key);
@@ -88,13 +99,11 @@ void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* 
         }
         pos = strlen(selected_buf);
     } else if(key == KEY_SYNC) {
-        start_sta();
         get_weather();
-    } else if(key == KEY_ENTER) {
-        write_memory(main_data, DATA_API);
-        write_memory(main_data, DATA_CITY);
-        write_memory(main_data, DATA_PWD);
-        write_memory(main_data, DATA_SSID);
+    } else if(key == KEY_UPDATE_SCREEN) {
+        dwin_set_pic(pic);
+    } else if(key == KEY_ENTER && !need_write) {
+        need_write = true;
     } else if(key == KEY_SETTING_SCREEN_LOWER) {
         pic = SETTING_LOW_LETTER_PIC;
     } else if(key == KEY_SETTING_SCREEN_UP) {
@@ -123,11 +132,11 @@ void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* 
         }
     }
     esp_event_post_to(show_loop, 
-                    EVENTS_SHOW, 
-                    KEY_UPDATE_SCREEN, 
-                    NULL, 
-                    0, 
-                    TIMEOUT_SEND_EVENTS);
+                        EVENTS_SHOW, 
+                        KEY_UPDATE_SCREEN, 
+                        NULL, 
+                        0, 
+                        TIMEOUT_SEND_EVENTS);
 }
 
 
@@ -288,7 +297,7 @@ void set_color_screen_handler(void* main_data, esp_event_base_t base, int32_t ke
     } else if(KEY_IS_AREA_TOGGLE(key)){
         uint8_t index_color = GET_AREA_VALUE_TOGGLE(key);
         if(index_color < SIZE_COLORS_INTERFACE){
-            colors_INTERFACE[area_SCREEN] = GET_COLOR[index_color];
+            colors_INTERFACE[area_SCREEN] = GET_COLOR(index_color);
         }
     } else if(key == KEY_ENTER){
         write_memory(main_data, DATA_COLOR);
@@ -354,7 +363,7 @@ void timer_screen_handler(void* main_data, esp_event_base_t base, int32_t key, v
     static int8_t *timer_data;
     static esp_event_handler_instance_t run_handler;
     if(key == KEY_CLOSE) {
-        if(handler_show){
+        if(run_handler){
             ESP_ERROR_CHECK(esp_event_handler_instance_unregister_with(
                     slow_service_loop,
                     EVENTS_SHOW,

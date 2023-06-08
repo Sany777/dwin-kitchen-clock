@@ -58,7 +58,7 @@ void get_weather_handler(void* main_data, esp_event_base_t base, int32_t key, vo
     weather_PIC = NO_WEATHER_PIC;
     xEventGroupClearBits(dwin_event_group, BIT_WEATHER_OK);
     DWIN_CHECK_FALSE_AND_GO((strnlen(api_KEY, SIZE_BUF) == MAX_STR_LEN) 
-                                && (strnlen(name_CITY, SIZE_BUF) != 0),
+                                || (strnlen(name_CITY, SIZE_BUF) == 0),
                                 st_1);
     EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);                                                                 
     if(!(xEventGroup&BIT_CON_STA_OK)){

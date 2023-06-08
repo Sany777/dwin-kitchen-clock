@@ -214,7 +214,7 @@ void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_s
 
 void timer_run_handler(void* data, esp_event_base_t base, int32_t key, void* event_data)
 {
-    int8_t *timer_data = (uint8_t*)data;
+    int8_t *timer_data = (int8_t*)data;
     static int count_buzer = NUMBER_SIG_BUZ;
     if(timer_SEC == 0 && timer_MIN == 0 && timer_HOUR){
         if(count_buzer){

@@ -4,7 +4,8 @@
 #include "limits.h"
 
 
-#define MAX_SCAN_LIST_SIZE 10
+#define MAX_SCAN_LIST_SIZE   20
+#define MAX_SSID_PEER_SCREEN 10
 
 /* for notify */
 #define NO_CLEAR_ENTRY     (0UL)

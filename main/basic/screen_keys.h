@@ -99,6 +99,7 @@ typedef enum Main_buttons{
 /*additional keys*/
 #define KEY_INIT KEY_DELETE
 #define KEY_START KEY_ENTER
+#define KEY_NEXT KEY_ENTER
 #define KEY_PAUSA KEY_BACKSPACE
 #define KEY_CLOSE KEY_MAIN_SCREEN
 #define KEY_CONNECT KEY_SYNC
