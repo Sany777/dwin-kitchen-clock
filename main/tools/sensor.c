@@ -29,7 +29,7 @@ sensor_data_t *get_sensor(main_data_t *main_data, const uint8_t *mac)
     return NULL;
 }
 
-bool set_sensor_data(main_data_t *main_data, const uint8_t *mac, const temperature_t temperature, const int humidity)
+bool set_sensor_data(main_data_t *main_data, const uint8_t *mac, const float temperature, const int humidity)
 {
     sensor_data_t *sensor = get_sensor(main_data, mac);
     if(!sensor){

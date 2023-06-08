@@ -10,7 +10,6 @@
 
 typedef void dwin_handler_t (void*, esp_event_base_t, int32_t, void*);
 
-typedef int temperature_t;
 
 typedef enum espnow_action{
     TRY_AGAIN,
@@ -83,7 +82,7 @@ typedef enum flag_state_device{
     CON_STA_OK,
     SENSOR_1_OK,
     SENSOR_2_OK,
-
+    RESPONSE_400_SERVER,
     SNTP_WORK,
     PROCESS_DWIN,
     ESPNOW_CONECT,
@@ -97,6 +96,8 @@ typedef enum flag_state_device{
 }flag_state_device_t;
 
 /*events bit*/
+
+#define BIT_RESPONSE_400_SERVER ( 1 << RESPONSE_400_SERVER )
 #define BIT_SOUNDS_ALLOW        ( 1 << SOUNDS_ALLOW )
 #define BIT_ESPNOW_ALLOW        ( 1 << ESPNOW_ALLOW )
 #define BIT_SYNC_TIME_ALLOW     ( 1 << SNTP_ALLOW )
@@ -109,11 +110,9 @@ typedef enum flag_state_device{
 #define BIT_TIMER_RUN           ( 1 << TIMER_RUN )
 #define BIT_WEATHER_OK          ( 1 << WEATHER_OK )
 #define BIT_IS_TIME             ( 1 << IS_TIME )
-
 #define BIT_ESPNOW_CONECT       ( 1 << ESPNOW_CONECT )
 #define BIT_DWIN_RESPONSE_OK    ( 1 << RESPONSE_OK )
 #define BIT_PROCESS             ( 1 << PROCESS_DWIN )
-
 #define BIT_ETHERNET            ( 1 << ETHERNET_OK )
 #define BIT_SEN_1               ( 1 << SENSOR_1_OK )
 #define BIT_SEN_2               ( 1 << SENSOR_2_OK )
@@ -142,7 +141,7 @@ typedef enum data_identification{
 /*package espnow*/
 typedef struct sensor_package{
     uint16_t crc;
-    temperature_t temperature;
+    float temperature;
     int humidity;
     time_t wakeup;
 }__attribute__((packed))sensor_package_t;
@@ -191,9 +190,9 @@ typedef struct {
     char description[LEN_BUF_DESCRIPTION];
     uint8_t pop[NUMBER_DATA_WEATHER];
     uint8_t dt_tx;
-    temperature_t indoor;
-    temperature_t feels_like[NUMBER_DATA_WEATHER];
-    temperature_t outdoor[NUMBER_DATA_WEATHER];
+    float indoor;
+    float feels_like[NUMBER_DATA_WEATHER];
+    float outdoor[NUMBER_DATA_WEATHER];
 } weather_data_t;
 
 /* data struct timer func*/
@@ -234,7 +233,7 @@ typedef struct device_inf {
 } device_inf_t;
 
 typedef struct sensor_data{
-    temperature_t temperature;
+    float temperature;
     int humidity;
     uint8_t mac[SIZE_MAC];
     char name[0];
@@ -248,9 +247,8 @@ typedef struct {
     char ssid_name[SIZE_BUF];
     char city_name[SIZE_BUF];
     char buf_api[SIZE_BUF];
-    uint8_t colors_interface[SIZE_COLORS_INTERFACE];
+    uint8_t colors_interface[COLOR_INTERFACE_NUMBER];
     uint8_t *notif_data;
     weather_data_t *weather_data;
     sensor_data_t *sensor_data[NUMBER_SENSOR];
-    struct tm *time;
 } main_data_t;

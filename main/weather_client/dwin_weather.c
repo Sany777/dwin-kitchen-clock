@@ -91,6 +91,12 @@ void get_weather_handler(void* main_data, esp_event_base_t base, int32_t key, vo
     esp_http_client_handle_t client = esp_http_client_init(&config);
     DWIN_CHECK_AND_GO(esp_http_client_perform(client), st_3);
     const size_t data_len = esp_http_client_get_content_length(client);
+    if(data_len == 0){
+        xEventGroupSetBits(dwin_event_group, BIT_RESPONSE_400_SERVER);
+        goto st_3;
+    } else if (xEventGroup&BIT_RESPONSE_400_SERVER){
+       xEventGroupClearBits(dwin_event_group, BIT_RESPONSE_400_SERVER); 
+    }
     char **pop = find_str_key(local_response_buffer, data_len, "\"pop\":");
     char **temp = find_str_key(local_response_buffer, data_len, "\"temp\":");
     char **temp_feel = find_str_key(local_response_buffer, data_len, "\"feels_like\":");
@@ -121,8 +127,7 @@ void get_weather_handler(void* main_data, esp_event_base_t base, int32_t key, vo
     weather_PIC = get_pic(atoi(id[0]), (dt_TX>sunset_HOUR-2));
     strncpy(description_WEATHER, description[0], LEN_BUF_DESCRIPTION);
     for(int i=0; temp && temp[i]; i++){
-        temp_OUTDOOR[i] = (atof(temp[i]))*10;
-        temp_FEELS_LIKE[i] = (atof(temp_feel[i]))*10;
+        temp_OUTDOOR[i] = atof(temp[i]);
         PoP[i] = (uint8_t) atoi(pop[i]);
     }
     xEventGroupSetBits(dwin_event_group, BIT_WEATHER_OK);

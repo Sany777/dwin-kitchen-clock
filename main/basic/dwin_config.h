@@ -45,7 +45,7 @@
 #define MAX_STR_LEN         SIZE_API
 #define SIZE_BUF            (MAX_STR_LEN+1)
 #define SIZE_BRIGHT         1
-#define SIZE_COLORS_INTERFACE           3
+#define COLOR_INTERFACE_NUMBER           3
 
 #define NOTIF_PER_DAY 4
 #define SIZE_NOTIFICATION       (SIZE_WEEK*NOTIF_PER_DAY*2)
@@ -72,7 +72,7 @@
 #define QUIET_BUZZER         30
 
 /* delays show data */
-#define DELAY_SHOW_ITEM          (75/portTICK_PERIOD_MS)
+#define DELAY_SHOW_ITEM          (50/portTICK_PERIOD_MS)
 #define DELAY_SHOW_MESSAGE       (2000/portTICK_PERIOD_MS)
 #define DELAY_CHANGE_PIC         (50/portTICK_PERIOD_MS)
 
@@ -150,3 +150,5 @@
 #define SIZE_SHOW_BUF 250
 
 #define DELAY_CHANGE_CNTX 100
+
+#define NO_TEMP_SENSOR -100

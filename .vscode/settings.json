@@ -112,7 +112,8 @@
     "screen_keys.h": "c",
     "esp_system.h": "c",
     "limits": "c",
-    "cstdarg": "c"
+    "cstdarg": "c",
+    "show_screen_handlers.h": "c"
   },
   "idf.port": "/dev/ttyUSB0",
   "idf.flashType": "UART",

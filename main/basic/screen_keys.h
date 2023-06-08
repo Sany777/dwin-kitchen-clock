@@ -20,7 +20,7 @@
 #define SIZE_USED_COLORS 7
 static const uint16_t USED_COLORS[SIZE_USED_COLORS] = {WHITE, CAEN, BLUE, GREY, VIOLET, LEMON, RED};
 
-#define COLOR_ENABLE RED 
+#define COLOR_ENABLE LEMON 
 #define COLOR_DISABLE WHITE
 
 
@@ -32,7 +32,6 @@ typedef enum area_clock{
     AREA_HOUR,
     AREA_MIN,
     AREA_SEC,
-    AREA_HOUR_OFFSET,
     END_AREA_CLOCK,
 } area_clock_t;
 
@@ -95,6 +94,9 @@ typedef enum Main_buttons{
     CHECK_NET_DATA,
     KEY_END_BUTTONS
 }key_btn_t;
+
+#define KEY_INCREMENT '+'
+#define KEY_DECREMENT '-'
 
 /*additional keys*/
 #define KEY_INIT KEY_DELETE

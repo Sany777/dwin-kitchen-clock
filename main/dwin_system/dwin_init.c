@@ -10,8 +10,6 @@ void esp_init(void)
     assert(show_buf);
     main_data->weather_data = calloc(1, sizeof(weather_data_t));
     assert(main_data->weather_data);
-    main_data->time = calloc(1, sizeof(struct tm));
-    assert(main_data->time);
     dwin_event_group = xEventGroupCreate();
     assert(dwin_event_group);
     main_data->notif_data = calloc(1,SIZE_BUF_NOTIFICATION);
@@ -23,6 +21,7 @@ void esp_init(void)
     }
     int offset;
     read_memory(&offset, DATA_OFFSET);
+    temp_INDOOR = 100;
     set_timezone(offset);
     init_uart();
     read_all_memory(main_data);

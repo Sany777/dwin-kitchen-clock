@@ -36,7 +36,7 @@ void write_memory(void *main_data, const int data_identificator)
 		}
 		case DATA_COLOR :
 		{
-			nvs_set_blob(nvs_handle_dwin, "color", colors_INTERFACE, SIZE_COLORS_INTERFACE); 
+			nvs_set_blob(nvs_handle_dwin, "color", colors_INTERFACE, COLOR_INTERFACE_NUMBER); 
 			break;
 		}	
 		case DATA_NOTIF :
@@ -77,7 +77,7 @@ void read_memory(void *main_data, const int data_identificator)
 		}
 		case DATA_COLOR :
 		{
-			len = SIZE_COLORS_INTERFACE;
+			len = COLOR_INTERFACE_NUMBER;
 			nvs_get_blob(nvs_handle_dwin, "color", (uint8_t *)colors_INTERFACE, &len); 
 			break;
 		}

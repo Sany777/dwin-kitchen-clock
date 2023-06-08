@@ -219,6 +219,7 @@ if(last_step != step){
 void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {
     static int offset = -100;
+    static struct tm * dwin_time;
     if(KEY_IS_AREA_CLOCK(key)) {
         area_SCREEN = GET_AREA_VALUE(key);
     } else if(KEY_IS_NUMBER(key)) {
@@ -259,11 +260,6 @@ void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* ev
                 if(!IS_MIN_OR_SEC(dwin_time->tm_sec)) dwin_time->tm_sec = 0;
                 break; 
             }
-            case AREA_HOUR_OFFSET :
-            {
-                offset = GET_NEW_TWO_DIGIT_VALUE(offset, GET_NUMBER(key));
-                if(!IS_HOUR(offset))offset = 0;
-            }
             default:break;
         }
     } else if(key == KEY_ENTER) {
@@ -280,12 +276,33 @@ void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* ev
         }
         write_memory(main_data, DATA_FLAGS); 
     } else if(key == KEY_INIT) {
+        if(!dwin_time){
+            dwin_time = malloc(sizeof(struct tm));
+            assert(dwin_time);
+        }
+        time_t raw_time =  time(NULL);
+        gmtime_r(&raw_time, dwin_time);
         if(offset == -100){
             read_memory(&offset, DATA_OFFSET);
         }
         start_sntp();
+    } else if(key == KEY_INCREMENT){
+        if(offset < 23){
+            offset++;
+        } else {
+            offset = 0;
+        }  
+    } else if(key == KEY_DECREMENT){
+         if(offset > -23){
+            offset--;
+         } else {
+            offset = 0;
+         }
+    } else if(key == KEY_CLOSE){
+        free(dwin_time);
+        dwin_time = NULL;
     }
-    esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, &offset, sizeof(offset), TIMEOUT_SEND_EVENTS);
+    esp_event_post_to(show_loop, EVENTS_SHOW, offset, dwin_time, sizeof(dwin_time), TIMEOUT_SEND_EVENTS);
 }
 
 void set_color_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
@@ -296,7 +313,7 @@ void set_color_screen_handler(void* main_data, esp_event_base_t base, int32_t ke
         area_SCREEN = GET_AREA_VALUE(key);
     } else if(KEY_IS_AREA_TOGGLE(key)){
         uint8_t index_color = GET_AREA_VALUE_TOGGLE(key);
-        if(index_color < SIZE_COLORS_INTERFACE){
+        if(index_color < COLOR_INTERFACE_NUMBER){
             colors_INTERFACE[area_SCREEN] = GET_COLOR(index_color);
         }
     } else if(key == KEY_ENTER){

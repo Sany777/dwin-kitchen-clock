@@ -18,7 +18,6 @@
 
 /*for main_data instance*/
 #define area_SCREEN             (((main_data_t *)main_data)->area)
-#define dwin_time               (((main_data_t *)main_data)->time)
 #define pwd_WIFI                (((main_data_t *)main_data)->pwd_wifi)
 #define name_SSID               (((main_data_t *)main_data)->ssid_name)
 #define name_CITY               (((main_data_t *)main_data)->city_name)

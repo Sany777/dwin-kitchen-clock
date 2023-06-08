@@ -1,11 +1,11 @@
 #include "dwin_help.h"
 
 
-void set_timezone(int hour)
+void set_timezone(int offset)
 {
-    if(hour < 24 || hour > -24){
+    if(offset < 24 || offset > -24){
         char buf_format_time[SIZE_BUF_FORMAT_CLOCK] = {0};
-        sprintf(buf_format_time, "EET%+dEEST,M3.5.0/3,M10.5.0/4", hour);
+        sprintf(buf_format_time, "EET%+dEEST,M3.5.0/3,M10.5.0/4", offset);
         setenv("TZ", buf_format_time, 1);
         tzset();
     }

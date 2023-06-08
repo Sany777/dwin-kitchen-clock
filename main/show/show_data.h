@@ -36,16 +36,10 @@ void send_str(const char * format, ... );
 
 
 
-int send_with_eof(const char *data_to_send);
-void send_number(int number);
-void send_without_zero(const uint8_t number);
-void send_without_zero(const uint8_t number);
-void send_clock(const uint8_t hour, const uint8_t min);
-void send_temperature(temperature_t int_as_float);
+
 void send_in_frame(uint8_t row, 
                     const uint8_t column, 
                     const uint8_t font, 
                     const uint16_t color, 
                     const char *message
                     );
-void show_server(uint8_t *mac, char *str);

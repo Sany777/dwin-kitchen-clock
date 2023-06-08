@@ -1,53 +1,14 @@
 #include "show_screen_handlers.h"
 
-const int FONT_STANDART = 3, FONT_INFO = 2, FONT_SECOND_INFO = 1, FONT_BUTTON = 4;
-
-const char *MES_ON = " [ON]";
-const char *MES_OFF = " [OFF]";
-
-const char *WEEK_DAY[SIZE_WEEK] = {
-    "Mon", 
-    "Tue", 
-    "Wed", 
-    "Thu", 
-    "Fri", 
-    "Sat", 
-    "Sun", 
-};
-
-const char *WEEK_ALL_NAME[SIZE_WEEK] = {
-    "Monday", 
-    "Tuesday", 
-    "Wednesday", 
-    "Thursday", 
-    "Friday", 
-    "Saturday", 
-    "Sunday"
-};
-
-const size_t SIZE_MASSAGE_CUSTOM = 10;
-
-static const char* massage_custom [] = {
-    "Clock", 
-    "Desc", 
-    "Info", 
-    "WHITE", 
-    "BLUE", 
-    "RED", 
-    "VIOLET", 
-    "LEMON", 
-    "GREY",
-    "Set\tcolor"
-};
-
-
+const int NORMAL_FONT = 3, FONT_INFO = 2, FONT_SECOND_INFO = 1, FONT_BUTTON = 4;
+#define REPEAT_SEND 3
 
 void show_ap_handler(void* main_data, 
                         esp_event_base_t base,
                         int32_t state, 
                         void* event_data)
 {
-    print_start(1, 2, WHITE, FONT_STANDART);
+    print_start(1, 2, WHITE, NORMAL_FONT);
     if(!event_data){
         send_str(
                 "Connect to the AP with the name %s, enter the %s paswword and and go to the address in your browser %s",
@@ -73,7 +34,7 @@ void show_ssid_handler(void* main_data,
                                 void* event_data) 
 {
     wifi_ap_record_t *wifi_record = (wifi_ap_record_t*)event_data;
-    print_start(1, 3, LEMON, FONT_STANDART);
+    print_start(1, 3, LEMON, NORMAL_FONT);
     if(ssids_number == 0) {
          send_str("\n\nNo networks found");
     } else {
@@ -85,10 +46,13 @@ void show_ssid_handler(void* main_data,
             start_ind = 0;
             end_show = MIN(ssids_number, MAX_SSID_PEER_SCREEN);
         }
-        send_str("Find %d SSID \r\n  Name      Signal    Auth.", (int)ssids_number);
+        send_str("Find %d SSID \r\n  Name      Signal    Auth.", 
+                        ssids_number > 0 
+                        ? (int)ssids_number
+                        : (int)ssids_number*-1);
         print_end();
         for(int i=0; i<end_show; i++, start_ind++) {
-            vTaskDelay(DELAY_SHOW_ITEM/2);
+            vTaskDelay(DELAY_SHOW_ITEM);
             print_start(2+i, 0, GET_COLOR_AREA(i), FONT_INFO);
             send_str(" %d. %10.10s %u %8.8s",
                         start_ind+1,
@@ -98,6 +62,7 @@ void show_ssid_handler(void* main_data,
             print_end();
         }
         if(ssids_number != end_show){
+            vTaskDelay(DELAY_SHOW_ITEM);
             print_start(6, 10, RED, FONT_BUTTON);
             if(ssids_number > end_show){
                 send_str("->");
@@ -111,7 +76,7 @@ void show_ssid_handler(void* main_data,
 
 
 
-void show_setting_handler(void* main_data, 
+void show_net_settings_handler(void* main_data, 
                             esp_event_base_t base, 
                             int32_t id, 
                             void* event_data) 
@@ -128,12 +93,12 @@ void show_setting_handler(void* main_data,
                 if(xEventGroup&BIT_PROCESS){
                     send_str("Connection attempt...");
                 }else if(xEventGroup&BIT_CON_STA_OK) {
-                    send_str("WiFi connected ");
-                    if(xEventGroup&BIT_WEATHER_OK) {
-                        send_str("| server OK");
-                    } else {
-                        send_str("|bad key or no Ethernet");
-                    }
+                    send_str("WiFi Ok |%s",
+                        xEventGroup&BIT_WEATHER_OK
+                        ? "weather OK"
+                        : xEventGroup&BIT_RESPONSE_400_SERVER
+                            ? "bad key"
+                            : "no internet");
                 } else if(xEventGroup&BIT_SSID_FOUND){
                     send_str(" Wrong password WiFi");
                 } else {
@@ -141,22 +106,22 @@ void show_setting_handler(void* main_data,
                 }
                 break;
             case 1:
-                print_start(2, 1, GET_COLOR_AREA(i), FONT_STANDART);
+                print_start(2, 1, GET_COLOR_AREA(i), NORMAL_FONT);
                 send_str("SSID  : %s", name_SSID);
                 break;
             case 2:
-                print_start(3, 1, GET_COLOR_AREA(i), FONT_STANDART);
+                print_start(3, 1, GET_COLOR_AREA(i), NORMAL_FONT);
                 send_str("Password : %s", 
                                     xEventGroup&BIT_SECURITY || area_SCREEN != AREA_PASSWORD
                                     ? "*** WiFi password ***"
                                     : pwd_WIFI);
                 break;
             case 3:
-                print_start(4, 1, GET_COLOR_AREA(i), FONT_STANDART);
+                print_start(4, 1, GET_COLOR_AREA(i), NORMAL_FONT);
                 send_str("Name city : %s", name_CITY);
                 break;
             case 4:
-                print_start(5, 1, GET_COLOR_AREA(i), FONT_STANDART);
+                print_start(5, 1, GET_COLOR_AREA(i), NORMAL_FONT);
                 send_str("Key ");
                 if(area_SCREEN == AREA_API) {
                     send_str(api_KEY);
@@ -174,61 +139,46 @@ void show_setting_handler(void* main_data,
 
 void show_notify_handler(void* main_data, esp_event_base_t base, int32_t cur_day, void* event_data) 
 {
+    for(uint8_t day_count=0; day_count<SIZE_WEEK; day_count++) {
+        print_start(1+day_count, 0, cur_day == day_count ? WHITE : BLUE, FONT_INFO);
+        send_str("%.3s %s", WEEK_DAY[day_count], IS_DAY_ACTIVE(day_count) ? MES_ON : MES_OFF);
+        print_end();
+        vTaskDelay(DELAY_SHOW_ITEM);
+    }
+    send_in_frame(1, 1, FONT_INFO, 
+                        IS_DAY_ACTIVE(cur_day) 
+                        ? COLOR_ENABLE 
+                        : COLOR_DISABLE, 
+                        WEEK_DAY[cur_day]);
 
-    // uint8_t tmp;
-    // uint8_t last_notif = 0;
-    // uint8_t day_count=0;
-    // for(uint8_t i=0; i<6; i++) {
-    //     vTaskDelay(DELAY_SHOW_ITEM);
-    //     switch(i){
-    //         case 0 :
-    //             for(; day_count<SIZE_WEEK; day_count++) {
-    //                 print_start(2+day_count, 0, cur_day == day_count ? WHITE : BLUE, FONT_INFO);
-    //                 send_str(WEEK_DAY[day_count]);
-    //                 send_str(cur_day == day_count ? MES_ON : MES_OFF);
-    //                 dwin_end_print();
-    //             }
-    //             break;
-    //         case 1 :
-    //             send_in_frame(1, 1, FONT_INFO, 
-    //                                 cur_day == day_count ? COLOR_ENABLE : COLOR_DISABLE, 
-    //                                 WEEK_ALL_NAME[day]);
-    //             break;
-    //         case 2 :
-    //             for(int count_hour=0, area=0; count_hour<last_notif; count_hour++, area++) {
-    //                 tmp = GET_NOTIF_HOUR(day, count_hour);
-    //                 print_start(2+count_hour, 6, GET_COLOR_AREA(area), FONT_STANDART);
-    //                 if(IS_HOUR(tmp)){
-    //                     send_str("\t\t+");
-    //                     last_notif = count_hour;
-    //                 } else {
-    //                     send_str("\t\t-\t");
-    //                     send_two_number(tmp);
-    //                     send_str("\t\t:");
-    //                 }
-    //                 dwin_end_print();
-    //             }
-    //             break;
-    //         case 3 :
-    //             for(int area=AREA_MIN_1, count_min=0; count_min<last_notif; count_min++, area++) {
-    //                 tmp = GET_NOTIF_MIN(day, count_min);
-    //                 print_start(2+count_min, 12, GET_COLOR_AREA(area), FONT_STANDART);
-    //                 send_two_number(tmp);
-    //             }
-    //             break;
-    //         case 4 :
-    //             print_start(0, 1, color_CLOCK, FONT_INFO);
-    //             send_clock(cur_HOUR, cur_MIN);
-    //             break;
-    //         case 5 :
-    //             print_start(4, 9, COLOR_DISABLE, FONT_BUTTON);
-    //             if(is_ACTIVE_DAY(day))send_str("SET\tOFF");
-    //             else send_str("SET\tON");
-    //             break;
-    //         default: break;
-    //     }
-    //     dwin_end_print();
-    // }
+    bool area_min = false;
+    for(int notif_count=0, area=0; notif_count<NOTIF_PER_DAY; area++) {  
+        vTaskDelay(DELAY_SHOW_ITEM);
+        print_start(2+notif_count, 
+                6 + area_min 
+                    ? 3
+                    : 0, 
+                GET_COLOR_AREA(area), 
+                NORMAL_FONT);
+        send_str("%s %d", 
+                        area_min 
+                        ? ":"
+                        : IS_NOTIF_ACTIVE(notif_count, cur_day) 
+                            ? MES_ON
+                            : MES_OFF,
+                        area_min 
+                        ? VALUE_NOTIF_MIN(notif_count, cur_day)
+                        : VALUE_NOTIF_HOUR(notif_count, cur_day)
+                    );
+
+        if(area%MEMBER_IN_NOTIF == 0){
+            area_min = true;
+        } else {
+            area_min = false;
+            notif_count++;
+        }
+        print_end();
+    }
 }
 
 void show_custom_handler(void* main_data, 
@@ -236,213 +186,251 @@ void show_custom_handler(void* main_data,
                                     int32_t id, 
                                     void* event_data) 
 {
-    // if(main_data == NULL) main_data = (main_data_t *)main_data;
-    // static uint16_t color_item, color_area;
-    // int i=0;
-    // vTaskDelay(DELAY_SHOW_ITEM);
-    // for(; i<SIZE_COLORS_INTERFACE; ) {
-    //     color_area = GET_COLOR(colors_INTERFACE[i]);
-    //     print_start(1, i*5, color_area, FONT_STANDART);
-    //     if(area_SCREEN == i)send_str("[");
-    //     send_str(massage_custom[i]);
-    //     if(area_SCREEN == i)send_str("]");
-    //     dwin_end_print();
-    //     i++;
-    // }
-    // color_area = GET_COLOR(colors_INTERFACE[area_SCREEN]);
-    // vTaskDelay(DELAY_SHOW_ITEM);
-    // for(int color_it=0; color_it<SIZE_USED_COLORS; color_it++) {
-    //     color_item = GET_COLOR(color_it),
-    //     print_start(i+1, 1, color_item, FONT_STANDART);
-    //     if(color_item == color_area)send_str("<--");
-    //     send_str(massage_custom[i]);
-    //     dwin_end_print();
-    //     i++;
-    // }
-    // print_start(4, 9, COLOR_DISABLE, FONT_BUTTON);
-    // send_str(massage_custom[i]);
-    // dwin_end_print();
+    for(int i=0; i<COLOR_INTERFACE_NUMBER; i++) {
+        print_start(1, i*4, GET_COLOR(colors_INTERFACE[i]), NORMAL_FONT);
+        send_str(" %s%s%s ", 
+                    area_SCREEN == i
+                    ? "["
+                    : "",
+                    ITEM_CUSTOM_NAME[i],
+                    area_SCREEN == i
+                    ? "["
+                    : "");
+        print_end();
+        vTaskDelay(DELAY_SHOW_ITEM);
+    }
+    for(int color_count=0; color_count<SIZE_USED_COLORS; color_count++) {
+        print_start(color_count+1, 1, GET_COLOR(color_count), NORMAL_FONT);
+        send_str( "%s %s",
+                    COLOR_NAME[color_count],
+                    GET_COLOR(color_count) == GET_COLOR(colors_INTERFACE[area_SCREEN])
+                    ? "<--"
+                    : "" );
+        print_end();
+        vTaskDelay(DELAY_SHOW_ITEM);
+    }
+    send_in_frame(4, 9, color_DESC, FONT_BUTTON, "Set color");
+}
+
+void show_settings_handler(void* main_data, 
+                                    esp_event_base_t base, 
+                                    int32_t id, 
+                                    void* event_data) 
+{
+    EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
+    xEventGroup&BIT_ESPNOW_ALLOW
+        ? send_in_frame(2, 10, color_DESC, NORMAL_FONT, "ESPNOW ON")
+        : send_in_frame(2, 10, color_DESC, NORMAL_FONT, "ESPNOW OFF");
+    vTaskDelay(DELAY_SHOW_ITEM);
+    xEventGroup&BIT_SECURITY
+        ? send_in_frame(5, 10, color_DESC, NORMAL_FONT, "Security ON")
+        : send_in_frame(5, 10, color_DESC, NORMAL_FONT, "Security OFF");
+    vTaskDelay(DELAY_SHOW_ITEM);
+    xEventGroup&BIT_SOUNDS_ALLOW
+        ? send_in_frame(8, 10, color_DESC, NORMAL_FONT, "Sound ON")
+        : send_in_frame(8, 10, color_DESC, NORMAL_FONT, "Sound OFF");
+    vTaskDelay(DELAY_SHOW_ITEM);
+    xEventGroup&BIT_SYNC_TIME_ALLOW
+        ? send_in_frame(11, 10, color_DESC, NORMAL_FONT, "SNTP ON")
+        : send_in_frame(11, 10, color_DESC, NORMAL_FONT, "STNP OFF");
+    vTaskDelay(DELAY_SHOW_ITEM);
+    print_start(1, 10, COLOR_DISABLE, NORMAL_FONT);
+    send_str("State device\n\r  WiFi %s.\n\r  ESPNOW %s.\n\r  Service openweather.com %s.\n\r SNTP %s",
+                xEventGroup&BIT_CON_STA_OK
+                    ? "connect"
+                    : xEventGroup&BIT_SSID_FOUND
+                        ? "disconnect-wrong\tpassword"
+                        : "disconnect-SSID\tnot\tfound",
+                xEventGroup&BIT_ESPNOW_ALLOW
+                    ? xEventGroup&BIT_ESPNOW_CONECT
+                        ? xEventGroup&BIT_SEN_1
+                            ? xEventGroup&BIT_SEN_2
+                                ? "connect\twith\tsensores"
+                                : "connect\twith\tsensor"
+                            : "device"
+                        : "no\tdevices"
+                    : "denied",
+                xEventGroup&BIT_WEATHER_OK
+                    ? "work"
+                    : xEventGroup&BIT_RESPONSE_400_SERVER
+                        ? "not\twork-wrong key api"
+                        : "not\twork-no connection",
+                xEventGroup&BIT_SYNC_TIME_ALLOW
+                ? xEventGroup&BIT_SNTP_WORK
+                    ? "work"
+                    : "not work-no\tconnection"
+                : "denied");
+    print_end();
 }
 
 
 
+void show_clock_handler(void* main_data, 
+                                    esp_event_base_t base, 
+                                    int32_t offset_time, 
+                                    void* event_data)
+{
+    EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
+    struct tm *cur_time = (struct tm *)event_data;
+    for(uint8_t i=0; i<8; i++) {
+        vTaskDelay(DELAY_SHOW_ITEM);
+        switch (i) {
+            case 0:
+                print_start(3, 1, GET_COLOR_AREA(i), NORMAL_FONT);
+                send_str("year 20%2.2d", cur_time->tm_hour);
+                break;
+            case 1:
+                print_start(3, 9, GET_COLOR_AREA(i), NORMAL_FONT);
+                send_str("month %2.2d", cur_time->tm_mon+1);
+                break;
+            case 2:
+                print_start(3, 15, GET_COLOR_AREA(i), NORMAL_FONT);
+                send_str("day %d", cur_time->tm_mday);
+                break;
+            case 3:
+                print_start(5, 1, GET_COLOR_AREA(i), NORMAL_FONT);
+                send_str("hour %d", cur_time->tm_hour);
+                break;
+            case 4:
+                print_start(5, 9, GET_COLOR_AREA(i), NORMAL_FONT);
+                send_str("min %d", cur_time->tm_min);
+                break;
+            case 5:
+                print_start(5, 15, GET_COLOR_AREA(i), NORMAL_FONT);
+                send_str("sec %d", cur_time->tm_sec);
+                break;
+            case 6:
+                print_start(0, 2, color_DESC, FONT_INFO);
+                send_str("Mode update time [%s], there is %sactual time.\n\r",
+                    xEventGroup&BIT_SYNC_TIME_ALLOW
+                        ? "SNTP"
+                        : "manual",
+                    !(xEventGroup&BIT_IS_TIME)
+                        ? "no "
+                        : "");
+                break;
+            case 7:
+                print_start(1, 3, color_DESC, NORMAL_FONT);
+                send_str("Service SNTP %swork. Offset time :  [+] %+d [-]",
+                        xEventGroup&BIT_SNTP_WORK
+                        ? ""
+                        : "not ",
+                        (int)offset_time);
+                break;
+            default : break;
+        }
+        print_end();
+    }
+}
 
+void show_main_handler(void* main_data, 
+                                esp_event_base_t base, 
+                                int32_t data_sensor, 
+                                void* event_data) 
+{
+    struct tm *cur_time = get_time_tm();
+    for(uint32_t i=0; i<5; i++) {
+        vTaskDelay(DELAY_SHOW_ITEM);
+        switch (i) {
+            case 0:
+                print_start(2, 3, color_CLOCK, 6);
+                send_str("%2.d : %2.2d", cur_time->tm_hour, cur_time->tm_min);
+                break;
+            case 1:
+                print_start(8, 10, color_CLOCK, 2);
+                send_str("%s %d", 
+                            WEEK_DAY[cur_time->tm_wday], 
+                            cur_time->tm_mday);
+                break;
+            case 2:
+                if(weather_PIC == NO_WEATHER_PIC && temp_INDOOR == NO_TEMP_SENSOR) return;
+                print_start(1, 0, color_INFO, FONT_INFO);
+                if(weather_PIC != NO_WEATHER_PIC){
+                    send_str(" outdoor       t*C %2.1f\n\r toutdoor\tfeels like t*C %2.1f", 
+                                    temp_OUTDOOR[0], 
+                                    temp_FEELS_LIKE[0]);
+                }
+                if(data_sensor != NO_TEMP_SENSOR) {
+                    send_str(" inside    t*C %f2.1", temp_INDOOR);
+                }
+            case 3:
+                print_start(3, 4, color_DESC, NORMAL_FONT);
+                send_str("%s", description_WEATHER);
+                break;
+            case 4:
+                print_start(20, 12, color_INFO, FONT_SECOND_INFO);
+                send_str("sunrise  %d:%2.2d  sunset %d:%2.2d",
+                            sunrise_HOUR,
+                            sunrise_MIN,
+                            sunset_HOUR,
+                            sunset_MIN);
+                break;
+            default   : break;
+        }
+        print_end();
+    }
+}
 
-// void show_clock_handler(void* main_data, 
-//                                     esp_event_base_t base, 
-//                                     int32_t id, 
-//                                     void* event_data)
-// {
-//     static const  main_data_t *main_data = NULL; 
-//     if(main_data == NULL) main_data = (main_data_t *)main_data;
-//     for(uint8_t i=0; i<6; i++) {
-//         vTaskDelay(DELAY_SHOW_ITEM);
-//         switch (i) {
-//             case 0:
-//                 print_start(0, 2, COLOR_DISABLE, FONT_INFO);
-//                 if(DATA_PREPARING) {
-//                     sync_TIME
-//                     ? send_str("autoupdate time")
-//                     : send_str("manual update time");
-//                     internet_OK
-//                     ? send_str(" SNTP ok")
-//                     : send_str(" SNTP fail");
-//                 } else {
-//                     send_str("Waiting update data...");
-//                 }
-//                 break;
-//             case 1:
-//                 print_start(3, 1, GET_COLOR_AREA(i), FONT_STANDART);
-//                 send_str("year 20");
-//                 send_two_number(cur_YEAR);
-//                 break;
-//             case 2:
-//                 print_start(3, 9, GET_COLOR_AREA(i), FONT_STANDART);
-//                 send_str("month ");
-//                 send_two_number(cur_MONTH);
-//                 break;
-//             case 3:
-//                 print_start(3, 15, GET_COLOR_AREA(i), FONT_STANDART);
-//                 send_str("day ");
-//                 send_two_number(cur_DAY);
-//                 break;
-//             case 4:
-//                 print_start(5, 1, GET_COLOR_AREA(i), FONT_STANDART);
-//                 send_str("hour ");
-//                 send_two_number(cur_HOUR);
-//                 break;
-//             case 5:
-//                 print_start(5, 9, GET_COLOR_AREA(i), FONT_STANDART);
-//                 send_str("min ");
-//                 send_two_number(cur_MIN);
-//                 break;
-//             case 6:
-//                 print_start(5, 15, GET_COLOR_AREA(i), FONT_STANDART);
-//                 send_str("sec ");
-//                 send_two_number(cur_SEC);
-//                 break;
-//             default : break;
-//         }
-//         dwin_end_print();
-//     }
-// }
+void show_timer_run_handler(void* main_data, 
+                                    esp_event_base_t base, 
+                                    int32_t run, 
+                                    void* event_data) 
+{
+    int8_t *timer_data = (int8_t *)event_data;
+    print_start(2, 2, color_CLOCK, 6);
+    if(timer_HOUR){
+        send_str("%d : %2d : %2d",
+                    timer_HOUR,
+                    timer_MIN,
+                    timer_SEC);
+    } else if(timer_MIN) {
+        send_str("    %d : %2d",
+                    timer_MIN,
+                    timer_SEC);
+    } else {
+       send_str("      %d", timer_SEC); 
+    }        
+    print_end();
+}
 
+void show_timer_stop_handler(void* main_data, 
+                                    esp_event_base_t base, 
+                                    int32_t run, 
+                                    void* event_data) 
+{
+    uint8_t *timer_data = (uint8_t *)event_data;
+    vTaskDelay(DELAY_SHOW_ITEM);
+    print_start(0, 10, color_CLOCK, FONT_INFO);
+    send_str("%s", asctime(get_time_tm()));
+    print_end();
+    print_start(2, 2, color_CLOCK, 6);
+    send_str("%2d : %2d : %2d",
+                timer_HOUR,
+                timer_MIN,
+                timer_SEC);   
+    print_end();
+}
 
-
-// void show_main_handler(void* main_data, 
-//                                 esp_event_base_t base, 
-//                                 int32_t data_sensor, 
-//                                 void* event_data) 
-// {
-//     static const  main_data_t *main_data = NULL; 
-//     if(main_data == NULL) main_data = (main_data_t *)main_data;
-//     weather_t *data_weather = event_data;
-//     size_t count = data_weather != NULL ? 5 : 3;
-//     for(uint32_t i=0; i<count; i++) {
-//         vTaskDelay(DELAY_SHOW_ITEM);
-//         switch (i) {
-//             case 0:
-//                 print_start(2, 3, color_CLOCK, 6);
-//                 send_clock(cur_HOUR, cur_MIN);
-//                 break;
-//             case 1:
-//                 print_start(8, 10, color_CLOCK, 2);
-//                 send_str(WEEK_DAY[cur_WEEK_DAY]);
-//                 send_number(cur_DAY);
-//                 break;
-//             case 2:
-//                 if(data_weather == NULL && data_sensor == NO_TEMP_SENSOR)return;
-//                 print_start(0, 1, color_INFO, FONT_INFO);
-//                 if(data_sensor != NO_TEMP_SENSOR) {
-//                     send_str(" inside    t*C     ");
-//                     send_temperature(data_sensor);
-//                 }
-//                 if(data_weather != NULL) {
-//                     send_str("\n outside     t*C     ");
-//                     send_temperature(temp_OUTDOR);
-//                     send_str("\n feels like     t*C   ");
-//                     send_temperature(temp_FEELS_LIKE);
-//                     send_str("\n rain           %     ");
-//                     send_temperature(PoP);
-//                 }
-//                 break;
-//             case 3:
-//                 print_start(3, 4, color_DESC, FONT_STANDART);
-//                 send_str(description_WEATHER);
-//                 break;
-//             case 4:
-//                 print_start(20, 12, color_INFO, FONT_SECOND_INFO);
-//                 send_str("sunrise  ");
-//                 send_clock(sunrise_HOUR, sunrise_MIN);
-//                 send_str("sunset  ");
-//                 send_clock(sunset_HOUR, sunset_MIN);
-//                 break;
-//         default   : break;
-//         }
-//         dwin_end_print();
-//     }
-// }
-
-
-
-// void show_timer_handler(void* main_data, 
-//                                     esp_event_base_t base, 
-//                                     int32_t run, 
-//                                     void* event_data) 
-// {
-//     static const  main_data_t *main_data = NULL; 
-//     if(main_data == NULL) main_data = (main_data_t *)main_data;
-//     uint8_t *timer_data = (uint8_t *)event_data;
-//     if(timer_data == NULL)return;
-//     vTaskDelay(DELAY_SHOW_ITEM);
-//     print_start(0, 12, color_CLOCK, FONT_INFO);
-//     send_clock(cur_HOUR, cur_MIN);
-//     dwin_end_print();
-//     if(run){
-//         uint8_t column = timer_HOUR ? 1 : timer_MIN ? 2 : 4;
-//         print_start(column, 1, color_CLOCK, 6);
-//         if(send_non_zero(timer_HOUR)) {
-//             send_str(" : ");
-//             send_two_number(timer_MIN);
-//             send_str(" : ");
-//             send_two_number(timer_SEC);
-//         } else if(send_non_zero(timer_MIN)) {
-//             send_str(" : ");
-//             send_two_number(timer_SEC);
-//         } else {
-//             send_number(timer_SEC);
-//         }
-//     dwin_end_print();
-//     } else {
-//         for(int i=0; i<SIZE_TIMER; i++) {
-//             print_start(i*3, 1, GET_COLOR_AREA(i), 6);
-//             send_two_number(timer_data[i]);
-//             dwin_end_print();
-//         }
-//     }
-// }
-
-
-// void welcome() 
-// {
-//     const int H = 10;
-//     const int W = 24;
-//     for (int h_count = 1; h_count < H; h_count++) {
-//         vTaskDelay(DELAY_SHOW_ITEM);
-//         for (int w_count = h_count % 2 == 0 ? 5 : 3, countView = 0; w_count < W; countView++) {
-//             if (countView % 1000 == 0) {
-//                 w_count++;
-//                 if (w_count % (h_count % 2 == 0 ? 2 : 3) == 0) {
-//                     print_start(h_count, w_count, LEMON, 2);
-//                     send_non_zero((w_count * h_count * 3) % 100);
-//                     dwin_end_print();
-//                 }
-//             }
-//         }
-//     }
-//     print_start(3, 7, WHITE, FONT_STANDART);
-//     send_str("WAIT...");
-//     dwin_end_print();
-// }
+void welcome()
+{
+    const int H = 10;
+    const int W = 24;
+    for (int h_count = 1; h_count < H; h_count++) {
+        vTaskDelay(DELAY_SHOW_ITEM);
+        for (int w_count = h_count % 2 == 0 ? 5 : 3, countView = 0; w_count < W; countView++) {
+            if (countView % 1000 == 0) {
+                w_count++;
+                if (w_count % (h_count % 2 == 0 ? 2 : 3) == 0) {
+                    print_start(h_count, w_count, LEMON, 2);
+                    send_str("%d", (w_count * h_count * 3) % 100 );
+                    print_end();
+                }
+            }
+        }
+    }
+    print_start(3, 7, WHITE, NORMAL_FONT);
+    send_str("WAIT...");
+    print_end();
+}
 
 
