@@ -56,7 +56,7 @@ void ap_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void
 {
     if(key == KEY_INIT) {
         start_ap();
-        esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
+        esp_event_post_to(show_loop, EVENTS_SHOW, UPDATE_DATA_COMPLETE, NULL, 0, TIMEOUT_SEND_EVENTS);
     } else if(key == KEY_CLOSE) {
         esp_wifi_stop();
         start_sta();
@@ -96,7 +96,7 @@ void setting_screen_handler(void* main_data, esp_event_base_t base, int32_t key,
         pos = strlen(selected_buf);
     } else if(key == KEY_SYNC) {
         get_weather();
-    } else if(key == KEY_UPDATE_SCREEN) {
+    } else if(key == UPDATE_DATA_COMPLETE) {
         dwin_set_pic(pic);
     } else if(key == KEY_ENTER && !need_write) {
         need_write = true;
@@ -129,7 +129,7 @@ void setting_screen_handler(void* main_data, esp_event_base_t base, int32_t key,
     }
     esp_event_post_to(show_loop, 
                         EVENTS_SHOW, 
-                        KEY_UPDATE_SCREEN, 
+                        UPDATE_DATA_COMPLETE, 
                         NULL, 
                         0, 
                         TIMEOUT_SEND_EVENTS);
@@ -217,7 +217,7 @@ if(last_step != step){
     dwin_set_pic(weather_PIC);
     esp_event_post_to(show_loop, 
             EVENTS_SHOW, 
-            KEY_UPDATE_SCREEN, 
+            UPDATE_DATA_COMPLETE, 
             NULL, 
             0, 
             TIMEOUT_SEND_EVENTS);
@@ -346,7 +346,7 @@ void state_screen_handler(void* main_data, esp_event_base_t base, int32_t key, v
     } else if(key == KEY_ENTER){
         write_memory(NULL, DATA_FLAGS);
     }
-    esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, &xEventGroup, sizeof(xEventGroup), TIMEOUT_SEND_EVENTS);
+    esp_event_post_to(show_loop, EVENTS_SHOW, UPDATE_DATA_COMPLETE, &xEventGroup, sizeof(xEventGroup), TIMEOUT_SEND_EVENTS);
 }
 
 void set_color_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
@@ -364,7 +364,7 @@ void set_color_screen_handler(void* main_data, esp_event_base_t base, int32_t ke
         write_memory(main_data, DATA_COLOR);
     }
     if(key != KEY_CLOSE){
-        esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
+        esp_event_post_to(show_loop, EVENTS_SHOW, UPDATE_DATA_COMPLETE, NULL, 0, TIMEOUT_SEND_EVENTS);
     }
 }
 
@@ -446,7 +446,7 @@ void timer_run_handler(void* data, esp_event_base_t base, int32_t key, void* eve
             }
         }
     }
-    esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, timer_data, sizeof(timer_data), TIMEOUT_SEND_EVENTS);
+    esp_event_post_to(show_loop, EVENTS_SHOW, UPDATE_DATA_COMPLETE, timer_data, sizeof(timer_data), TIMEOUT_SEND_EVENTS);
 }
 
 void timer_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
@@ -466,7 +466,7 @@ void timer_screen_handler(void* main_data, esp_event_base_t base, int32_t key, v
         }
         return;
     }
-    if(key == KEY_START){
+    if(key == KEY_ENTER){
         set_periodic_event(
             slow_service_loop,
             EVENTS_SHOW, 
@@ -541,5 +541,5 @@ void timer_screen_handler(void* main_data, esp_event_base_t base, int32_t key, v
             default : break;
         }
     }
-    esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
+    esp_event_post_to(show_loop, EVENTS_SHOW, UPDATE_DATA_COMPLETE, NULL, 0, TIMEOUT_SEND_EVENTS);
 }

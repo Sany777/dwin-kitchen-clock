@@ -4,8 +4,11 @@
 
 #include "dwin_config.h"
 
-
 /*COLORS*/
+#define GREEN  0x076E
+#define AQUA   0x74FF
+#define YELLOW 0xFFF0
+#define ORANGE 0xFD8F
 #define WHITE  0xFFFF
 #define BLACK  0x0000
 #define CAEN   0x0410
@@ -20,7 +23,7 @@
 #define SIZE_USED_COLORS 7
 static const uint16_t USED_COLORS[SIZE_USED_COLORS] = {WHITE, CAEN, BLUE, GREY, VIOLET, LEMON, RED};
 
-#define COLOR_ENABLE LEMON 
+#define COLOR_ENABLE LEMON
 #define COLOR_DISABLE WHITE
 
 
@@ -39,7 +42,7 @@ typedef enum area_timer{
     AREA_TIMER_HOUR,
     AREA_TIMER_MIN,
     AREA_TIMER_SEC,
-    END_AREA_TIMER
+    END_AREA_TIMERS
 } area_stop_timer_t;
 
 typedef enum area_notifications{
@@ -61,6 +64,23 @@ typedef enum area_custom{
     END_AREA_COLORS
 } area_custom_t;
 
+typedef enum {
+    KEY_SOUND_TOGGLE,
+    KEY_ESPNOW_TOGGLE,
+    KEY_SNTP_TOGGLE,
+    KEY_SECURITY,
+    END_AREA_STATE
+} area_toggle_state_t;
+
+typedef enum {
+    KEY_NOT_1_TOGGLE,
+    KEY_NOT_2_TOGGLE,
+    KEY_NOT_3_TOGGLE,
+    KEY_NOT_4_TOGGLE,
+    KEY_NOT_CURRENT_DAY_TOGGLE,
+    END_AREA_TOGGLE_NOTIF_STATE
+} area_toggle_notify_t;
+
 typedef enum area_settings{
     AREA_SSID,
     AREA_PASSWORD,
@@ -69,16 +89,11 @@ typedef enum area_settings{
     END_AREA_SETTINGS
 } area_settings_t;
 
-/* KEY BUTTON */
 typedef enum Main_buttons{
-    KEY_DELETE = 0x7F,  
-    KEY_ENTER,          
-    KEY_BACKSPACE,      
-    KEY_SYNC,           
-    KEY_MAIN_SCREEN,    
+    KEY_MAIN_SCREEN = 1,
     KEY_CLOCK_SCREEN,
     KEY_MENU_SCREEN,
-    KEY_DEVICE_SCREEN,
+    KEY_DETAILS_SCREEN,
     KEY_TIMER_SCREEN,
     KEY_SETTING_SCREEN_LOWER,
     KEY_SETTING_SCREEN_UP,
@@ -86,49 +101,83 @@ typedef enum Main_buttons{
     KEY_SEARCH_SSID_SCREEN,
     KEY_CUSTOM_SCREEN,
     KEY_NOTIF_SCREEN,
-    KEY_SETING_SERVER_SCREEN,
+    KEY_AP_SERVER,
+    KEY_DEVICE_STATUS,
+    KEY_INFO,
+    KEY_ESPNOW_DEVICES,
+    END_KEY_SCREEN_TASK
+}task_key_t;
+
+#define START_SCREEN_TASK KEY_MAIN_SCREEN
+
+
+/* AREA KEYS*/
+#define KEY_START_AREA                  0X20
+#define MAX_AREA_UNIT_ON_SCREEN         20
+#define END_KEY_AREA                    (KEY_START_AREA+MAX_AREA_UNIT_ON_SCREEN)
+/* DAY KEYS */
+#define KEY_DAY_1                       0X40
+#define END_KEY_DAY                     (KEY_DAY_1+SIZE_WEEK)
+/* TOGGLE DAY KEYS */
+#define KEY_TOGGLE_DAY_1                0X50
+#define END_KEY_TOGGLE_DAY              (KEY_TOGGLE_DAY_1+SIZE_WEEK)  
+/* TOGGLE KEYS */
+#define KEY_TOGGLE_1                    0X60
+#define MAX_TOGGLE_UNIT_ON_SCREEN       20
+#define END_KEY_TOGGLES                 (KEY_TOGGLE_1+MAX_TOGGLE_UNIT_ON_SCREEN)
+
+
+/* KEY BUTTON */
+typedef enum common_buttons_and_events{
+    KEY_DELETE = 0x80,
+    KEY_ENTER,
+    KEY_BACKSPACE,
+    KEY_SYNC,
     KEY_DEINIT,
     KEY_INIT,
-    KEY_UPDATE_SCREEN,
+    KEY_NEXT,
+    KEY_STOP,
+    KEY_PAUSA,
+    KEY_CLOSE,
+    KEY_INCREMENT,
+    KEY_DECREMENT,
+
+
+    KEY_END_COMMON_DWIN_BUTTONS,
+    START_STA,
+    INIT_AP,
+    CLOSE_CUR_CON,
+    INIT_SCAN_NETWORKS,
+    DEINIT_SCAN_NETWORKS,
+    START_SCAN_NETWORKS,
+    START_ESPNOW,
+    PAUSE_ESPNOW,
+    STOP_ESPNOW,
+    UPDATE_TIME,
+    INIT_SNTP,
+    STOP_SNTP,
+    INIT_ESPNOW,
+    STOP_WIFI,
+    SEND_RESULT,
+    SET_CONFIG,
+    SET_MODE_STA,
+    GET_WEATHER,
+    SHOW_SCREEN,
+    PUSH_KEY,
+    SELECT_TASK,
+    START_SERVICE,
+    UPDATE_TIME_FROM_UART,
+    UPDATE_TIME_FROM_ETHER,
+    UPDATE_TIME_FROM_MS,
+    SHOW_TIME,
+    GET_DATA_FROM_DEVICE,
+    DATA_SHOW,
+    TIMER_SHOW,
+    UPDATE_DATA_COMPLETE,
+    STATION_JOINE,
+    STATION_LEAVE,
     CHECK_NET_DATA,
-    KEY_END_BUTTONS
-}key_btn_t;
-
-#define KEY_INCREMENT '+'
-#define KEY_DECREMENT '-'
-
-/*additional keys*/
-#define KEY_INIT KEY_DELETE
-#define KEY_START KEY_ENTER
-#define KEY_NEXT KEY_ENTER
-#define KEY_SHOW_DETAILS KEY_ENTER
-#define KEY_PAUSA KEY_BACKSPACE
-#define KEY_CLOSE KEY_MAIN_SCREEN
-#define KEY_CONNECT KEY_SYNC
-
-#define START_SCREEN_TASKS_KEYS KEY_MAIN_SCREEN
-#define END_SCREEN_TASKS_KEYS KEY_SETING_SERVER_SCREEN
-
-/* CHAINING KEYS FOR CHOICE DISPLAY UNIT */
-
-#define KEY_START_AREA              1
-#define MAX_AREA_UNIT_ON_SCREEN     20
-#define END_AREA_TIMERS             (KEY_START_AREA+MAX_AREA_UNIT_ON_SCREEN)
-// start x15
-#define KEY_START_TOGGLE_AREA       (KEY_START_AREA+MAX_AREA_UNIT_ON_SCREEN)
-#define MAX_TOGGLE_UNIT_ON_SCREEN   10
-// start x91
-#define KEY_START_DAY               KEY_END_BUTTONS
-// start x98
-#define KEY_START_TOGLE_DAY         (KEY_START_DAY+SIZE_WEEK)
-
-typedef enum area_state{
-    KEY_SOUND_TOGGLE = KEY_START_TOGGLE_AREA,
-    KEY_ESPNOW_TOGGLE,
-    KEY_SNTP_TOGGLE,
-    KEY_SECURITY,
-    END_AREA_STATE
-} area_state_t;
+};
 
 /* PIC INDEX */
 typedef enum{
@@ -155,6 +204,7 @@ typedef enum{
     NOTIF_PIC,
     CUSTOM_COLORS_PIC,
     MENU_PIC,
-    DEVICE_PIC,
+    SHOW_INFO_PIC,
     END_LIST_PIC
 } picture_t;
+

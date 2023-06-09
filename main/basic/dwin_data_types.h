@@ -39,41 +39,6 @@ typedef enum mode_time_fun{
 } mode_time_func_t;
 
 
-enum events{
-    START_STA,
-    INIT_AP,
-    CLOSE_CUR_CON,
-    INIT_SCAN_NETWORKS,
-    DEINIT_SCAN_NETWORKS,
-    START_SCAN_NETWORKS,
-    START_ESPNOW,
-    PAUSE_ESPNOW,
-    STOP_ESPNOW,
-    UPDATE_TIME,
-    INIT_SNTP,
-    STOP_SNTP,
-    INIT_ESPNOW,
-    STOP_WIFI,
-    SEND_RESULT,
-    SET_CONFIG,
-    SET_MODE_STA,
-    GET_WEATHER,
-    SHOW_SCREEN,
-    PUSH_KEY,
-    SELECT_TASK,
-    START_SERVICE,
-    UPDATE_TIME_FROM_UART,
-    UPDATE_TIME_FROM_ETHER,
-    UPDATE_TIME_FROM_MS,
-    SHOW_TIME,
-    GET_DATA_FROM_DEVICE,
-    DATA_SHOW,
-    TIMER_SHOW,
-    UPDATE_DATA_COMPLETE,
-    STATION_JOINE,
-    STATION_LEAVE,
-};
-
 typedef enum flag_state_device{
     SOUNDS_ALLOW,
     ESPNOW_ALLOW,

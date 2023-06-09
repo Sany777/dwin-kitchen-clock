@@ -27,15 +27,15 @@
 
 /*GET INPUT VALUE*/
 #define GET_AREA_VALUE(key_from_dwin)             ((key_from_dwin)-KEY_START_AREA)
-#define GET_AREA_VALUE_TOGGLE(key_from_dwin)      ((key_from_dwin)-KEY_START_TOGGLE_AREA)
-#define GET_DAY_TOGGLE(key_from_dwin)             ((key_from_dwin)-KEY_START_TOGLE_DAY)
-#define GET_DAY(key_from_dwin)                    ((key_from_dwin)-KEY_START_DAY)
+#define GET_AREA_VALUE_TOGGLE(key_from_dwin)      ((key_from_dwin)-KEY_TOGGLE_1)
+#define GET_DAY_TOGGLE(key_from_dwin)             ((key_from_dwin)-KEY_TOGGLE_DAY_1)
+#define GET_DAY(key_from_dwin)                    ((key_from_dwin)-KEY_DAY_1)
 #define GET_NUMBER(key_from_dwin)                 ((key_from_dwin)-'0')
 #define GET_NEW_TWO_DIGIT_VALUE(old_val, in_val)  (((old_val) % 10) * 10+(in_val))
 #define GET_COLOR(item)                             (USED_COLORS[item])
-#define KEY_IS_SET_TASK(key_from_dwin)            ((key_from_dwin) >= START_SCREEN_TASKS_KEYS && \
-                                                            (key_from_dwin) <= END_SCREEN_TASKS_KEYS)
-#define GET_SCREEN_TASK(key_from_dwin)            ((key_from_dwin)-START_SCREEN_TASKS_KEYS)
+#define KEY_IS_SET_TASK(key_from_dwin)            ((key_from_dwin) >= START_SCREEN_TASK && \
+                                                            (key_from_dwin) <= END_KEY_SCREEN_TASK)
+#define GET_SCREEN_TASK(key_from_dwin)            ((key_from_dwin)-START_SCREEN_TASK)
 
 
 /*NOTIFICATIONS*/
@@ -134,12 +134,12 @@
 #define KEY_IS_AREA_SETTING(key_from_dwin)    ((key_from_dwin) >= KEY_START_AREA \
                                                     && (key_from_dwin) <= KEY_START_AREA+END_AREA_SETTINGS)
 #define KEY_IS_SYMBOL(key_from_dwin)          ((key_from_dwin) >= '!'&& (key_from_dwin) <= '~')
-#define KEY_IS_AREA_TOGGLE(key_from_dwin)     ((key_from_dwin) >= KEY_START_TOGGLE_AREA \
-                                                    && (key_from_dwin) <= (KEY_START_TOGGLE_AREA+MAX_TOGGLE_UNIT_ON_SCREEN))
-#define KEY_IS_AREA_TOGGLE_DAY(key_from_dwin) ((key_from_dwin) >= KEY_START_TOGLE_DAY \
-                                                    && (key_from_dwin) <= (KEY_START_TOGLE_DAY+SIZE_WEEK))
-#define KEY_IS_DAY(key_from_dwin)             ((key_from_dwin) >= KEY_START_DAY \
-                                                    && (key_from_dwin) <= KEY_START_DAY+SIZE_WEEK)
+#define KEY_IS_AREA_TOGGLE(key_from_dwin)     ((key_from_dwin) >= KEY_TOGGLE_1 \
+                                                    && (key_from_dwin) <= (KEY_TOGGLE_1+MAX_TOGGLE_UNIT_ON_SCREEN))
+#define KEY_IS_AREA_TOGGLE_DAY(key_from_dwin) ((key_from_dwin) >= KEY_TOGGLE_DAY_1 \
+                                                    && (key_from_dwin) <= (KEY_TOGGLE_DAY_1+SIZE_WEEK))
+#define KEY_IS_DAY(key_from_dwin)             ((key_from_dwin) >= KEY_DAY_1 \
+                                                    && (key_from_dwin) <= KEY_DAY_1+SIZE_WEEK)
 
 #define color_CLOCK                           (USED_COLORS[colors_INTERFACE[AREA_CLOCK_COLOR]])
 #define color_DESC                            (USED_COLORS[colors_INTERFACE[AREA_DESC_COLOR]])
