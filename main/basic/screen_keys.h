@@ -35,7 +35,6 @@ typedef enum area_clock{
     END_AREA_CLOCK,
 } area_clock_t;
 
-
 typedef enum area_timer{
     AREA_TIMER_HOUR,
     AREA_TIMER_MIN,
@@ -88,7 +87,7 @@ typedef enum Main_buttons{
     KEY_CUSTOM_SCREEN,
     KEY_NOTIF_SCREEN,
     KEY_SETING_SERVER_SCREEN,
-    KEY_BRIGHT,
+    KEY_DEINIT,
     KEY_INIT,
     KEY_UPDATE_SCREEN,
     CHECK_NET_DATA,
@@ -102,6 +101,7 @@ typedef enum Main_buttons{
 #define KEY_INIT KEY_DELETE
 #define KEY_START KEY_ENTER
 #define KEY_NEXT KEY_ENTER
+#define KEY_SHOW_DETAILS KEY_ENTER
 #define KEY_PAUSA KEY_BACKSPACE
 #define KEY_CLOSE KEY_MAIN_SCREEN
 #define KEY_CONNECT KEY_SYNC
@@ -121,6 +121,14 @@ typedef enum Main_buttons{
 #define KEY_START_DAY               KEY_END_BUTTONS
 // start x98
 #define KEY_START_TOGLE_DAY         (KEY_START_DAY+SIZE_WEEK)
+
+typedef enum area_state{
+    KEY_SOUND_TOGGLE = KEY_START_TOGGLE_AREA,
+    KEY_ESPNOW_TOGGLE,
+    KEY_SNTP_TOGGLE,
+    KEY_SECURITY,
+    END_AREA_STATE
+} area_state_t;
 
 /* PIC INDEX */
 typedef enum{

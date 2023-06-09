@@ -3,6 +3,7 @@
 const int NORMAL_FONT = 3, FONT_INFO = 2, FONT_SECOND_INFO = 1, FONT_BUTTON = 4;
 #define REPEAT_SEND 3
 
+
 void show_ap_handler(void* main_data, 
                         esp_event_base_t base,
                         int32_t state, 
@@ -135,8 +136,6 @@ void show_net_settings_handler(void* main_data,
     }
 }
 
-
-
 void show_notify_handler(void* main_data, esp_event_base_t base, int32_t cur_day, void* event_data) 
 {
     for(uint8_t day_count=0; day_count<SIZE_WEEK; day_count++) {
@@ -191,7 +190,7 @@ void show_custom_handler(void* main_data,
         send_str(" %s%s%s ", 
                     area_SCREEN == i
                     ? "["
-                    : "",
+                    : " ",
                     ITEM_CUSTOM_NAME[i],
                     area_SCREEN == i
                     ? "["
@@ -212,12 +211,12 @@ void show_custom_handler(void* main_data,
     send_in_frame(4, 9, color_DESC, FONT_BUTTON, "Set color");
 }
 
-void show_settings_handler(void* main_data, 
+void show_state_handler(void* main_data, 
                                     esp_event_base_t base, 
                                     int32_t id, 
                                     void* event_data) 
 {
-    EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
+    EventBits_t xEventGroup = *(EventBits_t *)event_data;
     xEventGroup&BIT_ESPNOW_ALLOW
         ? send_in_frame(2, 10, color_DESC, NORMAL_FONT, "ESPNOW ON")
         : send_in_frame(2, 10, color_DESC, NORMAL_FONT, "ESPNOW OFF");
@@ -230,7 +229,7 @@ void show_settings_handler(void* main_data,
         ? send_in_frame(8, 10, color_DESC, NORMAL_FONT, "Sound ON")
         : send_in_frame(8, 10, color_DESC, NORMAL_FONT, "Sound OFF");
     vTaskDelay(DELAY_SHOW_ITEM);
-    xEventGroup&BIT_SYNC_TIME_ALLOW
+    xEventGroup&BIT_SNTP_ALLOW
         ? send_in_frame(11, 10, color_DESC, NORMAL_FONT, "SNTP ON")
         : send_in_frame(11, 10, color_DESC, NORMAL_FONT, "STNP OFF");
     vTaskDelay(DELAY_SHOW_ITEM);
@@ -255,7 +254,7 @@ void show_settings_handler(void* main_data,
                     : xEventGroup&BIT_RESPONSE_400_SERVER
                         ? "not\twork-wrong key api"
                         : "not\twork-no connection",
-                xEventGroup&BIT_SYNC_TIME_ALLOW
+                xEventGroup&BIT_SNTP_ALLOW
                 ? xEventGroup&BIT_SNTP_WORK
                     ? "work"
                     : "not work-no\tconnection"
@@ -302,7 +301,7 @@ void show_clock_handler(void* main_data,
             case 6:
                 print_start(0, 2, color_DESC, FONT_INFO);
                 send_str("Mode update time [%s], there is %sactual time.\n\r",
-                    xEventGroup&BIT_SYNC_TIME_ALLOW
+                    xEventGroup&BIT_SNTP_ALLOW
                         ? "SNTP"
                         : "manual",
                     !(xEventGroup&BIT_IS_TIME)
@@ -320,6 +319,59 @@ void show_clock_handler(void* main_data,
             default : break;
         }
         print_end();
+    }
+}
+
+void show_details_weather_handler(main_data_t * main_data) 
+{
+    print_start(1, 7, color_INFO, FONT_BUTTON);
+    send_str_dwin(name_CITY);
+    print_end();
+    vTaskDelay(DELAY_SHOW_ITEM);
+    print_start(3, 0, 
+                    PoP[1] > 50 
+                        ? VIOLET 
+                        : color_INFO, 
+                    NORMAL_FONT);
+    send_str( "                %d:00   %d:00   %d:00   %d:00   %d:00", 
+                        dt_TX, 
+                        (dt_TX+3)%24, 
+                        (dt_TX+6)%24, 
+                        (dt_TX+9)%24, 
+                        (dt_TX+12)%24);
+    print_end();
+    vTaskDelay(DELAY_SHOW_ITEM);
+    print_start(4, 0, 
+                    PoP[1] > 50 
+                        ? VIOLET 
+                        : color_INFO, 
+                    NORMAL_FONT);
+    send_str(" rain  %%           %d      %d      %d      %d      %d", 
+                        PoP[0],
+                        PoP[1],
+                        PoP[2],
+                        PoP[3],
+                        PoP[4]);
+    print_end();
+    vTaskDelay(DELAY_SHOW_ITEM);
+    print_start(5, 0, color_INFO, NORMAL_FONT);
+    send_str( " temperature t*C  %2.1f   %2.1f   %2.1f   %2.1f   %2.1f\n\r feels like  t*C  %2.1f   %2.1f   %2.1f   %2.1f   %2.1f", 
+                    temp_OUTDOOR[0], 
+                    temp_OUTDOOR[1],
+                    temp_OUTDOOR[2],
+                    temp_OUTDOOR[3],
+                    temp_OUTDOOR[4],
+                    temp_FEELS_LIKE[0],
+                    temp_FEELS_LIKE[1],
+                    temp_FEELS_LIKE[2],
+                    temp_FEELS_LIKE[3],
+                    temp_FEELS_LIKE[4] );
+    print_end();
+    vTaskDelay(DELAY_SHOW_ITEM);
+    uint16_t *points = get_y_points(temp_FEELS_LIKE, NUMBER_ITEM_WEATHER, 40, 40);
+    if(points){
+        print_broken_line(points, NUMBER_ITEM_WEATHER, 30, 240);
+        free(points);
     }
 }
 
@@ -411,6 +463,7 @@ void show_timer_stop_handler(void* main_data,
     print_end();
 }
 
+
 void welcome()
 {
     const int H = 10;
@@ -432,5 +485,3 @@ void welcome()
     send_str("WAIT...");
     print_end();
 }
-
-

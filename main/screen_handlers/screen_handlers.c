@@ -139,13 +139,18 @@ void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* 
                         TIMEOUT_SEND_EVENTS);
 }
 
-
 void main_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {
     static uint8_t step, last_step;
     static bool menu_active;
     if(key == KEY_INIT){
         step = INIT_TASK;
+    } else if(key == KEY_SHOW_DETAILS){
+        xEventGroupSync(dwin_event_group, BIT_PROCESS, BIT_PROCESS, WAIT_PROCEES);
+        dwin_set_pic(NO_WEATHER_PIC);
+        show_details_weather_handler(main_data);
+        xEventGroupClearBits(dwin_event_group, BIT_PROCESS);
+        return;
     } else if(key == KEY_CLOSE) {
         if(menu_active)menu_active = false;
         else menu_active = true;     
@@ -155,12 +160,18 @@ void main_screen_handler(void* main_data, esp_event_base_t base, int32_t key, vo
             step = INIT_TASK;
         }
     } else  if(key == UPDATE_DATA_COMPLETE){
-        dwin_set_pic(weather_PIC);
         if(weather_PIC != NO_WEATHER_PIC){
             if(step != INIT_OK) step = INIT_OK;
         } else if(step != INIT_FAIL){
             step = INIT_FAIL;
         }
+    } else if(key == KEY_DEINIT){
+        step = DEINIT_TASK;
+        set_periodic_event( direct_loop, 
+                            EVENTS_MANAGER, 
+                            KEY_MAIN_SCREEN, 
+                            DELAY_AUTOCLOSE,
+                            ONLY_ONCE );
     }
 if(last_step != step){
     last_step = step;
@@ -183,6 +194,7 @@ if(last_step != step){
         {
             remove_periodic_event(WIFI_SET, GET_WEATHER);
             remove_periodic_event(EVENTS_SHOW, DATA_SHOW);
+            return;
         }
         case INIT_FAIL :
         {
@@ -191,7 +203,7 @@ if(last_step != step){
                                 GET_WEATHER, 
                                 DELAI_UPDATE_WEATHER_FAIL, 
                                 RELOAD_COUNT);
-            break;
+            return;
         }
         case INIT_OK :
         {
@@ -206,14 +218,13 @@ if(last_step != step){
         }
     
     }
-    if(step != DEINIT_TASK){
-        esp_event_post_to(show_loop, 
-                EVENTS_SHOW, 
-                KEY_UPDATE_SCREEN, 
-                NULL, 
-                0, 
-                TIMEOUT_SEND_EVENTS);
-    }
+    dwin_set_pic(weather_PIC);
+    esp_event_post_to(show_loop, 
+            EVENTS_SHOW, 
+            KEY_UPDATE_SCREEN, 
+            NULL, 
+            0, 
+            TIMEOUT_SEND_EVENTS);
 }
 
 void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
@@ -269,10 +280,10 @@ void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* ev
     } else if(key == KEY_SYNC) {
         EventBits_t xEventGroup = 
                     xEventGroupGetBits(dwin_event_group);                                                                 
-        if(xEventGroup&BIT_SYNC_TIME_ALLOW){
-            xEventGroupClearBits(dwin_event_group, BIT_SYNC_TIME_ALLOW);
+        if(xEventGroup&BIT_SNTP_ALLOW){
+            xEventGroupClearBits(dwin_event_group, BIT_SNTP_ALLOW);
         } else {
-            xEventGroupSetBits(dwin_event_group, BIT_SYNC_TIME_ALLOW);
+            xEventGroupSetBits(dwin_event_group, BIT_SNTP_ALLOW);
         }
         write_memory(main_data, DATA_FLAGS); 
     } else if(key == KEY_INIT) {
@@ -305,6 +316,43 @@ void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* ev
     esp_event_post_to(show_loop, EVENTS_SHOW, offset, dwin_time, sizeof(dwin_time), TIMEOUT_SEND_EVENTS);
 }
 
+void state_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
+{
+    EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
+    if(key == KEY_SOUND_TOGGLE){
+        if(xEventGroup&BIT_SOUNDS_ALLOW){
+            xEventGroup = xEventGroupClearBits(dwin_event_group, BIT_SOUNDS_ALLOW);
+        } else {
+            xEventGroup = xEventGroupSetBits(dwin_event_group, BIT_SOUNDS_ALLOW);
+        }
+    } else if(key == KEY_ESPNOW_TOGGLE){
+        if(xEventGroup&BIT_ESPNOW_ALLOW){
+            xEventGroup = xEventGroupClearBits(dwin_event_group, BIT_ESPNOW_ALLOW);
+            stop_espnow();
+       } else {
+            start_espnow();
+            xEventGroupSetBits(dwin_event_group, BIT_ESPNOW_ALLOW);
+       }
+    } else if(key == KEY_SNTP_TOGGLE){
+        if(xEventGroup&BIT_SNTP_ALLOW){
+            xEventGroup = xEventGroupClearBits(dwin_event_group, BIT_SNTP_ALLOW);
+            stop_sntp();
+        } else {
+            start_sntp();
+            xEventGroup = xEventGroupSetBits(dwin_event_group, BIT_SNTP_ALLOW);
+        }
+    } else if(key == KEY_SECURITY){
+        if(xEventGroup&BIT_SECURITY){
+            xEventGroup = xEventGroupClearBits(dwin_event_group, BIT_SECURITY);
+        } else {
+            xEventGroup = xEventGroupSetBits(dwin_event_group, BIT_SECURITY);
+        }
+    } else if(key == KEY_ENTER){
+        write_memory(NULL, DATA_FLAGS);
+    }
+    esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, &xEventGroup, sizeof(xEventGroup), TIMEOUT_SEND_EVENTS);
+}
+
 void set_color_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {
     if(key == KEY_INIT){
@@ -326,7 +374,7 @@ void set_color_screen_handler(void* main_data, esp_event_base_t base, int32_t ke
 
 
 void notification_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
-{  	
+{
     static uint8_t cur_day, cur_notif, cur_type_data;
     if(key == KEY_CLOSE) {
         return;

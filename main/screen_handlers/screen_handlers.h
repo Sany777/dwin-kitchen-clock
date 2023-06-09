@@ -25,4 +25,6 @@ dwin_handler_t customization_handler;
 dwin_handler_t notification_handler;
 dwin_handler_t timer_handler;
 
+void state_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
+
 

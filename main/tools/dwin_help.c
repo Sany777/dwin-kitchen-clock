@@ -11,20 +11,31 @@ void set_timezone(int offset)
     }
 }
 
-void fix_scale_height(uint16_t *h_points, 
-                const int number,
-                const uint16_t height)
+uint16_t * get_y_points(  float *h_points, 
+                                const int number,
+                                const uint16_t height,
+                                uint16_t row )
 {
-    uint8_t max_height = 0;
-    for(int i=0; i<number; i++){
-        if(h_points[i] > max_height){
-            max_height = h_points[i];
+    uint16_t *points_out = malloc(number*sizeof(uint16_t));
+    if(points_out){
+        float max_height = 0, min_height = 0xffff;
+        for(int i=0; i<number; i++){
+            if(h_points[i] > max_height){
+                max_height = h_points[i];
+            } 
+            if(h_points[i] < min_height){
+                min_height = h_points[i];
+            }
+        }
+        if(min_height < 0){
+            row += min_height * -1;
+        }
+        const float k_h = height/max_height;
+        for(int i=0; i<number; i++){
+            points_out[i] = h_points[i] * k_h + row;
         }
     }
-    const float k_h = height/max_height;
-    for(int i=0; i<number; i++){
-        h_points[i] = h_points[i] * k_h;
-    }
+    return points_out;
 }
 
 struct tm* get_time_tm()
@@ -38,7 +49,10 @@ void set_time_tv(struct timeval *tv)
 {
     settimeofday(tv, NULL);
     xEventGroupSetBits(dwin_event_group, BIT_IS_TIME);
-    esp_event_post_to(direct_loop, EVENTS_DIRECTION, KEY_UPDATE_SCREEN, NULL, 0, TIMEOUT_SEND_EVENTS);
+    esp_event_post_to(direct_loop, 
+                    EVENTS_DIRECTION, 
+                    UPDATE_DATA_COMPLETE, 
+                    NULL, 0, WAIT_WIFI_EVENT);
 }
 
 void set_time_tm(struct tm *timeptr, const bool update_dwin)
@@ -49,7 +63,6 @@ void set_time_tm(struct tm *timeptr, const bool update_dwin)
             .tv_sec = time,
         };
         set_time_tv(&tv);
-        xEventGroupSetBits(dwin_event_group, BIT_IS_TIME);
         if(update_dwin)dwin_clock_set(&timeptr);
     }
 }

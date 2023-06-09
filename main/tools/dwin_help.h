@@ -1,11 +1,12 @@
 #pragma once 
 #include "dwin_common.h"
 
-void fix_scale_height(uint16_t *h_points, 
-                const int number,
-                const uint16_t height);
-char *get_data_from_uri(const char *uri_str, 
-                                const char *base_path);
+uint16_t * get_y_points(  float *h_points, 
+                                const int number,
+                                const uint16_t height,
+                                uint16_t row );
+char *get_data_from_uri( const char *uri_str, 
+                         const char *base_path );
 
 char *get_chip(int model_id);
 void set_timezone(int hour);

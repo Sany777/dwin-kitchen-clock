@@ -83,6 +83,13 @@ static char INIT_UPDATE[] = {
     FRAME_END,
 };
 
+static char HEADER_SEND_BROKEN_LINE[] = {
+    FRAME_HEADER, 
+    COMMAND_BROKEN_LINE, 
+    VARIABLE_VALUE,
+    VARIABLE_VALUE,
+};
+
 static const char GET_TIME[] = {
     FRAME_HEADER, 
     COMMAND_GET_TIME, 

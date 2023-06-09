@@ -55,20 +55,24 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 
 void get_weather_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {
+    EventBits_t xEventGroup = xEventGroupWaitBits( dwin_event_group, 
+                                        BIT_PROCESS,   
+                                        false, false, 
+                                        WAIT_PROCEES);  
     weather_PIC = NO_WEATHER_PIC;
-    xEventGroupClearBits(dwin_event_group, BIT_WEATHER_OK);
+    if(xEventGroup&BIT_WEATHER_OK){
+        xEventGroupClearBits(dwin_event_group, BIT_WEATHER_OK);
+    }                                                            
     DWIN_CHECK_FALSE_AND_GO((strnlen(api_KEY, SIZE_BUF) == MAX_STR_LEN) 
                                 || (strnlen(name_CITY, SIZE_BUF) == 0),
                                 st_1);
-    EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);                                                                 
     if(!(xEventGroup&BIT_CON_STA_OK)){
         start_sta();
-        vTaskDelay(DELAY_CHANGE_CNTX);
-        xEventGroup = xEventGroupWaitBits(
-                    dwin_event_group, 
-                    BIT_PROCESS,   
-                    false, false, 
-                    WAIT_PROCEES); 
+        vTaskDelay(100);
+        xEventGroup = xEventGroupWaitBits( dwin_event_group, 
+                                            BIT_PROCESS,   
+                                            false, false, 
+                                            WAIT_PROCEES); 
     }
     DWIN_CHECK_FALSE_AND_GO(xEventGroup&BIT_CON_STA_OK, st_1);
     char *url_buf = (char*)calloc(1, SIZE_URL_BUF);

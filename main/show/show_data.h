@@ -18,12 +18,9 @@ void send_str(const char * format, ... );
                                 uart_write_bytes(UART_DWIN, arr, 1);        \
                              }while(0)
 
-#define send_str_dwin(str)                                                      \
-                            do{                                                 \
-                                size_t str_len = strlen(str);                   \
-                                if(str_len < MAX_DWIN_DATA){                    \
-                                    uart_write_bytes(UART_DWIN, str, str_len);  \
-                                }                                               \
+#define send_str_dwin(str)                                                          \
+                            do{                                                     \
+                                uart_write_bytes(UART_DWIN, str, strlen(str));  \
                             }while(0)
 
 #define send_message_dwin(message_str)                                                  \

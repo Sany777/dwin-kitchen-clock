@@ -64,7 +64,14 @@ void init_dwin_events(main_data_t *main_data)
                                 (void *)main_data,
                                 NULL
                             ));
-
+    ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
+                                slow_service_loop,
+                                WIFI_SET,
+                                STOP_SNTP,
+                                init_sntp_handler,
+                                (void *)main_data,
+                                NULL
+                            ));
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
                                 slow_service_loop,
                                 WIFI_SET,
@@ -82,14 +89,7 @@ void init_dwin_events(main_data_t *main_data)
                                 NULL
                             ));
 
-    ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                                slow_service_loop,
-                                EVENTS_SERVICE,
-                                SHOW_TIME,
-                                test_clock_handler,
-                                (void *)main_data,
-                                NULL
-                            ));
+    
     for(int i=0; i<SIZE_LIST_TASKS; i++){
             xTaskCreate(
                 list_services[i].pTask, 

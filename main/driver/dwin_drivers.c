@@ -40,10 +40,10 @@ void save_pic(const uint8_t pic)
     uart_write_bytes(UART_DWIN, SAVE_PIC, sizeof(SAVE_PIC));
 }
 
-void set_text_box(const uint16_t x_s, 
+void set_text_box(  const uint16_t x_s, 
                     const uint16_t y_s, 
                     const uint16_t x_e, 
-                    const uint16_t y_e)
+                    const uint16_t y_e  )
 {
     SET_TEXT_BOX[2] = x_s<<8;
     SET_TEXT_BOX[3] = x_s>>8;
@@ -65,10 +65,10 @@ void set_color(const uint16_t foreground, const uint16_t background)
     uart_write_bytes(UART_DWIN, SET_COLOR, sizeof(SET_COLOR));
 }
 
-void print_circle(const uint16_t x, 
+void print_circle(  const uint16_t x, 
                     const uint16_t y, 
                     const uint16_t radius, 
-                    const bool fill)
+                    const bool fill  )
 {
     CIRCULAR[1] = fill 
                 ? COMMAND_CIRCULAR_FILL_FOREGROUND 
@@ -82,58 +82,30 @@ void print_circle(const uint16_t x,
     uart_write_bytes(UART_DWIN, CIRCULAR, sizeof(CIRCULAR));
 }
 
+/* format [x1,y1,x2,y2]*/
 #define BYTE_PER_POINT_LINE 2
-void print_lines(const uint16_t *points, 
-                const int number_point, 
-                bool foreground)
+void print_lines(   const uint16_t *points, 
+                    const size_t number_point, 
+                    bool foreground  )
 {
-    const size_t len_command = 
-                    number_point*BYTE_PER_POINT_LINE
-                    + LEN_FRAME;
-    uint8_t *line_command = malloc(len_command);
-    if(line_command){
-        line_command[0] = FRAME_HEADER;
-        line_command[1] = foreground
-                        ? COMMAND_LINE_DISPLAY_FOREGROUND
-                        : COMMAND_LINE_DISPLAY_BACKGROUND;
-        if(line_command){
-            for(int command_i=INDEX_VARIABLE_VALUE, 
-                        points_i=0; points_i<number_point;)
-            {
-                line_command[command_i] = points[points_i]<<8;
-                line_command[command_i++] = points[points_i++]>>8;
-                line_command[command_i] = points[points_i]<<8;
-                line_command[command_i++] = points[points_i++]>>8;
-            }
-        }
-        uart_write_bytes(UART_DWIN, line_command, len_command);
-        print_end(); 
-    }
+    send_char(FRAME_HEADER);
+    send_char(foreground 
+                ? COMMAND_LINE_DISPLAY_FOREGROUND
+                : COMMAND_LINE_DISPLAY_BACKGROUND);
+    uart_write_bytes(UART_DWIN, points, sizeof(uint16_t)*number_point);
+    print_end(); 
 }
 
-void print_broken_line(const uint16_t *y_points, 
-                const int points_number,
-                const uint16_t x_start,
-                const uint16_t x_end)
+void print_broken_line( const uint16_t *y_points, 
+                        const size_t points_number,
+                        const char x_start,
+                        const char x_end )
 {
-    const size_t len_command = points_number * BYTE_PER_POINT_LINE
-                                    + LEN_FRAME;
-    uint8_t *line_command = (uint8_t *)malloc(len_command);
-    if(line_command){
-        line_command[0] = FRAME_HEADER;
-        line_command[1] = COMMAND_BROKEN_LINE;
-        if(line_command){
-            for(int command_i=INDEX_VARIABLE_VALUE, 
-                        points_i=0; points_i<points_number; 
-                        points_i++)
-            {
-                line_command[command_i++] = y_points[points_i]<<8;
-                line_command[command_i++] = y_points[points_i]>>8;
-            }
-        }
-        uart_write_bytes(UART_DWIN, line_command, len_command);
-        print_end(); 
-    }
+    HEADER_SEND_BROKEN_LINE[2] = x_end;
+    HEADER_SEND_BROKEN_LINE[3] = x_start;
+    send_str_dwin(HEADER_SEND_BROKEN_LINE);
+    uart_write_bytes(UART_DWIN, y_points, sizeof(uint16_t)*points_number);
+    print_end(); 
 }
 
 void print_rect(const uint16_t x_s, const uint16_t y_s, const uint16_t x_e, const uint16_t y_e)

@@ -51,6 +51,7 @@ enum events{
     STOP_ESPNOW,
     UPDATE_TIME,
     INIT_SNTP,
+    STOP_SNTP,
     INIT_ESPNOW,
     STOP_WIFI,
     SEND_RESULT,
@@ -100,7 +101,7 @@ typedef enum flag_state_device{
 #define BIT_RESPONSE_400_SERVER ( 1 << RESPONSE_400_SERVER )
 #define BIT_SOUNDS_ALLOW        ( 1 << SOUNDS_ALLOW )
 #define BIT_ESPNOW_ALLOW        ( 1 << ESPNOW_ALLOW )
-#define BIT_SYNC_TIME_ALLOW     ( 1 << SNTP_ALLOW )
+#define BIT_SNTP_ALLOW          ( 1 << SNTP_ALLOW )
 #define BIT_SECURITY            ( 1 << SECURITY )
 #define BIT_CON_STA_OK          ( 1 << CON_STA_OK )
 #define BIT_ESPNOW_RUN          ( 1 << ESPNOW_RUN )
@@ -116,7 +117,7 @@ typedef enum flag_state_device{
 #define BIT_ETHERNET            ( 1 << ETHERNET_OK )
 #define BIT_SEN_1               ( 1 << SENSOR_1_OK )
 #define BIT_SEN_2               ( 1 << SENSOR_2_OK )
-#define STORED_FLAGS            (1UL|BIT_SOUNDS_ALLOW|BIT_SYNC_TIME_ALLOW|BIT_ESPNOW_ALLOW|BIT_SECURITY )
+#define STORED_FLAGS            (1UL|BIT_SOUNDS_ALLOW|BIT_SNTP_ALLOW|BIT_ESPNOW_ALLOW|BIT_SECURITY )
 
 #define NUMBER_STORED_FLAGS 4
 
@@ -189,7 +190,7 @@ typedef struct {
     uint8_t timezone;
     char description[LEN_BUF_DESCRIPTION];
     uint8_t pop[NUMBER_DATA_WEATHER];
-    uint8_t dt_tx;
+    int dt_tx;
     float indoor;
     float feels_like[NUMBER_DATA_WEATHER];
     float outdoor[NUMBER_DATA_WEATHER];
