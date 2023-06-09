@@ -50,7 +50,7 @@ void show_notify_handler(void* main_data,
                             esp_event_base_t base, 
                             int32_t cur_day, 
                             void* event_data);
-void show_custom_handler(void* main_data, 
+void show_color_screen_handler(void* main_data, 
                             esp_event_base_t base, 
                             int32_t id, 
                             void* event_data);
@@ -74,5 +74,6 @@ void show_timer_stop_handler(void* main_data,
                             esp_event_base_t base, 
                             int32_t run, 
                             void* event_data);
+void show_details_weather(main_data_t * main_data);
 void welcome();
 

@@ -14,17 +14,13 @@
 #include "wifi_dwin.h"
 
 /*screen handlers*/
-dwin_handler_t setting_handler;
-dwin_handler_t search_handler;
-dwin_handler_t ap_handler;
-dwin_handler_t device_handler;
-dwin_handler_t main_handler;
-dwin_handler_t weather_detail_handler;
-dwin_handler_t clock_handler;
-dwin_handler_t customization_handler;
-dwin_handler_t notification_handler;
-dwin_handler_t timer_handler;
 
-void state_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
-
-
+void search_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
+void ap_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
+void setting_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
+void main_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
+void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
+void state_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
+void notifications_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
+void timer_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
+void timer_run_handler(void* data, esp_event_base_t base, int32_t key, void* event_data);

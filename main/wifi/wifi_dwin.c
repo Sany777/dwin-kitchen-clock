@@ -305,7 +305,7 @@ void init_sntp_handler(void* arg, esp_event_base_t event_base,
                     xEventGroupGetBits(dwin_event_group);                                                                 
             if(!(xEventGroup&BIT_CON_STA_OK)){
                 start_sta();
-                vTaskDelay(DELAY_CHANGE_CNTX);
+                vTaskDelay(100);
                 xEventGroup = xEventGroupWaitBits(
                             dwin_event_group, 
                             BIT_PROCESS,   

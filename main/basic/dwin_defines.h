@@ -96,7 +96,7 @@
         }                                                                   \
     }while(0) 
 
-#define SET_NOTIF_MIN(_number_notif, _day_week, _value)                     \  
+#define SET_NOTIF_MIN(_number_notif, _day_week, _value) \  
     do{                                                                     \
         VALUE_NOTIF_MIN((_number_notif), (_day_week)) = (_value);           \
     }while(0) 

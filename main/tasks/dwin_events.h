@@ -29,13 +29,13 @@ enum {
 typedef enum {
     MAIN_SCREEN,
     CLOCK_SCREEN,
-    DEVICE_SCREEN,
-    TIMER_SCREEN,
-    SETTING_SCREEN,
     SEARCH_SSID_SCREEN,
-    CUSTOMIZATION_SCREEN,
+    SETTING_SCREEN,
+    SET_COLOR_SCREEN,
     NOTIFICATION_SCREEN,
     SERVER_SCREEN,
+    STATE_DEVICE_SCREEN,
+    TIMER_SCREEN,
     MAIN_HANDLERS_LIST_END
 } identefier_handler_screen_t;
 
@@ -64,65 +64,66 @@ typedef struct {
 } handlers_dwin_t;
 
 
-extern  dwin_handler_t screen_change_handler;
-extern  dwin_handler_t setting_handler;
-extern  dwin_handler_t search_screen_handler;
-extern  dwin_handler_t ap_handler;
-extern  dwin_handler_t device_screen_handler;
-extern  dwin_handler_t main_screen_handler;
-extern  dwin_handler_t clock_handler;
-extern  dwin_handler_t set_color_screen_handler;
-extern  dwin_handler_t notification_screen_handler;
-extern  dwin_handler_t timer_screen_handler;
-
-
-extern  dwin_handler_t show_ssid_handler;
-extern  dwin_handler_t show_device_handler;
-extern  dwin_handler_t show_rename_device_handler;
-extern  dwin_handler_t show_notify_handler;
-extern  dwin_handler_t show_custom_handler;
-extern  dwin_handler_t show_setting_handler;
-extern  dwin_handler_t show_clock_handler;
-extern  dwin_handler_t show_main_handler;
-extern  dwin_handler_t show_timer_handler;
-
 extern  dwin_handler_t wifi_set_mode_handler;
+extern  dwin_handler_t  search_screen_handler;
+extern  dwin_handler_t  ap_screen_handler;
+extern  dwin_handler_t  setting_screen_handler;
+extern  dwin_handler_t  main_screen_handler;
+extern  dwin_handler_t  clock_handler;
+extern  dwin_handler_t  state_screen_handler;
+extern  dwin_handler_t  notifications_screen_handler;
+extern  dwin_handler_t  timer_screen_handler;
+extern  dwin_handler_t  set_color_screen_handler;
+
+extern  dwin_handler_t show_main_handler;
+extern  dwin_handler_t show_clock_handler;
+extern  dwin_handler_t show_ssid_handler;
+extern  dwin_handler_t show_settings_handler;
+extern  dwin_handler_t show_color_screen_handler;
+extern  dwin_handler_t show_notify_handler;
+extern  dwin_handler_t show_ap_handler;
+extern  dwin_handler_t show_state_handler;
+extern  dwin_handler_t show_timer_stop_handler;
 
 /* events structure */
  static handlers_dwin_t links_handlers_list[SIZE_LIST_HANDLERS] = {
-    // {
-    //     .main_handler    = main_screen_handler,
-    //     .show_handler    = show_main_handler,
-    // },
-    // {
-    //     .main_handler    = clock_handler,
-    //     .show_handler    = show_clock_handler,
-    // },    
-    // {
-    //     .main_handler    = device_screen_handler,
-    //     .show_handler    = show_device_handler,
-    // },
-    // {
-    //     .main_handler    = timer_screen_handler,
-    //     .show_handler    = show_timer_handler,
-    // },
-    // {
-    //     .main_handler    = search_screen_handler,
-    //     .show_handler    = show_ssid_handler,
-    // },
+    {
+        .main_handler    = main_screen_handler,
+        .show_handler    = show_main_handler,
+    },
+    {
+        .main_handler    = clock_handler,
+        .show_handler    = show_clock_handler,
+    },
+    {
+        .main_handler    = search_screen_handler,
+        .show_handler    = show_ssid_handler,
+    },
+    {
+        .main_handler    = setting_screen_handler,
+        .show_handler    = show_settings_handler,
+    },
+    {
+        .main_handler    = set_color_screen_handler,
+        .show_handler    = show_color_screen_handler,
+    },
+    {
+        .main_handler    = notifications_screen_handler,
+        .show_handler    = show_notify_handler,
+    },
+    {
+        .main_handler    = ap_screen_handler,
+        .show_handler    = show_ap_handler,
+    },
 
-    // {
-    //     .main_handler    = set_color_screen_handler,
-    //     .show_handler    = show_custom_handler,
-    // },
-    // {
-    //     .main_handler    = notification_screen_handler,
-    //     .show_handler    = show_notify_handler,
-    // },
-    // {
-    //     .main_handler    = ap_handler,
-    //     .show_handler    = NULL,
-    // },
+    {
+        .main_handler    = state_screen_handler,
+        .show_handler    = show_state_handler,
+    },
+    {
+        .main_handler    = timer_screen_handler,
+        .show_handler    = show_timer_stop_handler,
+    },
 };
 
 
@@ -173,8 +174,7 @@ void uart_event_task(void *);
                         }while(0) 
 void init_dwin_events(main_data_t*);
 void check_net_data_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data);
-void timer_run_handler(void* data, esp_event_base_t base, int32_t key, void* event_data);
-
+void set_screen_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data);
  static task_dwin_t list_services[SIZE_LIST_TASKS] = 
 {
     {

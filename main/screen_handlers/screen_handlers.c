@@ -52,7 +52,7 @@ void search_screen_handler(void* main_data, esp_event_base_t base, int32_t key, 
     esp_event_post_to(show_loop, EVENTS_SHOW, ap_count_show, ap_info, sizeof(ap_info), TIMEOUT_SEND_EVENTS);
 }
 
-void ap_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
+void ap_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {
     if(key == KEY_INIT) {
         start_ap();
@@ -63,12 +63,8 @@ void ap_handler(void* main_data, esp_event_base_t base, int32_t key, void* event
     }
 }
 
-void device_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
-{
 
-}
-
-void setting_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
+void setting_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {
     static uint8_t pos, max;
     static char *selected_buf;
@@ -148,7 +144,7 @@ void main_screen_handler(void* main_data, esp_event_base_t base, int32_t key, vo
     } else if(key == KEY_SHOW_DETAILS){
         xEventGroupSync(dwin_event_group, BIT_PROCESS, BIT_PROCESS, WAIT_PROCEES);
         dwin_set_pic(NO_WEATHER_PIC);
-        show_details_weather_handler(main_data);
+        show_details_weather(main_data);
         xEventGroupClearBits(dwin_event_group, BIT_PROCESS);
         return;
     } else if(key == KEY_CLOSE) {
@@ -316,7 +312,7 @@ void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* ev
     esp_event_post_to(show_loop, EVENTS_SHOW, offset, dwin_time, sizeof(dwin_time), TIMEOUT_SEND_EVENTS);
 }
 
-void state_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
+void state_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {
     EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
     if(key == KEY_SOUND_TOGGLE){
@@ -373,7 +369,7 @@ void set_color_screen_handler(void* main_data, esp_event_base_t base, int32_t ke
 }
 
 
-void notification_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
+void notifications_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {
     static uint8_t cur_day, cur_notif, cur_type_data;
     if(key == KEY_CLOSE) {
@@ -421,6 +417,37 @@ void notification_screen_handler(void* main_data, esp_event_base_t base, int32_t
     esp_event_post_to(show_loop, EVENTS_SHOW, cur_day, NULL, 0, TIMEOUT_SEND_EVENTS);
 }
 
+
+
+void timer_run_handler(void* data, esp_event_base_t base, int32_t key, void* event_data)
+{
+    int8_t *timer_data = (int8_t*)data;
+    static int count_buzer = NUMBER_SIG_BUZ;
+    if(timer_SEC == 0 && timer_MIN == 0 && timer_HOUR){
+        if(count_buzer){
+            dwin_buzer(LOUD_BUZZER);
+            count_buzer--;
+        } else {
+            esp_event_post_to(direct_loop, EVENTS_DIRECTION, KEY_INIT, NULL, 0, TIMEOUT_SEND_EVENTS);
+            count_buzer = NUMBER_SIG_BUZ;
+            return;
+        }
+    } else {
+        timer_SEC--;
+        if(timer_SEC < 0){
+            timer_SEC = 0;
+            timer_MIN--;
+            if(timer_MIN < 0){
+                timer_MIN = 0;
+                timer_HOUR--;
+                if(timer_HOUR < 0){
+                    timer_HOUR = 0;
+                }
+            }
+        }
+    }
+    esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, timer_data, sizeof(timer_data), TIMEOUT_SEND_EVENTS);
+}
 
 void timer_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {

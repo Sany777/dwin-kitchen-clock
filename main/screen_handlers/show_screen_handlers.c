@@ -77,7 +77,7 @@ void show_ssid_handler(void* main_data,
 
 
 
-void show_net_settings_handler(void* main_data, 
+void show_settings_handler(void* main_data, 
                             esp_event_base_t base, 
                             int32_t id, 
                             void* event_data) 
@@ -180,7 +180,7 @@ void show_notify_handler(void* main_data, esp_event_base_t base, int32_t cur_day
     }
 }
 
-void show_custom_handler(void* main_data, 
+void show_color_screen_handler(void* main_data, 
                                     esp_event_base_t base, 
                                     int32_t id, 
                                     void* event_data) 
@@ -322,7 +322,7 @@ void show_clock_handler(void* main_data,
     }
 }
 
-void show_details_weather_handler(main_data_t * main_data) 
+void show_details_weather(main_data_t * main_data) 
 {
     print_start(1, 7, color_INFO, FONT_BUTTON);
     send_str_dwin(name_CITY);
@@ -429,6 +429,9 @@ void show_timer_run_handler(void* main_data,
                                     void* event_data) 
 {
     int8_t *timer_data = (int8_t *)event_data;
+    print_start(1, 5, color_CLOCK, FONT_INFO);
+    send_str_dwin(asctime(get_time_tm()));
+    print_end();
     print_start(2, 2, color_CLOCK, 6);
     if(timer_HOUR){
         send_str("%d : %2d : %2d",

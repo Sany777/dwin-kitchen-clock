@@ -1,21 +1,5 @@
 #include "dwin_events.h"
 
-void test_clock_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data);
-void test_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)
-{
-    static int count;
-    ESP_LOGI(TAG, "test_handler %d", count++);
-}
-
-
-void test2_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)
-{
-    static int count;
-    ESP_LOGI(TAG, "test2_handler  %d", count++);
-}
-
-
-
 esp_event_loop_handle_t 
                 direct_loop, 
                 show_loop, 
@@ -52,7 +36,7 @@ void init_dwin_events(main_data_t *main_data)
                                 direct_loop,
                                 EVENTS_MANAGER,
                                 ESP_EVENT_ANY_ID,
-                                screen_change_handler,
+                                set_screen_handler,
                                 (void *)main_data,
                                 NULL
                             ));
@@ -104,7 +88,6 @@ void init_dwin_events(main_data_t *main_data)
 // xEventGroupSetBits(dwin_event_group, BIT_SSID_FOUND|BIT_IS_TIME|BIT_CON_STA_OK|BIT_SEN_2);
 
     // start_espnow();
-    start_ap();
     // vTaskDelay(10000/portTICK_PERIOD_MS);
     // esp_event_post_to(slow_service_loop, ESPNOW_SET, STOP_ESPNOW, NULL, 0, WAIT_SERVICE);
     // vTaskDelay(5000/portTICK_PERIOD_MS);
@@ -113,13 +96,6 @@ void init_dwin_events(main_data_t *main_data)
     // vTaskDelay(10000/portTICK_PERIOD_MS);
     // start_espnow();
 
-    set_periodic_event(
-        slow_service_loop,
-        EVENTS_SERVICE,
-        SHOW_TIME,
-        1,
-        RELOAD_COUNT
-    );
 }
 
 
@@ -143,7 +119,7 @@ void test_clock_handler(void* main_data, esp_event_base_t base, int32_t new_scre
     send_str(" asctime ::: %s", asctime(get_time_tm()));
 }
 
-void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)
+void set_screen_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)
 {
     if(new_screen >= SIZE_LIST_TASKS || new_screen < 0) return;
     static esp_event_handler_instance_t
@@ -209,37 +185,6 @@ void screen_change_handler(void* main_data, esp_event_base_t base, int32_t new_s
                             ));
     }
     esp_event_post_to(direct_loop, EVENTS_DIRECTION, KEY_INIT, NULL, 0, TIMEOUT_SEND_EVENTS);
-}
-
-
-void timer_run_handler(void* data, esp_event_base_t base, int32_t key, void* event_data)
-{
-    int8_t *timer_data = (int8_t*)data;
-    static int count_buzer = NUMBER_SIG_BUZ;
-    if(timer_SEC == 0 && timer_MIN == 0 && timer_HOUR){
-        if(count_buzer){
-            dwin_buzer(LOUD_BUZZER);
-            count_buzer--;
-        } else {
-            esp_event_post_to(direct_loop, EVENTS_DIRECTION, KEY_INIT, NULL, 0, TIMEOUT_SEND_EVENTS);
-            count_buzer = NUMBER_SIG_BUZ;
-            return;
-        }
-    } else {
-        timer_SEC--;
-        if(timer_SEC < 0){
-            timer_SEC = 0;
-            timer_MIN--;
-            if(timer_MIN < 0){
-                timer_MIN = 0;
-                timer_HOUR--;
-                if(timer_HOUR < 0){
-                    timer_HOUR = 0;
-                }
-            }
-        }
-    }
-    esp_event_post_to(show_loop, EVENTS_SHOW, KEY_UPDATE_SCREEN, timer_data, sizeof(timer_data), TIMEOUT_SEND_EVENTS);
 }
 
 void direction_task(void *pv)
