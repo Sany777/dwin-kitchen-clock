@@ -214,10 +214,9 @@ if(last_step != step){
         }
     
     }
-    dwin_set_pic(weather_PIC);
     esp_event_post_to(show_loop, 
             EVENTS_SHOW, 
-            UPDATE_DATA_COMPLETE, 
+            0, 
             NULL, 
             0, 
             TIMEOUT_SEND_EVENTS);

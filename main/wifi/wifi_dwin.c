@@ -274,11 +274,11 @@ void wifi_sta_handler(void* arg, esp_event_base_t event_base,
             retry_num = 0;
             xEventGroupSetBits(dwin_event_group, BIT_CON_STA_OK|BIT_SSID_FOUND);
             xEventGroupClearBits(dwin_event_group, BIT_PROCESS);
-            if(xEventGroup&BIT_SNTP_ALLOW && !(xEventGroup&BIT_IS_TIME)){
-                start_sntp();
-            }
             if(!(xEventGroup&BIT_WEATHER_OK)){
                 get_weather();
+            }
+            if(xEventGroup&BIT_SNTP_ALLOW && !(xEventGroup&BIT_IS_TIME)){
+                start_sntp();
             }
         }
     }

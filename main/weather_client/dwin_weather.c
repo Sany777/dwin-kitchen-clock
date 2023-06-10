@@ -104,7 +104,7 @@ void get_weather_handler(void* main_data, esp_event_base_t base, int32_t key, vo
     char **pop = find_str_key(local_response_buffer, data_len, "\"pop\":");
     char **temp = find_str_key(local_response_buffer, data_len, "\"temp\":");
     char **temp_feel = find_str_key(local_response_buffer, data_len, "\"feels_like\":");
-    char **description = find_str_key(local_response_buffer, data_len, "\"main\":\"");
+    char **description = find_str_key(local_response_buffer, data_len, "\"description\":\"");
     char **id = find_str_key(local_response_buffer, data_len, "\"id\":");
     char **sunrise = find_str_key(local_response_buffer, data_len, "\"sunrise\":");
     char **sunset = find_str_key(local_response_buffer, data_len, "\"sunset\":");
@@ -129,11 +129,12 @@ void get_weather_handler(void* main_data, esp_event_base_t base, int32_t key, vo
     sunset_MIN = timeinfo.tm_min;
     dt_TX = atoi((dt_txt[0]+SHIFT_DT_TX));
     weather_PIC = get_pic(atoi(id[0]), (dt_TX>sunset_HOUR-2));
-    strncpy(description_WEATHER, description[0], LEN_BUF_DESCRIPTION);
+    memset(description_WEATHER, 0, MAX_LEN_DESCRIPTION);
+    strncpy(description_WEATHER, description[0], MAX_LEN_DESCRIPTION);
     for(int i=0; temp && temp[i]; i++){
         temp_OUTDOOR[i] = atof(temp[i]);
         temp_FEELS_LIKE[i] = atof(temp_feel[i]);
-        PoP[i] = (uint8_t) atoi(pop[i]);
+        PoP[i] = atof(pop[i])*100;
     }
     xEventGroupSetBits(dwin_event_group, BIT_WEATHER_OK);
 st_4:

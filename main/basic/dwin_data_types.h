@@ -152,10 +152,10 @@ typedef struct {
     uint8_t sunrise_min;
     uint8_t sunset_hour;
     uint8_t sunset_min;
-    uint8_t timezone;
+    int timezone;
     char description[LEN_BUF_DESCRIPTION];
     uint8_t pop[NUMBER_DATA_WEATHER];
-    int dt_tx;
+    uint8_t dt_tx;
     float indoor;
     float feels_like[NUMBER_DATA_WEATHER];
     float outdoor[NUMBER_DATA_WEATHER];

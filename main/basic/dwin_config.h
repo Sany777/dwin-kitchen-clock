@@ -77,7 +77,7 @@
 #define QUIET_BUZZER         30
 
 /* delays show data */
-#define DELAY_SHOW_ITEM          (50/portTICK_PERIOD_MS)
+#define DELAY_SHOW_ITEM          (70/portTICK_PERIOD_MS)
 #define DELAY_SHOW_MESSAGE       (2000/portTICK_PERIOD_MS)
 #define DELAY_CHANGE_PIC         (50/portTICK_PERIOD_MS)
 

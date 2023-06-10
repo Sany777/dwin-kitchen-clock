@@ -23,7 +23,7 @@ void send_chunc(const char *data, const size_t data_len)
 void print_start(uint16_t row, uint16_t column, const uint16_t text_color, size_t font) 
 {
 	column = column * font * 8;
-	row = row * font * 10;
+	row = row * font * 11;
     PRINT[PRINT_FONT] = font;
 	PRINT[PRINT_COL_1] = column/256;
     PRINT[PRINT_COL_2] = column%256;
@@ -45,23 +45,23 @@ void set_text_box(  const uint16_t x_s,
                     const uint16_t x_e, 
                     const uint16_t y_e  )
 {
-    SET_TEXT_BOX[2] = x_s<<8;
-    SET_TEXT_BOX[3] = x_s>>8;
-    SET_TEXT_BOX[4] = y_s<<8;
-    SET_TEXT_BOX[5] = y_s>>8;
-    SET_TEXT_BOX[6] = x_e<<8;
-    SET_TEXT_BOX[7] = x_e>>8;
-    SET_TEXT_BOX[8] = y_e<<8;
-    SET_TEXT_BOX[9] = y_e>>8;
+    SET_TEXT_BOX[2] = x_s/256;
+    SET_TEXT_BOX[3] = x_s%256;
+    SET_TEXT_BOX[4] = y_s/256;
+    SET_TEXT_BOX[5] = y_s/256;
+    SET_TEXT_BOX[6] = x_e%256;
+    SET_TEXT_BOX[7] = x_e/256;
+    SET_TEXT_BOX[8] = y_e%256;
+    SET_TEXT_BOX[9] = y_e/256;
     uart_write_bytes(UART_DWIN, SET_TEXT_BOX, sizeof(SET_TEXT_BOX));
 }
 
 void set_color(const uint16_t foreground, const uint16_t background)
 {
-    SET_COLOR[2] = foreground<<8;
-    SET_COLOR[3] = foreground>>8;
-    SET_COLOR[4] = background<<8;
-    SET_COLOR[5] = background>>8;
+    SET_COLOR[2] = foreground%256;
+    SET_COLOR[3] = foreground/256;
+    SET_COLOR[4] = background%256;
+    SET_COLOR[5] = background/256;
     uart_write_bytes(UART_DWIN, SET_COLOR, sizeof(SET_COLOR));
 }
 
@@ -73,12 +73,12 @@ void print_circle(  const uint16_t x,
     CIRCULAR[1] = fill 
                 ? COMMAND_CIRCULAR_FILL_FOREGROUND 
                 : COMMAND_CIRCULAR_FOREGROUND;
-    CIRCULAR[2] = x>>8;
-    CIRCULAR[3] = x<<8;
-    CIRCULAR[4] = y>>8;
-    CIRCULAR[5] = y<<8;
-    CIRCULAR[6] = radius>>8;
-    CIRCULAR[7] = radius<<8;
+    CIRCULAR[2] = x/256;
+    CIRCULAR[3] = x%256;
+    CIRCULAR[4] = y/256;
+    CIRCULAR[5] = y%256;
+    CIRCULAR[6] = radius/256;
+    CIRCULAR[7] = radius%256;
     uart_write_bytes(UART_DWIN, CIRCULAR, sizeof(CIRCULAR));
 }
 
@@ -110,14 +110,14 @@ void print_broken_line( const uint16_t *y_points,
 
 void print_rect(const uint16_t x_s, const uint16_t y_s, const uint16_t x_e, const uint16_t y_e)
 {
-    RECTANGLE_ON[2] = x_s<<8;
-    RECTANGLE_ON[3] = x_s>>8;
-    RECTANGLE_ON[4] = y_s<<8;
-    RECTANGLE_ON[5] = y_s>>8;
-    RECTANGLE_ON[2] = x_e<<8;
-    RECTANGLE_ON[3] = x_e>>8;
-    RECTANGLE_ON[4] = y_e<<8;
-    RECTANGLE_ON[5] = y_e>>8;
+    RECTANGLE_ON[2] = x_s%256;
+    RECTANGLE_ON[3] = x_s/256;
+    RECTANGLE_ON[4] = y_s%256;
+    RECTANGLE_ON[5] = y_s/256;
+    RECTANGLE_ON[2] = x_e%256;
+    RECTANGLE_ON[3] = x_e/256;
+    RECTANGLE_ON[4] = y_e%256;
+    RECTANGLE_ON[5] = y_e/256;
     uart_write_bytes(UART_DWIN, RECTANGLE_ON, sizeof(RECTANGLE_ON));
 }
 

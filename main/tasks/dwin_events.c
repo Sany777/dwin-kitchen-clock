@@ -84,7 +84,7 @@ void init_dwin_events(main_data_t *main_data)
             NULL
         );
     }
-
+start_sntp();
     
 
     // xEventGroupSetBits(dwin_event_group, BIT_SSID_FOUND|BIT_IS_TIME|BIT_CON_STA_OK|BIT_SEN_2);
@@ -92,7 +92,7 @@ void init_dwin_events(main_data_t *main_data)
     // start_espnow();
     // vTaskDelay(10000/portTICK_PERIOD_MS);
     // esp_event_post_to(slow_service_loop, ESPNOW_SET, STOP_ESPNOW, NULL, 0, WAIT_SERVICE);
-    vTaskDelay(5000/portTICK_PERIOD_MS);
+    // vTaskDelay(5000/portTICK_PERIOD_MS);
     // start_espnow();
     // esp_event_post_to(slow_service_loop, ESPNOW_SET, PAUSE_ESPNOW, NULL, 0, WAIT_SERVICE);
     // vTaskDelay(10000/portTICK_PERIOD_MS);
@@ -107,11 +107,6 @@ void init_dwin_events(main_data_t *main_data)
             TIMEOUT_PUSH_KEY
         );
 
-
-        vTaskDelay(120000/portTICK_PERIOD_MS);
-        dwin_set_pic(NO_WEATHER_PIC);
-        start_sntp();
-        ESP_LOGI(TAG, "%s", (asctime(get_time_tm())));
 }
 
 

@@ -384,16 +384,17 @@ void show_main_handler(void* main_data,
                                 int32_t data_sensor, 
                                 void* event_data) 
 {
+    dwin_set_pic(weather_PIC);
     struct tm *cur_time = get_time_tm();
     for(uint32_t i=0; i<5; i++) {
         vTaskDelay(DELAY_SHOW_ITEM);
         switch (i) {
             case 0:
-                print_start(3, 4, color_CLOCK, 6);
+                print_start(3, 3, color_CLOCK, 6);
                 send_str("%2.d : %2.2d", cur_time->tm_hour, cur_time->tm_min);
                 break;
             case 1:
-                print_start(8, 10, color_CLOCK, 2);
+                print_start(8, 12, color_CLOCK, 2);
                 send_str("%s %d", 
                             WEEK_DAY[cur_time->tm_wday], 
                             cur_time->tm_mday);
@@ -402,20 +403,23 @@ void show_main_handler(void* main_data,
                 if(weather_PIC == NO_WEATHER_PIC && temp_INDOOR == NO_TEMP_SENSOR) return;
                 print_start(1, 0, color_INFO, FONT_INFO);
                 if(weather_PIC != NO_WEATHER_PIC){
-                    send_str(" outdoor       t*C %2.1f\n\r toutdoor\tfeels like t*C %2.1f", 
+                    send_str(" outdoor        t*C %2.1f\n\r feels like     t*C %2.1f\n\r Fall-out  %d%%", 
                                     temp_OUTDOOR[0], 
-                                    temp_FEELS_LIKE[0]);
+                                    temp_FEELS_LIKE[0],
+                                    PoP[0]
+                                    );
                 }
-                if(data_sensor != NO_TEMP_SENSOR) {
+                if(temp_INDOOR > NO_TEMP_SENSOR) {
                     send_str("\n\r inside    t*C %f2.1", temp_INDOOR);
                 }
+                break;
             case 3:
-                print_start(3, 2, color_DESC, NORMAL_FONT);
-                send_str("%s", description_WEATHER);
+                print_start(3, 4, color_DESC, FONT_BUTTON);
+                send_str_dwin(description_WEATHER);
                 break;
             case 4:
-                print_start(10, 5, color_INFO, FONT_SECOND_INFO);
-                send_str("sunrise  %d:%2.2d  sunset %d:%2.2d",
+                print_start(23, 15, color_INFO, FONT_SECOND_INFO);
+                send_str("Sunrise  %d:%2.2d  Sunset %d:%2.2d",
                             sunrise_HOUR,
                             sunrise_MIN,
                             sunset_HOUR,
