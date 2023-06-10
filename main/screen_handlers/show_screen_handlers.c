@@ -389,7 +389,7 @@ void show_main_handler(void* main_data,
         vTaskDelay(DELAY_SHOW_ITEM);
         switch (i) {
             case 0:
-                print_start(2, 3, color_CLOCK, 6);
+                print_start(3, 4, color_CLOCK, 6);
                 send_str("%2.d : %2.2d", cur_time->tm_hour, cur_time->tm_min);
                 break;
             case 1:
@@ -407,14 +407,14 @@ void show_main_handler(void* main_data,
                                     temp_FEELS_LIKE[0]);
                 }
                 if(data_sensor != NO_TEMP_SENSOR) {
-                    send_str(" inside    t*C %f2.1", temp_INDOOR);
+                    send_str("\n\r inside    t*C %f2.1", temp_INDOOR);
                 }
             case 3:
-                print_start(3, 4, color_DESC, NORMAL_FONT);
+                print_start(3, 2, color_DESC, NORMAL_FONT);
                 send_str("%s", description_WEATHER);
                 break;
             case 4:
-                print_start(20, 12, color_INFO, FONT_SECOND_INFO);
+                print_start(10, 5, color_INFO, FONT_SECOND_INFO);
                 send_str("sunrise  %d:%2.2d  sunset %d:%2.2d",
                             sunrise_HOUR,
                             sunrise_MIN,

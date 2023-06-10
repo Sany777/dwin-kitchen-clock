@@ -12,22 +12,22 @@ void init_uart()
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
         .source_clk = UART_SCLK_DEFAULT,
     };
-    ESP_ERROR_CHECK(uart_driver_install(UART_DWIN, UART_BUF_SIZE * 2, 0, SIZE_UART_EVENTS, (QueueHandle_t *)&dwin_uart_events_queue, 0));
+    ESP_ERROR_CHECK(uart_driver_install(UART_DWIN, UART_BUF_SIZE, 0, SIZE_UART_EVENTS, (QueueHandle_t *)&dwin_uart_events_queue, 0));
     assert(dwin_uart_events_queue);
     ESP_ERROR_CHECK(uart_param_config(UART_DWIN, &uart_config));
     esp_log_level_set(TAG, ESP_LOG_INFO);
-    uart_set_pin(UART_DWIN, UART_PIN_NO_CHANGE, RXD_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-    ESP_ERROR_CHECK(gpio_sleep_set_direction(
-                                RXD_PIN, 
-                                GPIO_MODE_INPUT));
-    ESP_ERROR_CHECK(gpio_sleep_set_pull_mode(
-                                RXD_PIN, 
-                                GPIO_PULLUP_ONLY));
-    ESP_ERROR_CHECK(uart_set_wakeup_threshold(
-                                UART_DWIN, 
-                                UART_WAKEUP_THRESHOLD));
-    ESP_ERROR_CHECK(esp_sleep_enable_uart_wakeup(
-                            UART_DWIN));
+    uart_set_pin(UART_DWIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+    // ESP_ERROR_CHECK(gpio_sleep_set_direction(
+    //                             RXD_PIN, 
+    //                             GPIO_MODE_INPUT));
+    // ESP_ERROR_CHECK(gpio_sleep_set_pull_mode(
+    //                             RXD_PIN, 
+    //                             GPIO_PULLUP_ONLY));
+    // ESP_ERROR_CHECK(uart_set_wakeup_threshold(
+    //                             UART_DWIN, 
+    //                             UART_WAKEUP_THRESHOLD));
+    // ESP_ERROR_CHECK(esp_sleep_enable_uart_wakeup(
+    //                         UART_DWIN));
 }
 
 
@@ -55,6 +55,9 @@ for(;;) {
                         && (buf_RX[byte_rx_count - 1] == 0xC3)  
                         && (buf_RX[byte_rx_count] == 0x3C))
                     {
+                        ESP_LOGI(TAG, "Get data buf_RX[INDEX_IDENTIF_DATA_IN_RX]=%c\n\r buf_RX[INDEX_START_DATA_IN_RX]=%c\n", buf_RX[INDEX_IDENTIF_DATA_IN_RX], buf_RX[INDEX_START_DATA_IN_RX]);
+
+                        
                         uint32_t key = buf_RX[INDEX_START_DATA_IN_RX];;
                             if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == KEY_READ_COMMAND) {
                                 if(key){

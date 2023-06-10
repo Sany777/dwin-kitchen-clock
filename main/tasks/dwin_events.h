@@ -190,17 +190,17 @@ void set_screen_handler(void* main_data, esp_event_base_t base, int32_t new_scre
     {
         .pTask = fast_services_task,
         .priority = PRIORITY_FAST_SERVICE,
-        .stack = 12000
+        .stack = 10000
     },
     {
         .pTask = slow_services_task,
         .priority = PRIORITY_SLOW_SERVICE,
-        .stack = 12000
+        .stack = 10000
     },
     {
         .pTask = uart_event_task,
-        .priority = PRIORITY_FAST_SERVICE,
-        .stack = 1024
+        .priority = 10,
+        .stack = 2048
     },
 };
 

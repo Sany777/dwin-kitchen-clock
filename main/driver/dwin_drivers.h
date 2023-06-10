@@ -40,7 +40,7 @@
 
 void print_start(uint16_t row, uint16_t column, 
 					const uint16_t text_color, 
-					const uint8_t font) ;
+					size_t font) ;
 void save_pic(const uint8_t pic);
 void set_text_box(const uint16_t x_s, 
                     const uint16_t y_s, 

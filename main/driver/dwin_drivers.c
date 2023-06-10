@@ -20,17 +20,17 @@ void send_chunc(const char *data, const size_t data_len)
     }
 }
 
-void print_start(uint16_t row, uint16_t column, const uint16_t text_color, const uint8_t font) 
+void print_start(uint16_t row, uint16_t column, const uint16_t text_color, size_t font) 
 {
-	column *= font * 8;
-	row *= font * 8;
+	column = column * font * 8;
+	row = row * font * 10;
     PRINT[PRINT_FONT] = font;
-    PRINT[PRINT_COLOR_1] = text_color>>8;
-    PRINT[PRINT_COLOR_2] = text_color<<8;
-	PRINT[PRINT_COL_1] = column>>8;
-    PRINT[PRINT_COL_2] = column<<8;
-    PRINT[PRINT_ROW_1] = row>>8;
-    PRINT[PRINT_ROW_2] = row<<8;
+	PRINT[PRINT_COL_1] = column/256;
+    PRINT[PRINT_COL_2] = column%256;
+    PRINT[PRINT_ROW_1] = row/256;
+    PRINT[PRINT_ROW_2] = row%256;
+    PRINT[PRINT_COLOR_1] = text_color/256;
+    PRINT[PRINT_COLOR_2] = text_color%256;
 	uart_write_bytes(UART_DWIN, PRINT, sizeof(PRINT));
 }
 

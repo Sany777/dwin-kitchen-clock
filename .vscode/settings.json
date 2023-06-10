@@ -114,7 +114,9 @@
     "limits": "c",
     "cstdarg": "c",
     "show_screen_handlers.h": "c",
-    "show_data.h": "c"
+    "show_data.h": "c",
+    "initializer_list": "c",
+    "uart_pins.h": "c"
   },
   "idf.port": "/dev/ttyACM0",
   "idf.flashType": "UART",

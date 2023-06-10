@@ -132,6 +132,7 @@ void get_weather_handler(void* main_data, esp_event_base_t base, int32_t key, vo
     strncpy(description_WEATHER, description[0], LEN_BUF_DESCRIPTION);
     for(int i=0; temp && temp[i]; i++){
         temp_OUTDOOR[i] = atof(temp[i]);
+        temp_FEELS_LIKE[i] = atof(temp_feel[i]);
         PoP[i] = (uint8_t) atoi(pop[i]);
     }
     xEventGroupSetBits(dwin_event_group, BIT_WEATHER_OK);

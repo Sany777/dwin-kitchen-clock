@@ -21,9 +21,10 @@ void esp_init(void)
     }
     int offset;
     read_memory(&offset, DATA_OFFSET);
-    temp_INDOOR = 100;
+    temp_INDOOR = NO_TEMP_SENSOR;
     set_timezone(offset);
     init_uart();
+    welcome();
     read_all_memory(main_data);
     wifi_init();
     init_dwin_events(main_data);

@@ -60,8 +60,13 @@
 #define UART_DWIN               0
 
 #define UART_WAKEUP_THRESHOLD   3
-#define U0RXD_GPIO_NUM 1
-#define U0TXD_GPIO_NUM 3
+
+// #define U0RXD_GPIO_NUM 1
+// #define U0TXD_GPIO_NUM 3
+
+#define U0RXD_GPIO_NUM 5
+#define U0TXD_GPIO_NUM 4
+
 
 #define TXD_PIN (U0RXD_GPIO_NUM)
 #define RXD_PIN (U0TXD_GPIO_NUM)
@@ -116,7 +121,7 @@
 #define MY_DEVICE_NAME "dwinScreen2"
 #define NUMBER_SENSOR 2
 
-#define VARIABLE_VALUE '\0'
+#define VARIABLE_VALUE 0
 
 /* AP */
 #define AP_WIFI_SSID      "NASA"
@@ -147,7 +152,7 @@
 
 #define SIZE_BUF_FORMAT_CLOCK (sizeof(FORMAT_CLOCK_DEFAULT)+2)
 
-#define SIZE_UART_EVENTS 5
+#define SIZE_UART_EVENTS 10
 #define SIZE_SHOW_BUF 250
 
 #define DELAY_AUTOCLOSE 180

@@ -165,7 +165,7 @@ static char RECTANGLE_ON[] = {
     FRAME_END,
 };
 
-static char PRINT[] = {
+static uint8_t PRINT[] = {
     FRAME_HEADER, 
     COMMAND_PRINT, 
     VARIABLE_VALUE, 
@@ -173,13 +173,12 @@ static char PRINT[] = {
     VARIABLE_VALUE, 
     VARIABLE_VALUE, 
     0x00,
-    0x80,
+    0x81,
     VARIABLE_VALUE,
     VARIABLE_VALUE,
     VARIABLE_VALUE,
     0xFF,
-    0XFF,
-    FRAME_END,
+    0XFF
 };
 
 static char SET_PIC[] = {
