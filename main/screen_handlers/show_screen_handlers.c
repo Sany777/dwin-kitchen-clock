@@ -217,24 +217,28 @@ void show_state_handler(void* main_data,
                                     void* event_data) 
 {
     EventBits_t xEventGroup = *(EventBits_t *)event_data;
-    xEventGroup&BIT_ESPNOW_ALLOW
-        ? send_in_frame(2, 10, color_DESC, NORMAL_FONT, "ESPNOW ON")
-        : send_in_frame(2, 10, color_DESC, NORMAL_FONT, "ESPNOW OFF");
+    send_in_frame(2, 15, color_DESC, NORMAL_FONT, 
+                            xEventGroup&BIT_ESPNOW_ALLOW
+                                ? "ESPNOW ON"
+                                : "ESPNOW OFF");
     vTaskDelay(DELAY_SHOW_ITEM);
-    xEventGroup&BIT_SECURITY
-        ? send_in_frame(5, 10, color_DESC, NORMAL_FONT, "Security ON")
-        : send_in_frame(5, 10, color_DESC, NORMAL_FONT, "Security OFF");
+    send_in_frame(5, 15, color_DESC, NORMAL_FONT, 
+                            xEventGroup&BIT_ESPNOW_ALLOW
+                                ? "Security ON" 
+                                : "Security OFF");
     vTaskDelay(DELAY_SHOW_ITEM);
-    xEventGroup&BIT_SOUNDS_ALLOW
-        ? send_in_frame(8, 10, color_DESC, NORMAL_FONT, "Sound ON")
-        : send_in_frame(8, 10, color_DESC, NORMAL_FONT, "Sound OFF");
+    send_in_frame(8, 15, color_DESC, NORMAL_FONT,  
+                            xEventGroup&BIT_SOUNDS_ALLOW
+                                ? "Sound ON"
+                                : "Sound OFF");
     vTaskDelay(DELAY_SHOW_ITEM);
-    xEventGroup&BIT_SNTP_ALLOW
-        ? send_in_frame(11, 10, color_DESC, NORMAL_FONT, "SNTP ON")
-        : send_in_frame(11, 10, color_DESC, NORMAL_FONT, "STNP OFF");
+    send_in_frame(11, 15, color_DESC, NORMAL_FONT, 
+                            xEventGroup&BIT_SNTP_ALLOW
+                            ? "SNTP ON"
+                            : "STNP OFF");
     vTaskDelay(DELAY_SHOW_ITEM);
     print_start(1, 10, COLOR_DISABLE, NORMAL_FONT);
-    send_str("State device\n\r  WiFi %s.\n\r  ESPNOW %s.\n\r  Service openweather.com %s.\n\r SNTP %s",
+    send_str("State device\n\r WiFi %s.\n\r ESPNOW %s.\n\r Service openweather.com %s.\n\r SNTP %s",
                 xEventGroup&BIT_CON_STA_OK
                     ? "connect"
                     : xEventGroup&BIT_SSID_FOUND

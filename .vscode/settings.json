@@ -116,10 +116,10 @@
     "show_screen_handlers.h": "c",
     "show_data.h": "c"
   },
-  "idf.port": "/dev/ttyUSB0",
+  "idf.port": "/dev/ttyACM0",
   "idf.flashType": "UART",
-  "idf.adapterTargetName": "esp32",
+  "idf.adapterTargetName": "esp32c3",
   "idf.openOcdConfigs": [
-    "board/esp32c2-bridge.cfg"
+    "board/esp32c3-bridge.cfg"
   ]
 }

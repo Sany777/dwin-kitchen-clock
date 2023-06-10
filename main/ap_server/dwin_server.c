@@ -141,7 +141,9 @@ static esp_err_t handler_update_dwin(httpd_req_t *req)
     if (received != total_len) {
         DWIN_RESP_ERR(req, "Failed to post control value", err);
     }
-    uart_write_bytes(UART_DWIN, server_buf, total_len);
+    server_buf[total_len] = 0;
+    vTaskDelay(100);
+    uart_write_bytes(UART_DWIN, server_buf, total_len+1);
     return ESP_OK;
 err:
     return ESP_FAIL;
@@ -345,7 +347,7 @@ static esp_err_t handler_set_network(httpd_req_t *req)
     cJSON *root = cJSON_Parse(server_buf);
     const cJSON *ssid_name_j = cJSON_GetObjectItemCaseSensitive(root, "SSID");
     const cJSON *pwd_wifi_j = cJSON_GetObjectItemCaseSensitive(root, "PWD");
-    const char *ssid_name, *pwd_wifi;
+    const char *ssid_name = NULL, *pwd_wifi = NULL;
     size_t pwd_len = 0, ssid_len = 0;
     if(cJSON_IsString(ssid_name_j) && (ssid_name_j->valuestring != NULL)){
         ssid_name = ssid_name_j->valuestring;

@@ -55,60 +55,75 @@ for(;;) {
                         && (buf_RX[byte_rx_count - 1] == 0xC3)  
                         && (buf_RX[byte_rx_count] == 0x3C))
                     {
-                        uint32_t key;
-                        if(buf_RX[INDEX_IDENTIF_DATA_IN_RX]){
+                        uint32_t key = buf_RX[INDEX_START_DATA_IN_RX];;
                             if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == KEY_READ_COMMAND) {
-                                key = buf_RX[INDEX_START_DATA_IN_RX];
-                                if(KEY_IS_SET_TASK(buf_RX[INDEX_IDENTIF_DATA_IN_RX])) {
-                                    esp_event_post_to(
-                                        direct_loop,
-                                        EVENTS_MANAGER,
-                                        key,
-                                        NULL,
-                                        0,
-                                        TIMEOUT_PUSH_KEY
-                                    );
-                                } else if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == KEY_GET_CLOCK){
-                                    struct tm tm_time = {
-                                        .tm_year = GET_DEC(buf_RX[1]),
-                                        .tm_mon = GET_DEC(buf_RX[2]),
-                                        .tm_mday = GET_DEC(buf_RX[3]),
-                                        .tm_hour = GET_DEC(buf_RX[5]),
-                                        .tm_min = GET_DEC(buf_RX[6]),
-                                        .tm_sec = GET_DEC(buf_RX[7]),
-                                    };
-                                    set_time_tm(&tm_time, false);
+                                if(key){
+                                    if(KEY_IS_SET_TASK(key)) {
+                                        esp_event_post_to(
+                                            direct_loop,
+                                            EVENTS_DIRECTION,
+                                            KEY_CLOSE,
+                                            NULL,
+                                            0,
+                                            TIMEOUT_PUSH_KEY
+                                        );
+                                        esp_event_post_to(
+                                            direct_loop,
+                                            EVENTS_MANAGER,
+                                            GET_SCREEN_TASK(key),
+                                            NULL,
+                                            0,
+                                            TIMEOUT_PUSH_KEY
+                                        );
+                                    } else {
+                                        esp_event_post_to(
+                                            direct_loop,
+                                            EVENTS_DIRECTION,
+                                            key,
+                                            NULL,
+                                            0,
+                                            TIMEOUT_PUSH_KEY
+                                        );  
+                                    }
                                 } else {
+                                    key = buf_RX[INDEX_IDENTIF_CHAR_IN_RX];
                                     esp_event_post_to(
-                                        direct_loop,
-                                        EVENTS_DIRECTION,
-                                        key,
-                                        NULL,
-                                        0,
-                                        TIMEOUT_PUSH_KEY
-                                    );
-                                }
-                            }
-                        } else {
-                                key = buf_RX[INDEX_IDENTIF_CHAR_IN_RX];
+                                            direct_loop,
+                                            EVENTS_DIRECTION,
+                                            key,
+                                            NULL,
+                                            0,
+                                            TIMEOUT_PUSH_KEY
+                                        );
+                                    }
+                            } else if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == KEY_GET_CLOCK){
+                                struct tm tm_time = {
+                                    .tm_year = GET_DEC(buf_RX[1]),
+                                    .tm_mon = GET_DEC(buf_RX[2]),
+                                    .tm_mday = GET_DEC(buf_RX[3]),
+                                    .tm_hour = GET_DEC(buf_RX[5]),
+                                    .tm_min = GET_DEC(buf_RX[6]),
+                                    .tm_sec = GET_DEC(buf_RX[7]),
+                                };
+                                set_time_tm(&tm_time, false);
+                            } else {
                                 esp_event_post_to(
-                                        direct_loop,
-                                        EVENTS_DIRECTION,
-                                        key,
-                                        NULL,
-                                        0,
-                                        TIMEOUT_PUSH_KEY
-                                    );
-                        }
-                        break;
-                    } else {
-                        byte_rx_count++;
-                        if(byte_rx_count >= SIZE_BUF) {
-                            break;
-                        }
+                                    direct_loop,
+                                    EVENTS_DIRECTION,
+                                    key,
+                                    NULL,
+                                    0,
+                                    TIMEOUT_PUSH_KEY
+                                );
+                            }
+                            break;    
                     }
-                } else if (buf_RX[byte_rx_count] == FRAME_HEADER) {
+                }  else if (buf_RX[byte_rx_count] == FRAME_HEADER) {
                     heder_ok = true;
+                }
+                byte_rx_count++;
+                if(byte_rx_count >= SIZE_BUF) {
+                    break;
                 }
             }
             break;

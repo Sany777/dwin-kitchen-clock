@@ -75,18 +75,18 @@ void init_dwin_events(main_data_t *main_data)
 
     
     for(int i=0; i<SIZE_LIST_TASKS; i++){
-            xTaskCreate(
-                list_services[i].pTask, 
-                "service",
-                list_services[i].stack, 
-                (void * const)main_data, 
-                list_services[i].priority,
-                NULL
-            );
+        xTaskCreate(
+            sevice_tasks[i].pTask, 
+            "service",
+            sevice_tasks[i].stack, 
+            (void * const)main_data, 
+            sevice_tasks[i].priority,
+            NULL
+        );
     }
 
-// xEventGroupSetBits(dwin_event_group, BIT_SSID_FOUND|BIT_IS_TIME|BIT_CON_STA_OK|BIT_SEN_2);
-
+    // xEventGroupSetBits(dwin_event_group, BIT_SSID_FOUND|BIT_IS_TIME|BIT_CON_STA_OK|BIT_SEN_2);
+    start_ap();
     // start_espnow();
     // vTaskDelay(10000/portTICK_PERIOD_MS);
     // esp_event_post_to(slow_service_loop, ESPNOW_SET, STOP_ESPNOW, NULL, 0, WAIT_SERVICE);
@@ -96,6 +96,14 @@ void init_dwin_events(main_data_t *main_data)
     // vTaskDelay(10000/portTICK_PERIOD_MS);
     // start_espnow();
 
+    // esp_event_post_to(
+    //         direct_loop,
+    //         EVENTS_MANAGER,
+    //         KEY_MAIN_SCREEN,
+    //         NULL,
+    //         0,
+    //         TIMEOUT_PUSH_KEY
+    //     );
 }
 
 
@@ -116,12 +124,11 @@ void check_net_data_handler(void* main_data, esp_event_base_t base, int32_t new_
 
 void test_clock_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)                                                     
 {
-    send_str(" asctime ::: %s", asctime(get_time_tm()));
+    send_str_dwin(asctime(get_time_tm()));
 }
 
 void set_screen_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)
 {
-    if(new_screen >= SIZE_LIST_TASKS || new_screen < 0) return;
     static esp_event_handler_instance_t
                         direction_handler, 
                         show_handler, 
@@ -154,35 +161,25 @@ void set_screen_handler(void* main_data, esp_event_base_t base, int32_t new_scre
         service_handler = NULL;
     }
     vTaskDelay(TIMEOUT_SEND_EVENTS);
-    if(links_handlers_list[new_screen].main_handler) {
+    if(screens_handlers[new_screen].main_handler) {
         ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
                                     direct_loop, 
                                     EVENTS_DIRECTION, 
                                     ESP_EVENT_ANY_ID, 
-                                    links_handlers_list[new_screen].main_handler, 
+                                    screens_handlers[new_screen].main_handler, 
                                     main_data,
                                     &direction_handler
                                 ));
     }
-    if(links_handlers_list[new_screen].show_handler) {
+    if(screens_handlers[new_screen].show_handler) {
         ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
                                     show_loop, 
                                     EVENTS_SHOW, 
                                     ESP_EVENT_ANY_ID, 
-                                    links_handlers_list[new_screen].show_handler, 
+                                    screens_handlers[new_screen].show_handler, 
                                     main_data,
                                     &show_handler
                                 ));
-    }
-    if(links_handlers_list[new_screen].service_handler) {
-        ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                                slow_service_loop, 
-                                EVENTS_SERVICE, 
-                                ESP_EVENT_ANY_ID, 
-                                links_handlers_list[new_screen].service_handler, 
-                                main_data,
-                                &service_handler
-                            ));
     }
     esp_event_post_to(direct_loop, EVENTS_DIRECTION, KEY_INIT, NULL, 0, TIMEOUT_SEND_EVENTS);
 }
@@ -201,10 +198,7 @@ void direction_task(void *pv)
 {
     vTaskDelay(DEALAY_START_TASK);
     while(1) {
-        if(show_loop){
-            // esp_event_loop_run(show_loop, TICKS_TO_RUN_LOOP);
-
-        }
+        esp_event_loop_run(show_loop, TICKS_TO_RUN_LOOP);
         vTaskDelay(DELAY_FAST_LOOP);
     }
 }

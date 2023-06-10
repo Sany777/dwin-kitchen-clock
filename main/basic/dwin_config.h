@@ -37,7 +37,7 @@
 #define ESP_WIFI_CHANNEL   0
 #define MAX_OTA_SIZE  1500000
 /* Scratch server_buffer size */
-#define SCRATCH_SIZE  1000 // 2 KB
+#define SCRATCH_SIZE  5000 // 2 KB
 #define MAX_URI_LEN 50
 #define MAX_LEN_CHUNC_IMG 1000
 

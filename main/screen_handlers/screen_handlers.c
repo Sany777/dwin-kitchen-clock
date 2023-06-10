@@ -74,7 +74,7 @@ void setting_screen_handler(void* main_data, esp_event_base_t base, int32_t key,
         area_SCREEN = END_AREA_SETTINGS;
         selected_buf = NULL;
         key = KEY_START_AREA;
-        pic = KEY_SETTING_SCREEN_LOWER;
+        pic = SETTING_LOW_LETTER_PIC;
     } else if(key == KEY_CLOSE) {
         if(need_write){
             write_memory(main_data, DATA_API);
@@ -100,7 +100,7 @@ void setting_screen_handler(void* main_data, esp_event_base_t base, int32_t key,
         dwin_set_pic(pic);
     } else if(key == KEY_ENTER && !need_write) {
         need_write = true;
-    } else if(key == KEY_SETTING_SCREEN_LOWER) {
+    } else if(key == KEY_SETTING_SCREEN_LOW) {
         pic = SETTING_LOW_LETTER_PIC;
     } else if(key == KEY_SETTING_SCREEN_UP) {
         pic = SETTING_UP_LETTER_PIC;
@@ -141,7 +141,7 @@ void main_screen_handler(void* main_data, esp_event_base_t base, int32_t key, vo
     static bool menu_active;
     if(key == KEY_INIT){
         step = INIT_TASK;
-    } else if(key == KEY_SHOW_DETAILS){
+    } else if(key == KEY_DETAILS_SCREEN){
         xEventGroupSync(dwin_event_group, BIT_PROCESS, BIT_PROCESS, WAIT_PROCEES);
         dwin_set_pic(NO_WEATHER_PIC);
         show_details_weather(main_data);

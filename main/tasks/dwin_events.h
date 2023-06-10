@@ -36,6 +36,8 @@ typedef enum {
     SERVER_SCREEN,
     STATE_DEVICE_SCREEN,
     TIMER_SCREEN,
+    INFO_SCREEN,
+    ESPNOW_DEVICES_SCREEN,
     MAIN_HANDLERS_LIST_END
 } identefier_handler_screen_t;
 
@@ -49,7 +51,7 @@ typedef enum {
 } identefier_system_task_t;
 
 #define SIZE_LIST_HANDLERS    MAIN_HANDLERS_LIST_END
-#define SIZE_LIST_TASKS    END_LIST_TASKS
+#define SIZE_LIST_TASKS       END_LIST_TASKS
 
 typedef struct {
     TaskFunction_t pTask;
@@ -60,7 +62,6 @@ typedef struct {
 typedef struct {
     dwin_handler_t *main_handler;
     dwin_handler_t *show_handler;
-    dwin_handler_t *service_handler;
 } handlers_dwin_t;
 
 
@@ -86,7 +87,7 @@ extern  dwin_handler_t show_state_handler;
 extern  dwin_handler_t show_timer_stop_handler;
 
 /* events structure */
- static handlers_dwin_t links_handlers_list[SIZE_LIST_HANDLERS] = {
+ static handlers_dwin_t screens_handlers[SIZE_LIST_HANDLERS] = {
     {
         .main_handler    = main_screen_handler,
         .show_handler    = show_main_handler,
@@ -175,8 +176,7 @@ void uart_event_task(void *);
 void init_dwin_events(main_data_t*);
 void check_net_data_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data);
 void set_screen_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data);
- static task_dwin_t list_services[SIZE_LIST_TASKS] = 
-{
+ static task_dwin_t sevice_tasks[SIZE_LIST_TASKS] = {
     {
         .pTask = direction_task,
         .priority = PRIORITY_DIRECTION,

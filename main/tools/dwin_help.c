@@ -63,7 +63,7 @@ void set_time_tm(struct tm *timeptr, const bool update_dwin)
             .tv_sec = time,
         };
         set_time_tv(&tv);
-        if(update_dwin)dwin_clock_set(&timeptr);
+        if(update_dwin)dwin_clock_set(timeptr);
     }
 }
 
