@@ -14,7 +14,7 @@ void send_str(const char * format, ... );
 
 #define send_char(c)                                                        \
                             do{                                             \
-                                const char arr[1] ={c};                     \
+                                const uint8_t arr[1] ={c};                     \
                                 uart_write_bytes(UART_DWIN, arr, 1);        \
                              }while(0)
 

@@ -328,16 +328,15 @@ void show_clock_handler(void* main_data,
 
 void show_details_weather(main_data_t * main_data) 
 {
-    print_start(1, 7, color_INFO, FONT_BUTTON);
+    dwin_set_pic(NO_WEATHER_PIC);
+    print_start(0,6, GREEN, FONT_BUTTON);
     send_str_dwin(name_CITY);
     print_end();
     vTaskDelay(DELAY_SHOW_ITEM);
-    print_start(3, 0, 
-                    PoP[1] > 50 
-                        ? VIOLET 
-                        : color_INFO, 
-                    NORMAL_FONT);
-    send_str( "                %d:00   %d:00   %d:00   %d:00   %d:00", 
+    print_start(4, 13, 
+                    color_INFO,
+                    FONT_SECOND_INFO);
+    send_str( "%d:00     %d:00     %d:00    %d:00    %d:00", 
                         dt_TX, 
                         (dt_TX+3)%24, 
                         (dt_TX+6)%24, 
@@ -345,12 +344,12 @@ void show_details_weather(main_data_t * main_data)
                         (dt_TX+12)%24);
     print_end();
     vTaskDelay(DELAY_SHOW_ITEM);
-    print_start(4, 0, 
+    print_start(3, 0, 
                     PoP[1] > 50 
                         ? VIOLET 
                         : color_INFO, 
-                    NORMAL_FONT);
-    send_str(" rain  %%           %d      %d      %d      %d      %d", 
+                    FONT_INFO);
+    send_str("rain     %d%%   %d%%   %d%%   %d%%   %d%%", 
                         PoP[0],
                         PoP[1],
                         PoP[2],
@@ -358,13 +357,8 @@ void show_details_weather(main_data_t * main_data)
                         PoP[4]);
     print_end();
     vTaskDelay(DELAY_SHOW_ITEM);
-    print_start(5, 0, color_INFO, NORMAL_FONT);
-    send_str( " temperature t*C  %2.1f   %2.1f   %2.1f   %2.1f   %2.1f\n\r feels like  t*C  %2.1f   %2.1f   %2.1f   %2.1f   %2.1f", 
-                    temp_OUTDOOR[0], 
-                    temp_OUTDOOR[1],
-                    temp_OUTDOOR[2],
-                    temp_OUTDOOR[3],
-                    temp_OUTDOOR[4],
+    print_start(5, 0, color_INFO, FONT_INFO);
+    send_str( "temp t*C %3.1f  %3.1f  %3.1f  %3.1f  %3.1f",
                     temp_FEELS_LIKE[0],
                     temp_FEELS_LIKE[1],
                     temp_FEELS_LIKE[2],
@@ -372,52 +366,68 @@ void show_details_weather(main_data_t * main_data)
                     temp_FEELS_LIKE[4] );
     print_end();
     vTaskDelay(DELAY_SHOW_ITEM);
-    uint16_t *points = get_y_points(temp_FEELS_LIKE, NUMBER_ITEM_WEATHER, 40, 40);
-    if(points){
-        print_broken_line(points, NUMBER_ITEM_WEATHER, 30, 240);
-        free(points);
-    }
+    // uint16_t *points = get_y_points(temp_FEELS_LIKE, NUMBER_ITEM_WEATHER, 40, 40);
+    // if(points){
+    //     print_broken_line(points, NUMBER_ITEM_WEATHER, 30, 240);
+    //     free(points);
+    // }
 }
 
 void show_main_handler(void* main_data, 
                                 esp_event_base_t base, 
-                                int32_t data_sensor, 
+                                int32_t is_notify, 
                                 void* event_data) 
 {
+    return;
     dwin_set_pic(weather_PIC);
     struct tm *cur_time = get_time_tm();
     for(uint32_t i=0; i<5; i++) {
         vTaskDelay(DELAY_SHOW_ITEM);
         switch (i) {
             case 0:
+            {
                 print_start(3, 3, color_CLOCK, 6);
-                send_str("%2.d : %2.2d", cur_time->tm_hour, cur_time->tm_min);
+                if(IS_HOUR(cur_time->tm_hour) && IS_MIN_OR_SEC(cur_time->tm_min)){
+                    send_str("%2.d : %2.2d", cur_time->tm_hour, cur_time->tm_min);
+                } else {
+                    send_str_dwin("updating");
+                }
                 break;
+            }
             case 1:
+            {
                 print_start(8, 12, color_CLOCK, 2);
-                send_str("%s %d", 
+                send_str("%s %d\r\n     %s", 
                             WEEK_DAY[cur_time->tm_wday], 
-                            cur_time->tm_mday);
+                            cur_time->tm_mday,
+                            is_notify
+                            ? "[!]"
+                            : "");
                 break;
+            }
             case 2:
+            {
                 if(weather_PIC == NO_WEATHER_PIC && temp_INDOOR == NO_TEMP_SENSOR) return;
                 print_start(1, 0, color_INFO, FONT_INFO);
                 if(weather_PIC != NO_WEATHER_PIC){
-                    send_str(" outdoor        t*C %2.1f\n\r feels like     t*C %2.1f\n\r Fall-out  %d%%", 
+                    send_str(" outdoor        t*C %2.1f\n\r feels like     t*C %2.1f\n\r Fall-out       %d%%", 
                                     temp_OUTDOOR[0], 
                                     temp_FEELS_LIKE[0],
-                                    PoP[0]
-                                    );
+                                    PoP[0]);
                 }
                 if(temp_INDOOR > NO_TEMP_SENSOR) {
                     send_str("\n\r inside    t*C %f2.1", temp_INDOOR);
                 }
                 break;
+            }
             case 3:
+            {
                 print_start(3, 4, color_DESC, FONT_BUTTON);
                 send_str_dwin(description_WEATHER);
                 break;
+            }
             case 4:
+            {
                 print_start(23, 15, color_INFO, FONT_SECOND_INFO);
                 send_str("Sunrise  %d:%2.2d  Sunset %d:%2.2d",
                             sunrise_HOUR,
@@ -425,6 +435,7 @@ void show_main_handler(void* main_data,
                             sunset_HOUR,
                             sunset_MIN);
                 break;
+            }
             default   : break;
         }
         print_end();
@@ -492,7 +503,7 @@ void welcome()
             }
         }
     }
-    print_start(3, 7, WHITE, NORMAL_FONT);
+    print_start(2, 2, WHITE, 6);
     send_str("WAIT...");
     print_end();
 }

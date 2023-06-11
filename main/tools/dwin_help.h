@@ -3,8 +3,7 @@
 
 uint16_t * get_y_points( float *h_points, 
                             const int number,
-                            const uint16_t height,
-                            uint16_t row );
+                            const float height );
 char *get_data_from_uri( const char *uri_str, 
                          const char *base_path );
 char *get_chip(int model_id);

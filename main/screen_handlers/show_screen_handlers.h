@@ -7,13 +7,13 @@ static const char *MES_ON = "[ON]";
 static const char *MES_OFF = "[OFF]";
 
 static const char *WEEK_DAY[SIZE_WEEK] = {
-    "Monday", 
+    "Sunday",
+    "Monday",
     "Tuesday", 
     "Wednesday", 
     "Thursday", 
     "Friday", 
-    "Saturday", 
-    "Sunday"
+    "Saturday"
 };
 
 static const char* ITEM_CUSTOM_NAME[] = {

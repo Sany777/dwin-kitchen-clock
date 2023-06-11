@@ -55,71 +55,61 @@ for(;;) {
                         && (buf_RX[byte_rx_count - 1] == 0xC3)  
                         && (buf_RX[byte_rx_count] == 0x3C))
                     {
-                        ESP_LOGI(TAG, "Get data buf_RX[INDEX_IDENTIF_DATA_IN_RX]=%c\n\r buf_RX[INDEX_START_DATA_IN_RX]=%c\n", buf_RX[INDEX_IDENTIF_DATA_IN_RX], buf_RX[INDEX_START_DATA_IN_RX]);
-
-                        
-                        uint32_t key = buf_RX[INDEX_START_DATA_IN_RX];;
-                            if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == KEY_READ_COMMAND) {
-                                if(key){
-                                    if(KEY_IS_SET_TASK(key)) {
-                                        esp_event_post_to(
-                                            direct_loop,
-                                            EVENTS_DIRECTION,
-                                            KEY_CLOSE,
-                                            NULL,
-                                            0,
-                                            TIMEOUT_PUSH_KEY
-                                        );
-                                        esp_event_post_to(
-                                            direct_loop,
-                                            EVENTS_MANAGER,
-                                            GET_SCREEN_TASK(key),
-                                            NULL,
-                                            0,
-                                            TIMEOUT_PUSH_KEY
-                                        );
-                                    } else {
-                                        esp_event_post_to(
-                                            direct_loop,
-                                            EVENTS_DIRECTION,
-                                            key,
-                                            NULL,
-                                            0,
-                                            TIMEOUT_PUSH_KEY
-                                        );  
-                                    }
-                                } else {
-                                    key = buf_RX[INDEX_IDENTIF_CHAR_IN_RX];
+                        if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == KEY_READ_COMMAND) {
+                            uint32_t key = buf_RX[INDEX_START_DATA_IN_RX];
+                            if(key){
+                                if(KEY_IS_SET_TASK(key)) {
                                     esp_event_post_to(
-                                            direct_loop,
-                                            EVENTS_DIRECTION,
-                                            key,
-                                            NULL,
-                                            0,
-                                            TIMEOUT_PUSH_KEY
-                                        );
-                                    }
-                            } else if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == KEY_GET_CLOCK){
-                                struct tm tm_time = {
-                                    .tm_year = GET_DEC(buf_RX[1]),
-                                    .tm_mon = GET_DEC(buf_RX[2]),
-                                    .tm_mday = GET_DEC(buf_RX[3]),
-                                    .tm_hour = GET_DEC(buf_RX[5]),
-                                    .tm_min = GET_DEC(buf_RX[6]),
-                                    .tm_sec = GET_DEC(buf_RX[7]),
-                                };
-                                set_time_tm(&tm_time, false);
+                                        direct_loop,
+                                        EVENTS_DIRECTION,
+                                        KEY_CLOSE,
+                                        NULL,
+                                        0,
+                                        TIMEOUT_PUSH_KEY
+                                    );
+                                    esp_event_post_to(
+                                        direct_loop,
+                                        EVENTS_MANAGER,
+                                        GET_SCREEN_TASK(key),
+                                        NULL,
+                                        0,
+                                        TIMEOUT_PUSH_KEY
+                                    );
+                                } else {
+                                    esp_event_post_to(
+                                        direct_loop,
+                                        EVENTS_DIRECTION,
+                                        key,
+                                        NULL,
+                                        0,
+                                        TIMEOUT_PUSH_KEY
+                                    );  
+                                }
                             } else {
+                                key = buf_RX[INDEX_IDENTIF_CHAR_IN_RX];
                                 esp_event_post_to(
-                                    direct_loop,
-                                    EVENTS_DIRECTION,
-                                    key,
-                                    NULL,
-                                    0,
-                                    TIMEOUT_PUSH_KEY
-                                );
-                            }
-                            break;    
+                                        direct_loop,
+                                        EVENTS_DIRECTION,
+                                        key,
+                                        NULL,
+                                        0,
+                                        TIMEOUT_PUSH_KEY
+                                    );
+                                }
+                        } else if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == KEY_GET_CLOCK){
+                            struct tm tm_time = {
+                                .tm_year = GET_DEC(buf_RX[1]),
+                                .tm_mon = GET_DEC(buf_RX[2]),
+                                .tm_mday = GET_DEC(buf_RX[3]),
+                                .tm_hour = GET_DEC(buf_RX[5]),
+                                .tm_min = GET_DEC(buf_RX[6]),
+                                .tm_sec = GET_DEC(buf_RX[7]),
+                            };
+                            set_time_tm(&tm_time, false);
+                        } else {
+                            xEventGroupSetBits(dwin_event_group, BIT_DWIN_RESPONSE_OK);
+                        }
+                        break;    
                     }
                 }  else if (buf_RX[byte_rx_count] == FRAME_HEADER) {
                     heder_ok = true;

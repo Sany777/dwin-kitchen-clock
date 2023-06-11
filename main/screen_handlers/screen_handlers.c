@@ -214,12 +214,13 @@ if(last_step != step){
         }
     
     }
-    esp_event_post_to(show_loop, 
-            EVENTS_SHOW, 
-            0, 
-            NULL, 
-            0, 
-            TIMEOUT_SEND_EVENTS);
+    show_details_weather(main_data);
+    // esp_event_post_to(show_loop, 
+    //         EVENTS_SHOW, 
+    //         0, 
+    //         NULL, 
+    //         0, 
+    //         TIMEOUT_SEND_EVENTS);
 }
 
 void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)

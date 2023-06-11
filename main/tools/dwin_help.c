@@ -13,10 +13,9 @@ void set_timezone(int offset)
 
 uint16_t * get_y_points(  float *h_points, 
                                 const int number,
-                                const uint16_t height,
-                                uint16_t row )
+                                const float height )
 {
-    uint16_t *points_out = malloc(number*sizeof(uint16_t));
+    uint16_t *points_out = malloc(number*2);
     if(points_out){
         float max_height = 0, min_height = 0xffff;
         for(int i=0; i<number; i++){
@@ -27,12 +26,10 @@ uint16_t * get_y_points(  float *h_points,
                 min_height = h_points[i];
             }
         }
-        if(min_height < 0){
-            row += min_height * -1;
-        }
+        // max_height = max_height - min_height;
         const float k_h = height/max_height;
         for(int i=0; i<number; i++){
-            points_out[i] = h_points[i] * k_h + row;
+            points_out[i] = (uint16_t) (h_points[i] * k_h);
         }
     }
     return points_out;
@@ -42,6 +39,7 @@ struct tm* get_time_tm()
 {
     time_t time_now;
     time(&time_now);
+    
     return gmtime(&time_now);
 }
 
@@ -50,9 +48,10 @@ void set_time_tv(struct timeval *tv)
     settimeofday(tv, NULL);
     xEventGroupSetBits(dwin_event_group, BIT_IS_TIME);
     esp_event_post_to(direct_loop, 
-                    EVENTS_DIRECTION, 
-                    UPDATE_DATA_COMPLETE, 
-                    NULL, 0, WAIT_WIFI_EVENT);
+                        EVENTS_DIRECTION, 
+                        UPDATE_DATA_COMPLETE, 
+                        NULL, 0,
+                        TIMEOUT_SEND_EVENTS);
 }
 
 void set_time_tm(struct tm *timeptr, const bool update_dwin)

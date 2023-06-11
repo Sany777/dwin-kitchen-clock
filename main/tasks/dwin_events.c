@@ -84,13 +84,35 @@ void init_dwin_events(main_data_t *main_data)
             NULL
         );
     }
-start_sntp();
-    
+    EventBits_t xEventGroup;
+    do{
+        send_hello();
+        xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_DWIN_RESPONSE_OK, false, false, 1000);
+    }while(!(xEventGroup&BIT_DWIN_RESPONSE_OK));
+    // dwin_set_pic(NO_WEATHER_PIC);
+    set_color(BLUE, LEMON);
+
+// clear_screen();
+// uart_write_bytes(UART_DWIN, send, 20);
+// send_str_dwin(send);
+    // vTaskDelay(1500/portTICK_PERIOD_MS);
+    float t[] = {11, 1, 17,7, 25, 20};
+    // get_y_points(t, 5, 50);
+    uint16_t  points[]= {10,13, 50,14, 10,45, 15,13, 25,22};
+
+    uint16_t *tu = get_y_points(t, 5, 100);
+    print_lines(tu,5 , 50, 470, 200);
+    // print_broken_line(points, 10, 10, 100);
+    // print_histogram(points, 7, 10, 400, 260);
+    // set_text_box(10, 10, 475, 267);
+    // fill_area(20, 20, RED);
+
+//  uart_write_bytes(UART_DWIN, points, 4);
+
 
     // xEventGroupSetBits(dwin_event_group, BIT_SSID_FOUND|BIT_IS_TIME|BIT_CON_STA_OK|BIT_SEN_2);
     // start_ap();
     // start_espnow();
-    // vTaskDelay(10000/portTICK_PERIOD_MS);
     // esp_event_post_to(slow_service_loop, ESPNOW_SET, STOP_ESPNOW, NULL, 0, WAIT_SERVICE);
     // vTaskDelay(5000/portTICK_PERIOD_MS);
     // start_espnow();
@@ -98,14 +120,14 @@ start_sntp();
     // vTaskDelay(10000/portTICK_PERIOD_MS);
     // start_espnow();
 
-    esp_event_post_to(
-            direct_loop,
-            EVENTS_MANAGER,
-            MAIN_TASK,
-            NULL,
-            0,
-            TIMEOUT_PUSH_KEY
-        );
+    // esp_event_post_to(
+    //         direct_loop,
+    //         EVENTS_MANAGER,
+    //         MAIN_TASK,
+    //         NULL,
+    //         0,
+    //         TIMEOUT_PUSH_KEY
+    //     );
 
 }
 

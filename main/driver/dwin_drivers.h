@@ -51,17 +51,26 @@ void print_circle(const uint16_t x,
                     const uint16_t y, 
                     const uint16_t radius, 
                     const bool fill);
-void print_lines(const uint16_t *points, 
-                const size_t number_point, 
-                bool foreground);
+void print_lines(  const uint16_t *points, 
+                    const size_t number_point,
+                    uint16_t x_start,
+                    const size_t width,
+					const uint16_t y);
 void print_rect(const uint16_t x_s, 
 				const uint16_t y_s, 
 				const uint16_t x_e, 
-				const uint16_t y_e);
-void print_broken_line(const uint16_t *y_points, 
-                const size_t points_number,
-                const char x_start,
-                const char x_end);
+				const uint16_t y_e,
+				bool fill);
+void print_broken_line( const uint16_t *y_points, 
+                        const size_t points_number,
+                        const uint16_t x_start,
+                        const uint16_t x_end );
+void print_histogram( uint16_t *points, 
+                        const size_t points_number,
+                        const uint16_t x_start,
+                        const size_t width, 
+                        const uint16_t y);
 void send_chunc(const char *data, const size_t data_len);
 #define dwin_clock_get() 	uart_write_bytes(UART_DWIN, GET_TIME, sizeof(GET_TIME))
 void dwin_clock_set(struct tm *tmptr);
+void fill_area(const uint16_t x_s, const uint16_t y_s, const uint16_t color);

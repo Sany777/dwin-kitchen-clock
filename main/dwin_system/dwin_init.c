@@ -24,11 +24,15 @@ void esp_init(void)
     temp_INDOOR = NO_TEMP_SENSOR;
     set_timezone(offset);
     init_uart();
-    welcome();
+    // welcome();
     read_all_memory(main_data);
     wifi_init();
-    init_dwin_events(main_data);
+        
+    // cancel_text_box();
+    // set_color(GREEN,BLACK);
+    // clear_screen();
 
+    init_dwin_events(main_data);
 }
 
 

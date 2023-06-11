@@ -45,23 +45,33 @@ void set_text_box(  const uint16_t x_s,
                     const uint16_t x_e, 
                     const uint16_t y_e  )
 {
-    SET_TEXT_BOX[2] = x_s/256;
-    SET_TEXT_BOX[3] = x_s%256;
-    SET_TEXT_BOX[4] = y_s/256;
-    SET_TEXT_BOX[5] = y_s/256;
-    SET_TEXT_BOX[6] = x_e%256;
-    SET_TEXT_BOX[7] = x_e/256;
-    SET_TEXT_BOX[8] = y_e%256;
-    SET_TEXT_BOX[9] = y_e/256;
+    char SET_TEXT_BOX[] = {
+        FRAME_HEADER, 
+        COMMAND_SET_BOX,
+        x_s/256,
+        x_s%256,
+        y_s/256,
+        y_s%256,
+        x_e/256,
+        x_e%256,
+        y_e/256,
+        y_e%256,
+        FRAME_END
+    };
     uart_write_bytes(UART_DWIN, SET_TEXT_BOX, sizeof(SET_TEXT_BOX));
 }
 
 void set_color(const uint16_t foreground, const uint16_t background)
 {
-    SET_COLOR[2] = foreground%256;
-    SET_COLOR[3] = foreground/256;
-    SET_COLOR[4] = background%256;
-    SET_COLOR[5] = background/256;
+    char SET_COLOR[] = {
+        FRAME_HEADER,
+        COMMAND_SET_COLOR,
+        foreground/256,
+        foreground%256,
+        background/256,
+        background%256,
+        FRAME_END
+    }; 
     uart_write_bytes(UART_DWIN, SET_COLOR, sizeof(SET_COLOR));
 }
 
@@ -70,54 +80,114 @@ void print_circle(  const uint16_t x,
                     const uint16_t radius, 
                     const bool fill  )
 {
-    CIRCULAR[1] = fill 
-                ? COMMAND_CIRCULAR_FILL_FOREGROUND 
-                : COMMAND_CIRCULAR_FOREGROUND;
-    CIRCULAR[2] = x/256;
-    CIRCULAR[3] = x%256;
-    CIRCULAR[4] = y/256;
-    CIRCULAR[5] = y%256;
-    CIRCULAR[6] = radius/256;
-    CIRCULAR[7] = radius%256;
+    char CIRCULAR[] = {
+        FRAME_HEADER,
+        fill 
+            ? COMMAND_CIRCULAR_FILL_FOREGROUND 
+            : COMMAND_CIRCULAR_FOREGROUND,
+        x/256,
+        x%256,
+        y/256,
+        y%256,
+        radius/256,
+        radius%256,
+        FRAME_END
+    };
     uart_write_bytes(UART_DWIN, CIRCULAR, sizeof(CIRCULAR));
 }
 
-/* format [x1,y1,x2,y2]*/
-#define BYTE_PER_POINT_LINE 2
-void print_lines(   const uint16_t *points, 
-                    const size_t number_point, 
-                    bool foreground  )
+
+void print_lines( const uint16_t *points, 
+                    const size_t number_point,
+                    uint16_t x_start,
+                    const size_t width,
+                    const uint16_t y)
 {
-    send_char(FRAME_HEADER);
-    send_char(foreground 
-                ? COMMAND_LINE_DISPLAY_FOREGROUND
-                : COMMAND_LINE_DISPLAY_BACKGROUND);
-    uart_write_bytes(UART_DWIN, points, sizeof(uint16_t)*number_point);
+
+    uint16_t step = width/number_point;
+    send_char(0XAA);
+    send_char(0X56);
+    for(uint16_t i=0, tmp=0; i<number_point; i++){
+        send_char(x_start/256);
+        send_char(x_start%256);
+        send_char((points[i]+y)/256);
+        send_char((points[i]+y)%256);
+        x_start += step;
+    }
     print_end(); 
 }
 
-void print_broken_line( const uint16_t *y_points, 
+void print_histogram( uint16_t *y_points, 
                         const size_t points_number,
-                        const char x_start,
-                        const char x_end )
+                        const uint16_t x_start,
+                        const size_t width,
+                        const uint16_t y)
 {
-    HEADER_SEND_BROKEN_LINE[2] = x_end;
-    HEADER_SEND_BROKEN_LINE[3] = x_start;
-    send_str_dwin(HEADER_SEND_BROKEN_LINE);
-    uart_write_bytes(UART_DWIN, y_points, sizeof(uint16_t)*points_number);
-    print_end(); 
+    size_t w = 1000;
+
+    uint16_t cur, next, count, x = x_start;
+    cur = y_points[0]*2;
+    next = y_points[1]*2;
+    if(cur > next){
+        count = w/(cur-next)-1;
+    } else {
+        count = w/(next - cur)-1;
+    }
+    
+    for( int ii = 0, i = 0, iii = 0; i-1<points_number; ii++, iii++){
+        if(ii == 0){
+            send_char(0XAA);
+            send_char(0x75);       
+            send_char((x)/256);
+            send_char((x)%256);
+            send_char((y)/256);
+            send_char((y)%256);
+            send_char(0xFF);
+        }
+            x++;
+
+        send_char(0);
+        send_char(cur);
+        if(cur != next){
+        //    if(iii > count){
+            cur > next ? cur-- : cur++;
+            iii = 0;
+        //    }
+        }
+        if(ii > w){
+            i++;
+            ii = 0;
+            cur = y_points[i]*2;
+            next = y_points[i+1]*2;
+            if(cur > next){
+                count = w/(cur-next)-1;
+            } else {
+                count = w/(next - cur)-1;
+            }
+            print_end(); 
+        }
+        vTaskDelay(10);
+    }
 }
 
-void print_rect(const uint16_t x_s, const uint16_t y_s, const uint16_t x_e, const uint16_t y_e)
+
+void print_rect(const uint16_t x_s, const uint16_t y_s, const uint16_t x_e, const uint16_t y_e, bool fill )
 {
-    RECTANGLE_ON[2] = x_s%256;
-    RECTANGLE_ON[3] = x_s/256;
-    RECTANGLE_ON[4] = y_s%256;
-    RECTANGLE_ON[5] = y_s/256;
-    RECTANGLE_ON[2] = x_e%256;
-    RECTANGLE_ON[3] = x_e/256;
-    RECTANGLE_ON[4] = y_e%256;
-    RECTANGLE_ON[5] = y_e/256;
+    char RECTANGLE_ON[] = {
+        FRAME_HEADER, 
+        fill
+            ? COMMAND_FILL_RECTANGLE
+            : COMMAND_BOX_RECTANGLE, 
+        x_s/256, 
+        x_s%256, 
+        y_s/256,
+        y_s%256, 
+        x_e/256, 
+        x_e%256, 
+        y_e/256, 
+        y_e%256,
+        FRAME_END
+    };
     uart_write_bytes(UART_DWIN, RECTANGLE_ON, sizeof(RECTANGLE_ON));
 }
 
@@ -132,4 +202,19 @@ void dwin_clock_set(struct tm *tmptr)
     time_to_send[INDEX_SEC]     = GET_HEX(tmptr->tm_sec);
     uart_write_bytes(UART_DWIN, time_to_send, SIZE_BUF_CLOCK_SET);
 	print_end();
+}
+
+void fill_area(const uint16_t x_s, const uint16_t y_s, const uint16_t color)
+{
+    send_char(0XAA);
+    send_char(0x73);
+    uint16_t xs= x_s;
+    send_char(xs/256);
+    send_char(xs%256);
+    uint16_t ys= y_s;
+    send_char(ys/256);
+    send_char(ys/256);;
+    send_char(color/256);
+    send_char(color/256);
+    print_end(); 
 }

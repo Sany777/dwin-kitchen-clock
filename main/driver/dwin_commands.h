@@ -16,7 +16,8 @@
 #define COMMAND_SET_SETTING     0x55,0xAA,0x5A,0xA5
 #define COMMAND_SET_BRIGHT      0x5f
 #define COMMAND_SET_PIC         0x70
-#define COMMAND_ON_RECTANGLE    0x59
+#define COMMAND_BOX_RECTANGLE   0x59
+#define COMMAND_FILL_RECTANGLE  0x5B
 #define COMMAND_OFF_RECTANGLE   0x69
 #define COMMAND_FILL_AREA       0x64
 #define COMMAND_PIC_SAVE        0xE2
@@ -83,40 +84,13 @@ static char INIT_UPDATE[] = {
     FRAME_END,
 };
 
-static char HEADER_SEND_BROKEN_LINE[] = {
-    FRAME_HEADER, 
-    COMMAND_BROKEN_LINE, 
-    VARIABLE_VALUE,
-    VARIABLE_VALUE,
-};
+
 
 static const char GET_TIME[] = {
     FRAME_HEADER, 
     COMMAND_GET_TIME, 
     FRAME_END
 };
-
-static char CIRCULAR[] = {
-    FRAME_HEADER,
-    VARIABLE_VALUE, // mode
-    VARIABLE_VALUE, // x centre
-    VARIABLE_VALUE,
-    VARIABLE_VALUE, // y centre
-    VARIABLE_VALUE,
-    VARIABLE_VALUE, // radius 
-    VARIABLE_VALUE,
-    FRAME_END
-};
-
-static char SET_COLOR[] = {
-    FRAME_HEADER,
-    COMMAND_SET_COLOR,
-    VARIABLE_VALUE, //foreground
-    VARIABLE_VALUE,
-    VARIABLE_VALUE, //background
-    VARIABLE_VALUE,
-    FRAME_END
-}; 
 
 static const char HELLO_COMMAND[] = {
     FRAME_HEADER,
@@ -151,19 +125,7 @@ static const char RECTANGLE_OFF[] = {
     FRAME_END,
 };
 
-static char RECTANGLE_ON[] = {
-    FRAME_HEADER, 
-    COMMAND_ON_RECTANGLE, 
-    VARIABLE_VALUE, 
-    VARIABLE_VALUE, 
-    VARIABLE_VALUE, 
-    VARIABLE_VALUE, 
-    VARIABLE_VALUE, 
-    VARIABLE_VALUE, 
-    VARIABLE_VALUE, 
-    VARIABLE_VALUE, 
-    FRAME_END,
-};
+
 
 static uint8_t PRINT[] = {
     FRAME_HEADER, 
@@ -200,20 +162,6 @@ static char FULL_COMMAND_BUZZER[] = {
     FRAME_HEADER, 
     COMMAND_BUZZER, 
     VARIABLE_VALUE, 
-    FRAME_END
-};
-
-static char SET_TEXT_BOX[] = {
-    FRAME_HEADER, 
-    COMMAND_SET_BOX,
-    VARIABLE_VALUE, //x start
-    VARIABLE_VALUE,
-    VARIABLE_VALUE, //y start
-    VARIABLE_VALUE,
-    VARIABLE_VALUE, //x end
-    VARIABLE_VALUE,
-    VARIABLE_VALUE, //y end
-    VARIABLE_VALUE,
     FRAME_END
 };
 
