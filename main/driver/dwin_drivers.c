@@ -103,15 +103,14 @@ void print_lines( const uint16_t *points,
                     const size_t width,
                     const uint16_t y)
 {
-
-    uint16_t step = width/number_point;
+    const uint16_t step = width/number_point;
     send_char(0XAA);
     send_char(0X56);
     for(uint16_t i=0, tmp=0; i<number_point; i++){
         send_char(x_start/256);
         send_char(x_start%256);
-        send_char((points[i]+y)/256);
-        send_char((points[i]+y)%256);
+        send_char((y - points[i])/256);
+        send_char((y - points[i])%256);
         x_start += step;
     }
     print_end(); 
@@ -123,7 +122,7 @@ void print_histogram( uint16_t *y_points,
                         const size_t width,
                         const uint16_t y)
 {
-    size_t w = 1000;
+    size_t w = 10;
 
     uint16_t cur, next, count, x = x_start;
     cur = y_points[0]*2;

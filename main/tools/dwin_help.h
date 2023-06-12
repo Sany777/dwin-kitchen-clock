@@ -1,9 +1,10 @@
 #pragma once 
 #include "dwin_common.h"
 
-uint16_t * get_y_points( float *h_points, 
+
+uint16_t *get_y_points(  int8_t *points, 
                             const int number,
-                            const float height );
+                            const uint16_t height );
 char *get_data_from_uri( const char *uri_str, 
                          const char *base_path );
 char *get_chip(int model_id);

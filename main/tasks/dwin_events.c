@@ -90,18 +90,18 @@ void init_dwin_events(main_data_t *main_data)
         xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_DWIN_RESPONSE_OK, false, false, 1000);
     }while(!(xEventGroup&BIT_DWIN_RESPONSE_OK));
     // dwin_set_pic(NO_WEATHER_PIC);
-    set_color(BLUE, LEMON);
+    set_color(GREEN, WHITE);
 
 // clear_screen();
 // uart_write_bytes(UART_DWIN, send, 20);
 // send_str_dwin(send);
     // vTaskDelay(1500/portTICK_PERIOD_MS);
-    float t[] = {11, 1, 17,7, 25, 20};
+    int8_t t[] = {0, 0, 0, 0, 10, -20};
     // get_y_points(t, 5, 50);
-    uint16_t  points[]= {10,13, 50,14, 10,45, 15,13, 25,22};
+    uint16_t  points[]= {10, 13, 40, 14, 10,45, 15,13, 25,22};
 
-    uint16_t *tu = get_y_points(t, 5, 100);
-    print_lines(tu,5 , 50, 470, 200);
+    uint16_t *tu = get_y_points(t, 6, 100);
+    print_lines(tu, 6, 50, 470, 265);
     // print_broken_line(points, 10, 10, 100);
     // print_histogram(points, 7, 10, 400, 260);
     // set_text_box(10, 10, 475, 267);

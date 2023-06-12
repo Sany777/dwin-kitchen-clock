@@ -1,6 +1,7 @@
 #include "dwin_help.h"
 
 
+
 void set_timezone(int offset)
 {
     if(offset < 24 || offset > -24){
@@ -11,28 +12,26 @@ void set_timezone(int offset)
     }
 }
 
-uint16_t * get_y_points(  float *h_points, 
-                                const int number,
-                                const float height )
+uint16_t *get_y_points(  int8_t *points, 
+                            const int number,
+                            const uint16_t height )
 {
-    uint16_t *points_out = malloc(number*2);
-    if(points_out){
-        float max_height = 0, min_height = 0xffff;
-        for(int i=0; i<number; i++){
-            if(h_points[i] > max_height){
-                max_height = h_points[i];
-            } 
-            if(h_points[i] < min_height){
-                min_height = h_points[i];
-            }
-        }
-        // max_height = max_height - min_height;
-        const float k_h = height/max_height;
-        for(int i=0; i<number; i++){
-            points_out[i] = (uint16_t) (h_points[i] * k_h);
+    int max = 0, min_val = 0;
+    uint16_t *buf_out  = (uint16_t *)(buf_send_operation + MAX_DATA_LEN - number*sizeof(uint16_t));
+    for(int i=0; i<number; i++){
+        if(points[i] > max){
+            max = points[i];
+        } else if(points[i] < min_val){
+            min_val = points[i];
         }
     }
-    return points_out;
+    min_val *= -1;
+    max += min_val;
+    const float k_h = (float)height/max;
+    for(int i=0; i<number; i++){
+        buf_out[i] = (uint16_t)((points[i]+min_val) * k_h);
+    }
+    return buf_out;
 }
 
 struct tm* get_time_tm()

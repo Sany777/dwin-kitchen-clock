@@ -156,9 +156,9 @@ typedef struct {
     char description[LEN_BUF_DESCRIPTION];
     uint8_t pop[NUMBER_DATA_WEATHER];
     uint8_t dt_tx;
-    float indoor;
-    float feels_like[NUMBER_DATA_WEATHER];
-    float outdoor[NUMBER_DATA_WEATHER];
+    int indoor;
+    int feels_like[NUMBER_DATA_WEATHER];
+    int outdoor[NUMBER_DATA_WEATHER];
 } weather_data_t;
 
 /* data struct timer func*/
