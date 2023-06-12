@@ -9,7 +9,7 @@ void show_ap_handler(void* main_data,
                         int32_t state, 
                         void* event_data)
 {
-    dwin_set_pic(NO_WEATHER_PIC);
+    dwin_set_pic(NO_WEATHER_PIC*2);
     vTaskDelay(DELAY_SHOW_ITEM);
     print_start(1, 2, WHITE, FONT_INFO);
     if(!event_data){
@@ -328,9 +328,10 @@ void show_clock_handler(void* main_data,
     }
 }
 
+
+
 void show_details_weather(main_data_t * main_data) 
 {
-    dwin_set_pic(NO_WEATHER_PIC);
     print_start(0,6, GREEN, FONT_BUTTON);
     send_str_dwin(name_CITY);
     print_end();
@@ -347,7 +348,7 @@ void show_details_weather(main_data_t * main_data)
     print_end();
     vTaskDelay(DELAY_SHOW_ITEM);
     print_start(3, 0, 
-                    PoP[1] > 50 
+                    PoP[1] > 60 
                         ? VIOLET 
                         : color_INFO, 
                     FONT_INFO);
@@ -359,7 +360,9 @@ void show_details_weather(main_data_t * main_data)
                         PoP[4]);
     print_end();
     vTaskDelay(DELAY_SHOW_ITEM);
-    print_start(5, 0, color_INFO, FONT_INFO);
+    print_start(5, 0, 
+                    get_color_temp(temp_FEELS_LIKE[0]),
+                    FONT_INFO);
     send_str( "Temp t*C  %+3d   %+3d   %+3d   %+3d   %+3d",
                     temp_FEELS_LIKE[0],
                     temp_FEELS_LIKE[1],
@@ -376,7 +379,6 @@ void show_main_handler(void* main_data,
                                 int32_t is_notify, 
                                 void* event_data) 
 {
-    return;
     dwin_set_pic(weather_PIC);
     struct tm *cur_time = get_time_tm();
     for(uint32_t i=0; i<5; i++) {
@@ -406,7 +408,7 @@ void show_main_handler(void* main_data,
             case 2:
             {
                 if(weather_PIC == NO_WEATHER_PIC && temp_INDOOR == NO_TEMP_SENSOR) return;
-                print_start(1, 0, color_INFO, FONT_INFO);
+                print_start(1, 0, get_color_temp(temp_FEELS_LIKE[0]), FONT_INFO);
                 if(weather_PIC != NO_WEATHER_PIC){
                     send_str(" outdoor        t*C %d\n\r feels like     t*C %d\n\r Fall-out       %d%%", 
                                     temp_OUTDOOR, 
@@ -414,14 +416,16 @@ void show_main_handler(void* main_data,
                                     PoP[0]);
                 }
                 if(temp_INDOOR > NO_TEMP_SENSOR) {
+                    print_end();
+                    print_start(3, 0, get_color_temp(temp_INDOOR), FONT_INFO);
                     send_str("\n\r inside    t*C %f2.1", temp_INDOOR);
                 }
                 break;
             }
             case 3:
             {
-                print_start(3, 4, color_DESC, FONT_BUTTON);
-                send_str_dwin(description_WEATHER);
+                print_start(3, 3, LEMON, FONT_BUTTON);
+                send_str("%8s", description_WEATHER);
                 break;
             }
             case 4:

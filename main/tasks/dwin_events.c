@@ -112,15 +112,15 @@ void init_dwin_events(main_data_t *main_data)
     // esp_event_post_to(slow_service_loop, ESPNOW_SET, PAUSE_ESPNOW, NULL, 0, WAIT_SERVICE);
     // start_espnow();
 
-    // esp_event_post_to(
-    //         direct_loop,
-    //         EVENTS_MANAGER,
-    //         SERVER_SCREEN,
-    //         NULL,
-    //         0,
-    //         TIMEOUT_PUSH_KEY
-    //     );
-    // vTaskDelay(20000/portTICK_PERIOD_MS);
+    esp_event_post_to(
+            direct_loop,
+            EVENTS_MANAGER,
+            SERVER_SCREEN,
+            NULL,
+            0,
+            TIMEOUT_PUSH_KEY
+        );
+    vTaskDelay(40000/portTICK_PERIOD_MS);
     esp_event_post_to(
             direct_loop,
             EVENTS_MANAGER,

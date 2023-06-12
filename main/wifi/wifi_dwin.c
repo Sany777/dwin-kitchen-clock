@@ -164,6 +164,7 @@ switch(action){
     {
         EventBits_t xEventGroup = xEventGroupSync(dwin_event_group, BIT_PROCESS, BIT_WORK_AP|BIT_PROCESS, WAIT_PROCEES);
         if(xEventGroup&BIT_WORK_AP) return;
+        esp_wifi_stop();
         if(!init_sta){
             esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_START, &wifi_sta_handler, main_data);
             esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_sta_handler, main_data);

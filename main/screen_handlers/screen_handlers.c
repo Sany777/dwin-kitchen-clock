@@ -141,10 +141,9 @@ void main_screen_handler(void* main_data, esp_event_base_t base, int32_t key, vo
     if(key == KEY_INIT){
         step = INIT_TASK;
     } else if(key == KEY_DETAILS_SCREEN){
-        xEventGroupSync(dwin_event_group, BIT_PROCESS, BIT_PROCESS, WAIT_PROCEES);
+        xEventGroupWaitBits(dwin_event_group, BIT_PROCESS, false, false, WAIT_PROCEES);
         dwin_set_pic(NO_WEATHER_PIC);
         show_details_weather(main_data);
-        xEventGroupClearBits(dwin_event_group, BIT_PROCESS);
         return;
     } else if(key == KEY_CLOSE) {
         if(menu_active)menu_active = false;
@@ -213,13 +212,13 @@ if(last_step != step){
         }
     
     }
-    show_details_weather(main_data);
-    // esp_event_post_to(show_loop, 
-    //         EVENTS_SHOW, 
-    //         0, 
-    //         NULL, 
-    //         0, 
-    //         TIMEOUT_SEND_EVENTS);
+    // show_details_weather(main_data);
+    esp_event_post_to(show_loop, 
+            EVENTS_SHOW, 
+            0, 
+            NULL, 
+            0, 
+            TIMEOUT_SEND_EVENTS);
 }
 
 void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)

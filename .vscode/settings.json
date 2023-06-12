@@ -116,7 +116,8 @@
     "show_screen_handlers.h": "c",
     "show_data.h": "c",
     "initializer_list": "c",
-    "uart_pins.h": "c"
+    "uart_pins.h": "c",
+    "parser.h": "c"
   },
   "idf.port": "/dev/ttyACM0",
   "idf.flashType": "UART",

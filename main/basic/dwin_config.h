@@ -37,7 +37,7 @@
 #define ESP_WIFI_CHANNEL   0
 #define MAX_OTA_SIZE  1500000
 /* Scratch server_buffer size */
-#define SCRATCH_SIZE  5000 // 2 KB
+#define SCRATCH_SIZE  5500 // 5 KB
 #define MAX_URI_LEN 50
 #define MAX_LEN_CHUNC_IMG 1000
 
@@ -130,7 +130,7 @@
 
 /* weather service*/
 #define NUMBER_DATA_WEATHER 5
-#define MAX_LEN_DESCRIPTION 10
+#define MAX_LEN_DESCRIPTION 20
 #define LEN_BUF_DESCRIPTION (MAX_LEN_DESCRIPTION+1)
 #define SIZE_URL_BUF 250
 #define NUMBER_ITEM_WEATHER  5

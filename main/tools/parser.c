@@ -1,5 +1,17 @@
 #include "parser.h"
 
+uint16_t get_color_temp(int8_t temp)
+{
+    if(temp <= 0){
+        return VIOLET;
+    } else if(temp > 24 ){
+        return ORANGE;
+    } else if(temp > 18){
+        return YELLOW;
+    } else {
+        return WHITE;
+    }
+}
 
 picture_t get_pic(const uint weather_id, const bool night) 
 {

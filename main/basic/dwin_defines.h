@@ -34,7 +34,7 @@
 #define GET_NEW_TWO_DIGIT_VALUE(old_val, in_val)  (((old_val) % 10) * 10+(in_val))
 #define GET_COLOR(item)                             (USED_COLORS[item])
 #define KEY_IS_SET_TASK(key_from_dwin)            ((key_from_dwin) >= START_SCREEN_TASK && \
-                                                            (key_from_dwin) <= END_KEY_SCREEN_TASK)
+                                                            (key_from_dwin) < END_KEY_SCREEN_TASK)
 #define GET_SCREEN_TASK(key_from_dwin)            ((key_from_dwin)-START_SCREEN_TASK)
 
 

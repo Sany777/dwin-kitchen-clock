@@ -134,16 +134,23 @@ static esp_err_t handler_update_dwin(httpd_req_t *req)
     if (total_len >= SCRATCH_SIZE) {
         DWIN_RESP_ERR(req, "Content too long", err);
     }
-    init_update_dwin();
     /* check response */
-    char * const server_buf = (char *)req->user_ctx;
-    const int received = httpd_req_recv(req, server_buf, SCRATCH_SIZE);
+    char * server_buf = (char *)req->user_ctx;
+    int received = httpd_req_recv(req, server_buf, SCRATCH_SIZE);
     if (received != total_len) {
         DWIN_RESP_ERR(req, "Failed to post control value", err);
     }
     server_buf[total_len] = 0;
-    vTaskDelay(100);
-    uart_write_bytes(UART_DWIN, server_buf, total_len+1);
+    size_t len = 0;
+    init_update_dwin();
+    do{
+        vTaskDelay(200);
+        len =  MIN(100, total_len);
+        total_len -= len;
+        uart_write_bytes(UART_DWIN, server_buf, len);
+        server_buf += len;
+    }while(len != 200);
+    httpd_resp_sendstr(req, "Update dwin screen!");
     return ESP_OK;
 err:
     return ESP_FAIL;

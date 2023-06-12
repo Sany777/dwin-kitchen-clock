@@ -67,6 +67,7 @@ for(;;) {
                                         0,
                                         TIMEOUT_PUSH_KEY
                                     );
+                                    vTaskDelay(20);
                                     esp_event_post_to(
                                         direct_loop,
                                         EVENTS_MANAGER,
