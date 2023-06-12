@@ -200,7 +200,7 @@ void set_screen_handler(void* main_data, esp_event_base_t base, int32_t new_scre
     {
         .pTask = uart_event_task,
         .priority = 10,
-        .stack = 2048
+        .stack = 4048
     },
 };
 

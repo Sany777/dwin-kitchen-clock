@@ -143,13 +143,14 @@ static esp_err_t handler_update_dwin(httpd_req_t *req)
     server_buf[total_len] = 0;
     size_t len = 0;
     init_update_dwin();
+    vTaskDelay(100);
     do{
-        vTaskDelay(200);
-        len =  MIN(100, total_len);
+        vTaskDelay(100);
+        len =  MIN(200, total_len);
         total_len -= len;
         uart_write_bytes(UART_DWIN, server_buf, len);
         server_buf += len;
-    }while(len != 200);
+    }while(len == 200);
     httpd_resp_sendstr(req, "Update dwin screen!");
     return ESP_OK;
 err:
@@ -322,8 +323,12 @@ static esp_err_t handler_clear_screen(httpd_req_t *req)
 static esp_err_t handler_send_hello(httpd_req_t *req)
 {
     send_hello();
-    /* check response */
-    httpd_resp_sendstr(req, "Dwin ok");
+    EventBits_t evBits = xEventGroupWaitBits(dwin_event_group, BIT_DWIN_RESPONSE_OK, false, false, WAIT_PROCEES);
+    if(evBits&BIT_DWIN_RESPONSE_OK){
+        httpd_resp_sendstr(req, "Dwin ok");
+    } else {
+         httpd_resp_sendstr(req, "Dwin no response!");
+    }
     return ESP_OK;
 }
 

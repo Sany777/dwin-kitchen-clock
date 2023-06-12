@@ -12,7 +12,7 @@ void init_uart()
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
         .source_clk = UART_SCLK_DEFAULT,
     };
-    ESP_ERROR_CHECK(uart_driver_install(UART_DWIN, UART_BUF_SIZE, 0, SIZE_UART_EVENTS, (QueueHandle_t *)&dwin_uart_events_queue, 0));
+    ESP_ERROR_CHECK(uart_driver_install(UART_DWIN, UART_BUF_SIZE, UART_BUF_SIZE, SIZE_UART_EVENTS, (QueueHandle_t *)&dwin_uart_events_queue, 0));
     assert(dwin_uart_events_queue);
     ESP_ERROR_CHECK(uart_param_config(UART_DWIN, &uart_config));
     esp_log_level_set(TAG, ESP_LOG_INFO);
@@ -34,7 +34,7 @@ void init_uart()
 void uart_event_task(void *pv)
 {
     bool heder_ok;    
-	size_t byte_rx_count, rxBytes;
+	int byte_rx_count, rxBytes, ind=0;
     char *buf_RX = (char*) malloc(UART_BUF_SIZE);
     assert(buf_RX);
     uart_event_t event;
@@ -44,20 +44,21 @@ for(;;) {
         case UART_DATA:
         {
             rxBytes = uart_read_bytes(UART_DWIN, buf_RX,
-                            event.size,
-                            portMAX_DELAY);
+                                        event.size,
+                                        portMAX_DELAY);
             byte_rx_count = 0;
             heder_ok = false;
             while(rxBytes--) {
                 if (heder_ok) {
                     if((buf_RX[byte_rx_count - 3] == 0xCC)      
-                        && (buf_RX[byte_rx_count - 2] == 0x33)  
-                        && (buf_RX[byte_rx_count - 1] == 0xC3)  
-                        && (buf_RX[byte_rx_count] == 0x3C))
+                        && (buf_RX[byte_rx_count - 2+ind] == 0x33)  
+                        && (buf_RX[byte_rx_count - 1+ind] == 0xC3)  
+                        && (buf_RX[byte_rx_count+ind] == 0x3C))
                     {
-                        if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == KEY_READ_COMMAND) {
-                            uint32_t key = buf_RX[INDEX_START_DATA_IN_RX];
+                        if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == TOUCH_CODE) {
+                            uint32_t key = buf_RX[INDEX_START_DATA_IN_RX+ind];
                             if(key){
+                                ESP_LOGI(TAG, "get task");
                                 if(KEY_IS_SET_TASK(key)) {
                                     esp_event_post_to(
                                         direct_loop,
@@ -67,7 +68,7 @@ for(;;) {
                                         0,
                                         TIMEOUT_PUSH_KEY
                                     );
-                                    vTaskDelay(20);
+                                    vTaskDelay(50);
                                     esp_event_post_to(
                                         direct_loop,
                                         EVENTS_MANAGER,
@@ -77,6 +78,7 @@ for(;;) {
                                         TIMEOUT_PUSH_KEY
                                     );
                                 } else {
+                                    ESP_LOGI(TAG, "get command");
                                     esp_event_post_to(
                                         direct_loop,
                                         EVENTS_DIRECTION,
@@ -87,7 +89,8 @@ for(;;) {
                                     );  
                                 }
                             } else {
-                                key = buf_RX[INDEX_IDENTIF_CHAR_IN_RX];
+                                ESP_LOGI(TAG, "get char");
+                                key = buf_RX[INDEX_IDENTIF_CHAR_IN_RX+ind];
                                 esp_event_post_to(
                                         direct_loop,
                                         EVENTS_DIRECTION,
@@ -97,7 +100,8 @@ for(;;) {
                                         TIMEOUT_PUSH_KEY
                                     );
                                 }
-                        } else if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == KEY_GET_CLOCK){
+                        } else if(buf_RX[INDEX_IDENTIF_DATA_IN_RX+ind] == KEY_GET_CLOCK){
+                            ESP_LOGI(TAG, "get clock");
                             struct tm tm_time = {
                                 .tm_year = GET_DEC(buf_RX[1]),
                                 .tm_mon = GET_DEC(buf_RX[2]),
@@ -113,10 +117,12 @@ for(;;) {
                         break;    
                     }
                 }  else if (buf_RX[byte_rx_count] == FRAME_HEADER) {
+                    ind = byte_rx_count;
                     heder_ok = true;
                 }
                 byte_rx_count++;
                 if(byte_rx_count >= SIZE_BUF) {
+                    ind = 0;
                     break;
                 }
             }

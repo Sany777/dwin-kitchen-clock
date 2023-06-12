@@ -55,6 +55,7 @@ void search_screen_handler(void* main_data, esp_event_base_t base, int32_t key, 
 void ap_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
 {
     if(key == KEY_INIT) {
+        dwin_set_pic(SHOW_INFO_PIC);
         start_ap();
         esp_event_post_to(show_loop, EVENTS_SHOW, UPDATE_DATA_COMPLETE, NULL, 0, TIMEOUT_SEND_EVENTS);
     } else if(key == KEY_CLOSE) {
@@ -141,6 +142,7 @@ void main_screen_handler(void* main_data, esp_event_base_t base, int32_t key, vo
     if(key == KEY_INIT){
         step = INIT_TASK;
     } else if(key == KEY_DETAILS_SCREEN){
+        ESP_LOGI(TAG, "GET details");
         xEventGroupWaitBits(dwin_event_group, BIT_PROCESS, false, false, WAIT_PROCEES);
         dwin_set_pic(NO_WEATHER_PIC);
         show_details_weather(main_data);
@@ -213,12 +215,12 @@ if(last_step != step){
     
     }
     // show_details_weather(main_data);
-    esp_event_post_to(show_loop, 
-            EVENTS_SHOW, 
-            0, 
-            NULL, 
-            0, 
-            TIMEOUT_SEND_EVENTS);
+    // esp_event_post_to(show_loop, 
+    //         EVENTS_SHOW, 
+    //         0, 
+    //         NULL, 
+    //         0, 
+    //         TIMEOUT_SEND_EVENTS);
 }
 
 void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
@@ -431,6 +433,7 @@ void timer_run_handler(void* data, esp_event_base_t base, int32_t key, void* eve
             return;
         }
     } else {
+        dwin_set_pic(TIMER_RUN_PIC);
         timer_SEC--;
         if(timer_SEC < 0){
             timer_SEC = 0;
@@ -482,6 +485,9 @@ void timer_screen_handler(void* main_data, esp_event_base_t base, int32_t key, v
             timer_data = malloc(SIZE_TIMER);
             if(!timer_data)return;
         }
+        timer_HOUR = 0;
+        timer_MIN = 10;
+        timer_SEC = 0;
         if(!run_handler){
             ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
                     slow_service_loop,
@@ -494,9 +500,6 @@ void timer_screen_handler(void* main_data, esp_event_base_t base, int32_t key, v
         } else {
             remove_periodic_event(EVENTS_SHOW, TIMER_SHOW);
         }
-        timer_HOUR = 0;
-        timer_MIN = 10;
-        timer_SEC = 0;
     }
     if(KEY_IS_AREA_TIMERS(key)) {
         new_area = GET_AREA_VALUE(key);
@@ -539,5 +542,5 @@ void timer_screen_handler(void* main_data, esp_event_base_t base, int32_t key, v
             default : break;
         }
     }
-    esp_event_post_to(show_loop, EVENTS_SHOW, UPDATE_DATA_COMPLETE, NULL, 0, TIMEOUT_SEND_EVENTS);
+    esp_event_post_to(show_loop, EVENTS_SHOW, UPDATE_DATA_COMPLETE, timer_data, sizeof(timer_data), TIMEOUT_SEND_EVENTS);
 }

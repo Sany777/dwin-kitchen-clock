@@ -1,6 +1,6 @@
 #include "show_screen_handlers.h"
 
-const int NORMAL_FONT = 3, FONT_INFO = 2, FONT_SECOND_INFO = 1, FONT_BUTTON = 4;
+const int NORMAL_FONT = 2, FONT_INFO = 2, FONT_SECOND_INFO = 1, FONT_BUTTON = 3;
 #define REPEAT_SEND 3
 
 
@@ -474,11 +474,11 @@ void show_timer_stop_handler(void* main_data,
                                     int32_t run, 
                                     void* event_data) 
 {
-    uint8_t *timer_data = (uint8_t *)event_data;
-    vTaskDelay(DELAY_SHOW_ITEM);
+    int8_t *timer_data = (int8_t *)event_data;
     print_start(0, 10, color_CLOCK, FONT_INFO);
     send_str("%s", asctime(get_time_tm()));
     print_end();
+    vTaskDelay(DELAY_SHOW_ITEM);
     print_start(2, 2, color_CLOCK, 6);
     send_str("%2d : %2d : %2d",
                 timer_HOUR,

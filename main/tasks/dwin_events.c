@@ -90,7 +90,7 @@ void init_dwin_events(main_data_t *main_data)
         xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_DWIN_RESPONSE_OK, false, false, 1000);
     }while(!(xEventGroup&BIT_DWIN_RESPONSE_OK));
     // dwin_set_pic(NO_WEATHER_PIC);
-    set_color(GREEN, WHITE);
+    // set_color(GREEN, WHITE);
 
 // clear_screen();
 // uart_write_bytes(UART_DWIN, send, 20);
@@ -120,7 +120,7 @@ void init_dwin_events(main_data_t *main_data)
             0,
             TIMEOUT_PUSH_KEY
         );
-    vTaskDelay(40000/portTICK_PERIOD_MS);
+    vTaskDelay(50000/portTICK_PERIOD_MS);
     esp_event_post_to(
             direct_loop,
             EVENTS_MANAGER,

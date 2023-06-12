@@ -4,13 +4,13 @@
 #include "dwin_common.h"
 
 /*data identifier from dwin*/
-#define KEY_READ_COMMAND (0x78)
+
 #define KEY_GET_CLOCK (155)
 
 /*index byte in RX buffer*/
-#define INDEX_IDENTIF_DATA_IN_RX    (0)
-#define INDEX_START_DATA_IN_RX      (1)
-#define INDEX_IDENTIF_CHAR_IN_RX    (2)
+#define INDEX_IDENTIF_DATA_IN_RX    (1)
+#define INDEX_START_DATA_IN_RX      (2)
+#define INDEX_IDENTIF_CHAR_IN_RX    (3)
 
 #define init_update_dwin()			uart_write_bytes(UART_DWIN, INIT_UPDATE, sizeof(INIT_UPDATE))
 
