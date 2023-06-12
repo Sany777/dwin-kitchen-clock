@@ -26,10 +26,13 @@ static const char* COLOR_NAME[] = {
     "WHITE", 
     "CAEN",
     "BLUE", 
-    "GREY"
+    "GREY",
     "VIOLET", 
     "LEMON", 
     "RED", 
+    "GREEN",
+    "AQUA",
+    "ORANGE"
 };
 
 
@@ -66,13 +69,9 @@ void show_main_handler(void* main_data,
                             esp_event_base_t base, 
                             int32_t data_sensor, 
                             void* event_data);
-void show_timer_run_handler(void* main_data, 
+void show_timer_handler(void* main_data, 
                             esp_event_base_t base, 
-                            int32_t run, 
-                            void* event_data);
-void show_timer_stop_handler(void* main_data, 
-                            esp_event_base_t base, 
-                            int32_t run, 
+                            int32_t key, 
                             void* event_data);
 void show_details_weather(main_data_t * main_data);
 void welcome();

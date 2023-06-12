@@ -48,7 +48,7 @@ ESP_EVENT_DECLARE_BASE(EVENTS_SHOW);
 
 
 extern char *buf_send_operation;
-extern EventGroupHandle_t dwin_event_group;
+extern EventGroupHandle_t dwin_event_group, dwin_system_event;
 extern esp_event_loop_handle_t 
                 direct_loop, 
                 show_loop, 

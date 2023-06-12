@@ -22,13 +22,6 @@ switch(action){
             if(xEventGroup&BIT_WORK_AP) return;
             wifi_mode_t mode;
             esp_wifi_get_mode(&mode);
-            if(mode != WIFI_MODE_STA){
-                start_sta();
-                xEventGroupWaitBits(dwin_event_group,             
-                    BIT_PROCESS,                                              
-                    false, false,
-                    WAIT_PROCEES);
-            }
             if(!rx_espnow )xTaskCreate(espnow_task_rx, "espnow_task_rx", 5000, arg, 5, &rx_espnow);
             if(!tx_espnow)xTaskCreate(espnow_task_tx, "espnow_task_tx", 5000, arg, 5, &tx_espnow);
             if(!rx_espnow || !tx_espnow)return;
@@ -125,7 +118,7 @@ switch(action){
     case INIT_AP :
     {
         if(mode == WIFI_MODE_AP)break;
-        xEventGroup = xEventGroupSync(dwin_event_group, BIT_PROCESS, BIT_WORK_AP, WAIT_PROCEES);
+        xEventGroup = xEventGroupSync(dwin_event_group, BIT_PROCESS, BIT_WORK_AP, 10000);
         if(mode != WIFI_MODE_NULL){
             if(xEventGroup&BIT_ESPNOW_RUN){
                 stop_espnow();
@@ -194,7 +187,7 @@ switch(action){
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
         ESP_ERROR_CHECK(esp_wifi_start());
         if(xEventGroup&BIT_ESPNOW_ALLOW && !(xEventGroup&BIT_ESPNOW_RUN)){
-            start_espnow();
+            // start_espnow();
         }
         break;
     }

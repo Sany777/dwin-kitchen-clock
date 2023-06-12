@@ -120,26 +120,26 @@
                                                     || ((key_from_dwin) >= 'a' && (key_from_dwin) <= 'z'))
 #define KEY_IS_NUMBER(key_from_dwin)          ((key_from_dwin) >= '0' && (key_from_dwin) <= '9')
 #define KEY_IS_AREA_SCAN_SSID(key_from_dwin)  ((key_from_dwin) >= KEY_START_AREA \
-                                                    && (key_from_dwin) <= KEY_START_AREA+MAX_SCAN_LIST_SIZE)
+                                                    && (key_from_dwin) < KEY_START_AREA+MAX_SCAN_LIST_SIZE)
 #define KEY_IS_AREA_CLOCK(key_from_dwin)      ((key_from_dwin) >= KEY_START_AREA \
-                                                    && (key_from_dwin) <= KEY_START_AREA+END_AREA_CLOCK)
+                                                    && (key_from_dwin) < KEY_START_AREA+END_AREA_CLOCK)
 #define KEY_IS_AREA_TIMERS(key_from_dwin)     ((key_from_dwin) >= KEY_START_AREA \
-                                                    && (key_from_dwin) <= KEY_START_AREA+END_AREA_TIMERS)
+                                                    && (key_from_dwin) < KEY_START_AREA+END_AREA_TIMERS)
 #define KEY_IS_AREA_STOP_TIMER(key_from_dwin) ((key_from_dwin) >= KEY_START_AREA \
-                                                    && (key_from_dwin) <= KEY_START_AREA+END_AREA_STOP_TIMERS)
+                                                    && (key_from_dwin) < KEY_START_AREA+END_AREA_STOP_TIMERS)
 #define KEY_IS_AREA_NOTIF(key_from_dwin)      ((key_from_dwin) >= KEY_START_AREA \
-                                                    && (key_from_dwin) <= KEY_START_AREA+END_AREA_NOTIFICATIONS)
+                                                    && (key_from_dwin) < KEY_START_AREA+END_AREA_NOTIFICATIONS)
 #define KEY_IS_AREA_CUSTOM(key_from_dwin)     ((key_from_dwin) >= KEY_START_AREA \
-                                                    && (key_from_dwin) <= KEY_START_AREA+END_AREA_COLORS)
+                                                    && (key_from_dwin) < KEY_START_AREA+END_AREA_COLORS)
 #define KEY_IS_AREA_SETTING(key_from_dwin)    ((key_from_dwin) >= KEY_START_AREA \
-                                                    && (key_from_dwin) <= KEY_START_AREA+END_AREA_SETTINGS)
+                                                    && (key_from_dwin) < KEY_START_AREA+END_AREA_SETTINGS)
 #define KEY_IS_SYMBOL(key_from_dwin)          ((key_from_dwin) >= '!'&& (key_from_dwin) <= '~')
 #define KEY_IS_AREA_TOGGLE(key_from_dwin)     ((key_from_dwin) >= KEY_TOGGLE_1 \
-                                                    && (key_from_dwin) <= (KEY_TOGGLE_1+MAX_TOGGLE_UNIT_ON_SCREEN))
+                                                    && (key_from_dwin) < (KEY_TOGGLE_1+MAX_TOGGLE_UNIT_ON_SCREEN))
 #define KEY_IS_AREA_TOGGLE_DAY(key_from_dwin) ((key_from_dwin) >= KEY_TOGGLE_DAY_1 \
-                                                    && (key_from_dwin) <= (KEY_TOGGLE_DAY_1+SIZE_WEEK))
+                                                    && (key_from_dwin) < (KEY_TOGGLE_DAY_1+SIZE_WEEK))
 #define KEY_IS_DAY(key_from_dwin)             ((key_from_dwin) >= KEY_DAY_1 \
-                                                    && (key_from_dwin) <= KEY_DAY_1+SIZE_WEEK)
+                                                    && (key_from_dwin) < KEY_DAY_1+SIZE_WEEK)
 
 #define color_CLOCK                           (USED_COLORS[colors_INTERFACE[AREA_CLOCK_COLOR]])
 #define color_DESC                            (USED_COLORS[colors_INTERFACE[AREA_DESC_COLOR]])

@@ -1,6 +1,6 @@
 #include "dwin_init.h"
 
-EventGroupHandle_t dwin_event_group;
+EventGroupHandle_t dwin_event_group, dwin_system_event;
 
 void esp_init(void)
 {
@@ -11,7 +11,9 @@ void esp_init(void)
     main_data->weather_data = calloc(1, sizeof(weather_data_t));
     assert(main_data->weather_data);
     dwin_event_group = xEventGroupCreate();
+    dwin_system_event = xEventGroupCreate();
     assert(dwin_event_group);
+    assert(dwin_system_event);
     main_data->notif_data = calloc(1,SIZE_BUF_NOTIFICATION);
     assert(main_data->notif_data);
     esp_err_t ret = nvs_flash_init();

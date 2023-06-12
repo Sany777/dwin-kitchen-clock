@@ -53,12 +53,12 @@ typedef enum flag_state_device{
     PROCESS_DWIN,
     ESPNOW_CONECT,
     IS_TIME,
-    TIMER_RUN,
     RESPONSE_OK,
     RESPONSE_UPDATE,
     WORK_AP,
     SSID_FOUND,
     ESPNOW_RUN,
+    TIMER_RUN,
 }flag_state_device_t;
 
 /*events bit*/

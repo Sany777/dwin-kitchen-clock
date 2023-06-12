@@ -58,50 +58,51 @@ for(;;) {
                         if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == TOUCH_CODE) {
                             uint32_t key = buf_RX[INDEX_START_DATA_IN_RX+ind];
                             if(key){
-                                ESP_LOGI(TAG, "get task");
                                 if(KEY_IS_SET_TASK(key)) {
-                                    esp_event_post_to(
-                                        direct_loop,
-                                        EVENTS_DIRECTION,
-                                        KEY_CLOSE,
-                                        NULL,
-                                        0,
-                                        TIMEOUT_PUSH_KEY
-                                    );
-                                    vTaskDelay(50);
-                                    esp_event_post_to(
-                                        direct_loop,
-                                        EVENTS_MANAGER,
-                                        GET_SCREEN_TASK(key),
-                                        NULL,
-                                        0,
-                                        TIMEOUT_PUSH_KEY
-                                    );
+                                    ESP_LOGI(TAG, "get task");
+                                    send_direct(KEY_CLOSE);
+                                    // esp_event_post_to(
+                                    //     direct_loop,
+                                    //     EVENTS_DIRECTION,
+                                    //     KEY_CLOSE,
+                                    //     NULL,
+                                    //     0,
+                                    //     TIMEOUT_PUSH_KEY
+                                    // );
+                                    send_menager(GET_SCREEN_TASK(key));
+                                    // esp_event_post_to(
+                                    //     direct_loop,
+                                    //     EVENTS_MANAGER,
+                                    //     GET_SCREEN_TASK(key),
+                                    //     NULL,
+                                    //     0,
+                                    //     TIMEOUT_PUSH_KEY
+                                    // );
                                 } else {
                                     ESP_LOGI(TAG, "get command");
-                                    esp_event_post_to(
-                                        direct_loop,
-                                        EVENTS_DIRECTION,
-                                        key,
-                                        NULL,
-                                        0,
-                                        TIMEOUT_PUSH_KEY
-                                    );  
+                                    send_direct(key);
+                                    // esp_event_post_to(
+                                    //     direct_loop,
+                                    //     EVENTS_DIRECTION,
+                                    //     key,
+                                    //     NULL,
+                                    //     0,
+                                    //     TIMEOUT_PUSH_KEY
+                                    // );  
                                 }
                             } else {
-                                ESP_LOGI(TAG, "get char");
                                 key = buf_RX[INDEX_IDENTIF_CHAR_IN_RX+ind];
-                                esp_event_post_to(
-                                        direct_loop,
-                                        EVENTS_DIRECTION,
-                                        key,
-                                        NULL,
-                                        0,
-                                        TIMEOUT_PUSH_KEY
-                                    );
+                                send_direct(key);
+                                // esp_event_post_to(
+                                //         direct_loop,
+                                //         EVENTS_DIRECTION,
+                                //         key,
+                                //         NULL,
+                                //         0,
+                                //         TIMEOUT_PUSH_KEY
+                                //     );
                                 }
                         } else if(buf_RX[INDEX_IDENTIF_DATA_IN_RX+ind] == KEY_GET_CLOCK){
-                            ESP_LOGI(TAG, "get clock");
                             struct tm tm_time = {
                                 .tm_year = GET_DEC(buf_RX[1]),
                                 .tm_mon = GET_DEC(buf_RX[2]),

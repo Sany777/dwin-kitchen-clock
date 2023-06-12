@@ -65,7 +65,7 @@ typedef struct {
 } handlers_dwin_t;
 
 
-extern  dwin_handler_t wifi_set_mode_handler;
+extern  dwin_handler_t  wifi_set_mode_handler;
 extern  dwin_handler_t  search_screen_handler;
 extern  dwin_handler_t  ap_screen_handler;
 extern  dwin_handler_t  setting_screen_handler;
@@ -127,6 +127,7 @@ extern  dwin_handler_t show_timer_stop_handler;
     },
 };
 
+ 
 
 /* loop task */
 void show_task(void*);
@@ -135,44 +136,56 @@ void slow_services_task(void *pv);
 void fast_services_task(void *pv);
 void uart_event_task(void *);
 
-#define show_screen(dt)                                                                                             \
-                        do{                                                                                         \
-                            esp_event_post_to(show_loop, EVENTS_SHOW, SHOW_SCREEN, dt, sizeof(dt), WAIT_SERVICE);   \
-                        }while(0) 
 
-#define start_ap()                                                                                              \
-                        do{                                                                                     \
-                            esp_event_post_to(fast_service_loop, WIFI_SET, INIT_AP, NULL, 0, WAIT_SERVICE);     \
-                        }while(0)    
+#define send_direct(key)                                                           \
+    do{                                                                            \
+        esp_event_post_to(direct_loop, EVENTS_DIRECTION, key, NULL, 0, 400);       \
+    }while(0) 
 
-#define get_weather()                                                                                           \
-                        do{                                                                                     \
-                            esp_event_post_to(slow_service_loop, WIFI_SET, GET_WEATHER, NULL, 0, WAIT_SERVICE); \
-                        }while(0)                                                                               \
 
-#define start_sta()                                                                                             \
-                        do{                                                                                     \
-                            esp_event_post_to(fast_service_loop, WIFI_SET, START_STA, NULL, 0, WAIT_SERVICE);   \
-                        }while(0) 
+#define send_menager(key)                                                           \
+    do{                                                                            \
+        esp_event_post_to(direct_loop, EVENTS_MANAGER, key, NULL, 0, 400);       \
+    }while(0) 
 
-#define stop_espnow()                                                                                               \
-                        do{                                                                                         \
-                            esp_event_post_to(slow_service_loop, ESPNOW_SET, STOP_ESPNOW, NULL, 0, WAIT_SERVICE);   \
-                        }while(0)
+#define show_screen(key, dt)                                                            \
+    do{                                                                                 \
+        esp_event_post_to(show_loop, EVENTS_SHOW, key, dt, sizeof(dt), 300);            \
+    }while(0) 
 
-#define start_espnow()                                                                                              \
-                        do{                                                                                         \
-                            esp_event_post_to(slow_service_loop, ESPNOW_SET, START_ESPNOW, NULL, 0, WAIT_SERVICE);    \
-                        }while(0) 
-#define start_sntp()                                                                                                \
-                        do{                                                                                         \
-                            esp_event_post_to(slow_service_loop, WIFI_SET, INIT_SNTP, NULL, 0, WAIT_SERVICE);       \
-                        }while(0) 
+#define start_ap()                                                                          \
+    do{                                                                                     \
+        esp_event_post_to(fast_service_loop, WIFI_SET, INIT_AP, NULL, 0, 200);     \
+    }while(0)    
 
-#define stop_sntp()                                                                                                \
-                        do{                                                                                        \
-                            esp_event_post_to(slow_service_loop, WIFI_SET, STOP_SNTP, NULL, 0, WAIT_SERVICE);      \
-                        }while(0) 
+#define get_weather()                                                                       \
+    do{                                                                                     \
+        esp_event_post_to(slow_service_loop, WIFI_SET, GET_WEATHER, NULL, 0, WAIT_SERVICE); \
+    }while(0)                                                                               \
+
+#define start_sta()                                                                         \
+    do{                                                                                     \
+        esp_event_post_to(fast_service_loop, WIFI_SET, START_STA, NULL, 0, 200);   \
+    }while(0) 
+
+#define stop_espnow()                                                                           \
+    do{                                                                                         \
+        esp_event_post_to(slow_service_loop, ESPNOW_SET, STOP_ESPNOW, NULL, 0, WAIT_SERVICE);   \
+    }while(0)
+
+#define start_espnow()                                                                          \
+    do{                                                                                         \
+        esp_event_post_to(slow_service_loop, ESPNOW_SET, START_ESPNOW, NULL, 0, 200);  \
+    }while(0) 
+#define start_sntp()                                                                            \
+    do{                                                                                         \
+        esp_event_post_to(slow_service_loop, WIFI_SET, INIT_SNTP, NULL, 0, WAIT_SERVICE);       \
+    }while(0) 
+
+#define stop_sntp()                                                                            \
+    do{                                                                                        \
+        esp_event_post_to(slow_service_loop, WIFI_SET, STOP_SNTP, NULL, 0, WAIT_SERVICE);      \
+    }while(0) 
 void init_dwin_events(main_data_t*);
 void check_net_data_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data);
 void set_screen_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data);

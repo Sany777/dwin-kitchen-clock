@@ -90,8 +90,8 @@
 #define TIMEOUT_SEND_EVENTS      (100/portTICK_PERIOD_MS)
 #define TICKS_TO_RUN_LOOP         100
 #define TASK_EVENT_SIZE           3
-#define DELAY_SLOW_LOOP          (500/portTICK_PERIOD_MS)
-#define DELAY_FAST_LOOP          (20/portTICK_PERIOD_MS)
+#define DELAY_SLOW_LOOP          (1000/portTICK_PERIOD_MS)
+#define DELAY_FAST_LOOP          (50/portTICK_PERIOD_MS)
 #define DEALAY_START_TASK        (1000/portTICK_PERIOD_MS)
 #define DEALAY_START_ESPNOWTASK  (4000/portTICK_PERIOD_MS)
 #define SIZE_EVENTS_UART          10

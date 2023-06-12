@@ -112,23 +112,16 @@ void init_dwin_events(main_data_t *main_data)
     // esp_event_post_to(slow_service_loop, ESPNOW_SET, PAUSE_ESPNOW, NULL, 0, WAIT_SERVICE);
     // start_espnow();
 
-    esp_event_post_to(
-            direct_loop,
-            EVENTS_MANAGER,
-            SERVER_SCREEN,
-            NULL,
-            0,
-            TIMEOUT_PUSH_KEY
-        );
-    vTaskDelay(50000/portTICK_PERIOD_MS);
-    esp_event_post_to(
-            direct_loop,
-            EVENTS_MANAGER,
-            MAIN_SCREEN,
-            NULL,
-            0,
-            TIMEOUT_PUSH_KEY
-        );
+    // esp_event_post_to(
+    //         direct_loop,
+    //         EVENTS_MANAGER,
+    //         SERVER_SCREEN,
+    //         NULL,
+    //         0,
+    //         TIMEOUT_PUSH_KEY
+    //     );
+    // vTaskDelay(50000/portTICK_PERIOD_MS);
+    send_menager(SET_COLOR_SCREEN);
 
 }
 
@@ -155,6 +148,7 @@ void test_clock_handler(void* main_data, esp_event_base_t base, int32_t new_scre
 
 void set_screen_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)
 {
+    area_SCREEN = 0;
     static esp_event_handler_instance_t
                         direction_handler, 
                         show_handler, 
@@ -177,15 +171,6 @@ void set_screen_handler(void* main_data, esp_event_base_t base, int32_t new_scre
                     ));
         show_handler = NULL;
     }
-    if(service_handler) {
-        ESP_ERROR_CHECK(esp_event_handler_instance_unregister_with(
-                        slow_service_loop, 
-                        EVENTS_SERVICE, 
-                        ESP_EVENT_ANY_ID,  
-                        service_handler)
-                    );
-        service_handler = NULL;
-    }
     vTaskDelay(TIMEOUT_SEND_EVENTS);
     if(screens_handlers[new_screen].main_handler) {
         ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
@@ -196,6 +181,8 @@ void set_screen_handler(void* main_data, esp_event_base_t base, int32_t new_scre
                                     main_data,
                                     &direction_handler
                                 ));
+                                send_direct(KEY_INIT);
+        // esp_event_post_to(direct_loop, EVENTS_DIRECTION, KEY_INIT, NULL, 0, TIMEOUT_SEND_EVENTS);
     }
     if(screens_handlers[new_screen].show_handler) {
         ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
@@ -207,44 +194,38 @@ void set_screen_handler(void* main_data, esp_event_base_t base, int32_t new_scre
                                     &show_handler
                                 ));
     }
-    esp_event_post_to(direct_loop, EVENTS_DIRECTION, KEY_INIT, NULL, 0, TIMEOUT_SEND_EVENTS);
 }
+
+
 
 void direction_task(void *pv)
 {
-    vTaskDelay(DEALAY_START_TASK);
     while(1) {
-        esp_event_loop_run(direct_loop, TICKS_TO_RUN_LOOP);
-        vTaskDelay(DELAY_FAST_LOOP);
+        esp_event_loop_run(direct_loop, portMAX_DELAY);
     }
 }
 
 
  void show_task(void *pv)
 {
-    vTaskDelay(DEALAY_START_TASK);
     while(1) {
-        esp_event_loop_run(show_loop, TICKS_TO_RUN_LOOP);
-        vTaskDelay(DELAY_FAST_LOOP);
+        esp_event_loop_run(show_loop, portMAX_DELAY);
     }
 }
 
  void fast_services_task(void *pv)
 {
-    vTaskDelay(DEALAY_START_TASK);
     while(1) {
-        esp_event_loop_run(fast_service_loop, TICKS_TO_RUN_LOOP);
-        vTaskDelay(DELAY_FAST_LOOP);
+        esp_event_loop_run(fast_service_loop, portMAX_DELAY);
     }
 }
 
 
 void slow_services_task(void *pv)
 {
-    vTaskDelay(DEALAY_START_TASK);
     while(1) {
-        esp_event_loop_run(slow_service_loop, TICKS_TO_RUN_LOOP);
-        vTaskDelay(DELAY_SLOW_LOOP);
+        esp_event_loop_run(slow_service_loop, portMAX_DELAY);
+        vTaskDelay(500);
     }
 }
 
@@ -252,6 +233,7 @@ void vApplicationIdleHook( void )
 { 
     TickType_t us_time_sleep = TIMER_WAKEUP_LONG_TIME_US;
     while (1) {
+        
         sleep_dwin(us_time_sleep);
     }
 }

@@ -129,7 +129,6 @@ void get_weather_handler(void* main_data, esp_event_base_t base, int32_t key, vo
     sunset_MIN = timeinfo.tm_min;
     dt_TX = atoi((dt_txt[0]+SHIFT_DT_TX));
     weather_PIC = get_pic(atoi(id[0]), (dt_TX>sunset_HOUR-2));
-    // memset(description_WEATHER, 0, MAX_LEN_DESCRIPTION);
     strncpy(description_WEATHER, description[0], MAX_LEN_DESCRIPTION);
     for(int i=0; temp && temp[i]; i++){
         temp_FEELS_LIKE[i] = atoi(temp_feel[i]);
