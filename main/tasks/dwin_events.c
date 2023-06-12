@@ -96,12 +96,12 @@ void init_dwin_events(main_data_t *main_data)
 // uart_write_bytes(UART_DWIN, send, 20);
 // send_str_dwin(send);
     // vTaskDelay(1500/portTICK_PERIOD_MS);
-    int8_t t[] = {0, 0, 0, 0, 10, -20};
+    int8_t t[] = {0, 0, 0, 0, 0, 0};
     // get_y_points(t, 5, 50);
     uint16_t  points[]= {10, 13, 40, 14, 10,45, 15,13, 25,22};
 
     uint16_t *tu = get_y_points(t, 6, 100);
-    print_lines(tu, 6, 50, 470, 265);
+    print_lines(tu, 6, 50, 470, 260);
     // print_broken_line(points, 10, 10, 100);
     // print_histogram(points, 7, 10, 400, 260);
     // set_text_box(10, 10, 475, 267);

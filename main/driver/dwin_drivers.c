@@ -103,14 +103,15 @@ void print_lines( const uint16_t *points,
                     const size_t width,
                     const uint16_t y)
 {
-    const uint16_t step = width/number_point;
+    uint16_t step = width/number_point;
     send_char(0XAA);
     send_char(0X56);
     for(uint16_t i=0, tmp=0; i<number_point; i++){
         send_char(x_start/256);
         send_char(x_start%256);
-        send_char((y - points[i])/256);
-        send_char((y - points[i])%256);
+        tmp = points ? points[i] : 20;
+        send_char((y - tmp )/256);
+        send_char((y - tmp)%256);
         x_start += step;
     }
     print_end(); 

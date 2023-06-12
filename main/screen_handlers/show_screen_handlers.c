@@ -349,7 +349,7 @@ void show_details_weather(main_data_t * main_data)
                         ? VIOLET 
                         : color_INFO, 
                     FONT_INFO);
-    send_str("rain     %d%%   %d%%   %d%%   %d%%   %d%%", 
+    send_str("rain      %d%%   %d%%   %d%%   %d%%   %d%%", 
                         PoP[0],
                         PoP[1],
                         PoP[2],
@@ -358,19 +358,15 @@ void show_details_weather(main_data_t * main_data)
     print_end();
     vTaskDelay(DELAY_SHOW_ITEM);
     print_start(5, 0, color_INFO, FONT_INFO);
-    send_str( "temp t*C %3.1f  %3.1f  %3.1f  %3.1f  %3.1f",
+    send_str( "temp   t*C %2d  %2d  %2d  %2d  %2d",
                     temp_FEELS_LIKE[0],
                     temp_FEELS_LIKE[1],
                     temp_FEELS_LIKE[2],
                     temp_FEELS_LIKE[3],
                     temp_FEELS_LIKE[4] );
     print_end();
-    vTaskDelay(DELAY_SHOW_ITEM);
-    // uint16_t *points = get_y_points(temp_FEELS_LIKE, NUMBER_ITEM_WEATHER, 40, 40);
-    // if(points){
-    //     print_broken_line(points, NUMBER_ITEM_WEATHER, 30, 240);
-    //     free(points);
-    // }
+    vTaskDelay(DELAY_SHOW_ITEM*2);
+    print_lines(get_y_points(temp_FEELS_LIKE, NUMBER_ITEM_WEATHER, 80), NUMBER_ITEM_WEATHER, 70, 470, 260);
 }
 
 void show_main_handler(void* main_data, 
@@ -410,8 +406,8 @@ void show_main_handler(void* main_data,
                 if(weather_PIC == NO_WEATHER_PIC && temp_INDOOR == NO_TEMP_SENSOR) return;
                 print_start(1, 0, color_INFO, FONT_INFO);
                 if(weather_PIC != NO_WEATHER_PIC){
-                    send_str(" outdoor        t*C %2.1f\n\r feels like     t*C %2.1f\n\r Fall-out       %d%%", 
-                                    temp_OUTDOOR[0], 
+                    send_str(" outdoor        t*C %d\n\r feels like     t*C %d\n\r Fall-out       %d%%", 
+                                    temp_OUTDOOR, 
                                     temp_FEELS_LIKE[0],
                                     PoP[0]);
                 }

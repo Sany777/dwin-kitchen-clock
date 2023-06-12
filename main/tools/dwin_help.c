@@ -17,19 +17,27 @@ uint16_t *get_y_points(  int8_t *points,
                             const uint16_t height )
 {
     int max = 0, min_val = 0;
-    uint16_t *buf_out  = (uint16_t *)(buf_send_operation + MAX_DATA_LEN - number*sizeof(uint16_t));
+    uint16_t *buf_out  = NULL;
+    
+    bool is_number = false;
     for(int i=0; i<number; i++){
         if(points[i] > max){
             max = points[i];
+            if(!is_number){
+                is_number = true;
+            }
         } else if(points[i] < min_val){
             min_val = points[i];
         }
     }
-    min_val *= -1;
-    max += min_val;
-    const float k_h = (float)height/max;
-    for(int i=0; i<number; i++){
-        buf_out[i] = (uint16_t)((points[i]+min_val) * k_h);
+    if(is_number){
+        buf_out = (uint16_t *)(buf_send_operation + MAX_DATA_LEN - number*sizeof(uint16_t));
+        min_val *= -1;
+        max += min_val;
+        const float k_h = (float)height/max;
+        for(int i=0; i<number; i++){
+            buf_out[i] = (uint16_t)((points[i]+min_val) * k_h);
+        }
     }
     return buf_out;
 }

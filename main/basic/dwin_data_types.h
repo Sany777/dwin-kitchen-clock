@@ -152,13 +152,13 @@ typedef struct {
     uint8_t sunrise_min;
     uint8_t sunset_hour;
     uint8_t sunset_min;
-    int timezone;
     char description[LEN_BUF_DESCRIPTION];
     uint8_t pop[NUMBER_DATA_WEATHER];
     uint8_t dt_tx;
-    int indoor;
-    int feels_like[NUMBER_DATA_WEATHER];
-    int outdoor[NUMBER_DATA_WEATHER];
+    int8_t outdoor;
+    int8_t indoor;
+    int8_t feels_like[NUMBER_DATA_WEATHER];
+    int timezone;
 } weather_data_t;
 
 /* data struct timer func*/

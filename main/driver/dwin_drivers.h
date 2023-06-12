@@ -61,10 +61,7 @@ void print_rect(const uint16_t x_s,
 				const uint16_t x_e, 
 				const uint16_t y_e,
 				bool fill);
-void print_broken_line( const uint16_t *y_points, 
-                        const size_t points_number,
-                        const uint16_t x_start,
-                        const uint16_t x_end );
+
 void print_histogram( uint16_t *points, 
                         const size_t points_number,
                         const uint16_t x_start,
