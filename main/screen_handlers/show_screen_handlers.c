@@ -9,10 +9,12 @@ void show_ap_handler(void* main_data,
                         int32_t state, 
                         void* event_data)
 {
-    print_start(1, 2, WHITE, NORMAL_FONT);
+    dwin_set_pic(NO_WEATHER_PIC);
+    vTaskDelay(DELAY_SHOW_ITEM);
+    print_start(1, 2, WHITE, FONT_INFO);
     if(!event_data){
         send_str(
-                "Connect to the AP with the name %s, enter the %s paswword and and go to the address in your browser %s",
+                "Connect to the AP \n\r with the name: \"%s\",\r\n enter the paswword: \"%s\"\n\r and go to \"%s\".",
                 AP_WIFI_SSID,
                 AP_WIFI_PWD,
                 MY_IP);
@@ -333,10 +335,10 @@ void show_details_weather(main_data_t * main_data)
     send_str_dwin(name_CITY);
     print_end();
     vTaskDelay(DELAY_SHOW_ITEM);
-    print_start(4, 13, 
+    print_start(4, 15, 
                     color_INFO,
                     FONT_SECOND_INFO);
-    send_str( "%d:00     %d:00     %d:00    %d:00    %d:00", 
+    send_str( "%2d:00    %2d:00    %2d:00    %2d:00    %2d:00", 
                         dt_TX, 
                         (dt_TX+3)%24, 
                         (dt_TX+6)%24, 
@@ -349,7 +351,7 @@ void show_details_weather(main_data_t * main_data)
                         ? VIOLET 
                         : color_INFO, 
                     FONT_INFO);
-    send_str("rain      %d%%   %d%%   %d%%   %d%%   %d%%", 
+    send_str("Rain      %2d%%   %2d%%   %2d%%   %2d%%   %2d%%", 
                         PoP[0],
                         PoP[1],
                         PoP[2],
@@ -358,12 +360,12 @@ void show_details_weather(main_data_t * main_data)
     print_end();
     vTaskDelay(DELAY_SHOW_ITEM);
     print_start(5, 0, color_INFO, FONT_INFO);
-    send_str( "temp   t*C %2d  %2d  %2d  %2d  %2d",
+    send_str( "Temp t*C  %+3d   %+3d   %+3d   %+3d   %+3d",
                     temp_FEELS_LIKE[0],
                     temp_FEELS_LIKE[1],
                     temp_FEELS_LIKE[2],
                     temp_FEELS_LIKE[3],
-                    temp_FEELS_LIKE[4] );
+                    temp_FEELS_LIKE[4]);
     print_end();
     vTaskDelay(DELAY_SHOW_ITEM*2);
     print_lines(get_y_points(temp_FEELS_LIKE, NUMBER_ITEM_WEATHER, 80), NUMBER_ITEM_WEATHER, 70, 470, 260);

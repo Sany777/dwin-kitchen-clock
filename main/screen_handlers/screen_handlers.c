@@ -59,7 +59,6 @@ void ap_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void
         esp_event_post_to(show_loop, EVENTS_SHOW, UPDATE_DATA_COMPLETE, NULL, 0, TIMEOUT_SEND_EVENTS);
     } else if(key == KEY_CLOSE) {
         esp_wifi_stop();
-        start_sta();
     }
 }
 

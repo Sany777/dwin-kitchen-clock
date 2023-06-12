@@ -15,34 +15,38 @@ switch(action){
     case START_ESPNOW :
     {
         if(!init_espnow){
-            main_data_t *main_data = (main_data_t *)arg;
-            xTaskCreate(espnow_task_rx, "espnow_task_rx", 5000, arg, 5, &rx_espnow);
-            xTaskCreate(espnow_task_tx, "espnow_task_tx", 5000, arg, 5, &tx_espnow);
-            if(!rx_espnow || !tx_espnow)return;
-            ESP_ERROR_CHECK(esp_now_init());
+            EventBits_t xEventGroup = xEventGroupWaitBits(dwin_event_group,             
+                    BIT_PROCESS,                                              
+                    false, false,
+                    WAIT_PROCEES);
+            if(xEventGroup&BIT_WORK_AP) return;
             wifi_mode_t mode;
             esp_wifi_get_mode(&mode);
             if(mode != WIFI_MODE_STA){
                 start_sta();
                 xEventGroupWaitBits(dwin_event_group,             
-                        BIT_PROCESS,                                              
-                        false, false,
-                        WAIT_PROCEES);
+                    BIT_PROCESS,                                              
+                    false, false,
+                    WAIT_PROCEES);
             }
+            if(!rx_espnow )xTaskCreate(espnow_task_rx, "espnow_task_rx", 5000, arg, 5, &rx_espnow);
+            if(!tx_espnow)xTaskCreate(espnow_task_tx, "espnow_task_tx", 5000, arg, 5, &tx_espnow);
+            if(!rx_espnow || !tx_espnow)return;
             ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
                                 direct_loop,
                                 EVENTS_DIRECTION,
                                 CHECK_NET_DATA,
                                 check_net_data_handler,
-                                (void *)main_data,
+                                arg,
                                 &handler_check
                             ));
-            #if CONFIG_ESP_WIFI_STA_DISCONNECTED_PM_ENABLE
-                ESP_ERROR_CHECK(esp_now_set_wake_window(WINDOW_ESPNOW_MS));
-            #endif
+            ESP_ERROR_CHECK(esp_now_init());
             ESP_ERROR_CHECK( esp_now_set_pmk((uint8_t *)ESPNOW_PMK) );
             ESP_ERROR_CHECK( esp_now_register_send_cb(espnow_send_cb) );
             ESP_ERROR_CHECK(esp_now_register_recv_cb(espnow_rx_cb));
+            #if CONFIG_ESP_WIFI_STA_DISCONNECTED_PM_ENABLE
+                ESP_ERROR_CHECK(esp_now_set_wake_window(WINDOW_ESPNOW_MS));
+            #endif
             init_espnow = true;
             run_espnow = true;
         } else if(!run_espnow){
@@ -121,7 +125,7 @@ switch(action){
     case INIT_AP :
     {
         if(mode == WIFI_MODE_AP)break;
-        xEventGroup = xEventGroupSync(dwin_event_group, BIT_PROCESS, BIT_WORK_AP|BIT_PROCESS, WAIT_PROCEES);
+        xEventGroup = xEventGroupSync(dwin_event_group, BIT_PROCESS, BIT_WORK_AP, WAIT_PROCEES);
         if(mode != WIFI_MODE_NULL){
             if(xEventGroup&BIT_ESPNOW_RUN){
                 stop_espnow();
@@ -220,19 +224,16 @@ void ap_handler(void* arg, esp_event_base_t event_base,
                             int32_t event_id, void* event_data)
 {
     static int32_t last_event = WIFI_EVENT_AP_STOP;
-    main_data_t *main_data = (main_data_t*)arg;
     if(event_id == WIFI_EVENT_AP_START){
-        set_run_webserver(main_data);
+        set_run_webserver(arg);
     } else if (event_id == WIFI_EVENT_AP_STOP){
         xEventGroupClearBits(dwin_event_group, BIT_WORK_AP);
         set_run_webserver(NULL);
     } else if(event_id == WIFI_EVENT_AP_STACONNECTED){
         wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
-        dwin_set_pic(NO_WEATHER_PIC);
         esp_event_post_to(show_loop, EVENTS_SHOW, STATION_JOINE, event->mac, sizeof(event->mac), TIMEOUT_SEND_EVENTS);
     } else if(event_id == WIFI_EVENT_AP_STADISCONNECTED){
         wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
-        dwin_set_pic(NO_WEATHER_PIC);
         esp_event_post_to(show_loop, EVENTS_SHOW, STATION_LEAVE, event->mac, sizeof(event->mac), TIMEOUT_SEND_EVENTS);
     }
 }
@@ -301,26 +302,13 @@ void init_sntp_handler(void* arg, esp_event_base_t event_base,
     if(event_id == INIT_SNTP){
         if(!esp_sntp_enabled()){
             sntp_set_time_sync_notification_cb(set_time_cb);
-            EventBits_t xEventGroup = 
-                    xEventGroupGetBits(dwin_event_group);                                                                 
-            if(!(xEventGroup&BIT_CON_STA_OK)){
-                start_sta();
-                vTaskDelay(100);
-                xEventGroup = xEventGroupWaitBits(
-                            dwin_event_group, 
-                            BIT_PROCESS,   
-                            false, false, 
-                            WAIT_PROCEES); 
-            }
-            if(xEventGroup&BIT_CON_STA_OK){
-                sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
-                sntp_setoperatingmode(ESP_SNTP_OPMODE_POLL);
-                sntp_setservername(0, "pool.ntp.org");
-                sntp_setservername(1, "time.windows.com");
-                sntp_servermode_dhcp(0);
-                sntp_set_sync_interval(SYNC_15_MIN);
-                sntp_init();
-            }
+            sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
+            sntp_setoperatingmode(ESP_SNTP_OPMODE_POLL);
+            sntp_setservername(0, "pool.ntp.org");
+            sntp_setservername(1, "time.windows.com");
+            sntp_servermode_dhcp(0);
+            sntp_set_sync_interval(SYNC_15_MIN);
+            sntp_init();
         } else {
             sntp_restart();
         }
