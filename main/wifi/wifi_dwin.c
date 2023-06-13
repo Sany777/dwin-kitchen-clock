@@ -276,6 +276,8 @@ void wifi_sta_handler(void* arg, esp_event_base_t event_base,
                 start_sntp();
             }
         }
+    } else {
+        xEventGroupClearBits(dwin_event_group, BIT_CON_STA_OK);
     }
 }
 

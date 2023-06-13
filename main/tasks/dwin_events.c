@@ -89,7 +89,7 @@ void init_dwin_events(main_data_t *main_data)
         send_hello();
         xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_DWIN_RESPONSE_OK, false, false, 1000);
     }while(!(xEventGroup&BIT_DWIN_RESPONSE_OK));
-    // dwin_set_pic(NO_WEATHER_PIC);
+    dwin_set_pic(NO_WEATHER_PIC);
     // set_color(GREEN, WHITE);
 
 // clear_screen();
@@ -149,51 +149,49 @@ void test_clock_handler(void* main_data, esp_event_base_t base, int32_t new_scre
 void set_screen_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)
 {
     area_SCREEN = 0;
+    new_screen = GET_SCREEN_TASK(new_screen);
+    
     static esp_event_handler_instance_t
-                        direction_handler, 
-                        show_handler, 
-                        service_handler;
+                                direction_handler, 
+                                show_handler,
+                                last_direct;
     if(direction_handler) {
+        send_direct(KEY_CLOSE, direction_handler);
         ESP_ERROR_CHECK(esp_event_handler_instance_unregister_with(
-                        direct_loop, 
-                        EVENTS_DIRECTION, 
-                        ESP_EVENT_ANY_ID,  
-                        &direction_handler
-                    ));
+                                direct_loop, 
+                                EVENTS_DIRECTION, 
+                                ESP_EVENT_ANY_ID,  
+                                direction_handler
+                            ));
+        last_direct = direction_handler;
         direction_handler = NULL;
     }
     if(show_handler) {
         ESP_ERROR_CHECK(esp_event_handler_instance_unregister_with(
-                        show_loop, 
-                        EVENTS_SHOW, 
-                        ESP_EVENT_ANY_ID,  
-                        show_handler
-                    ));
+                                show_loop, 
+                                EVENTS_SHOW, 
+                                ESP_EVENT_ANY_ID,  
+                                show_handler
+                            ));
         show_handler = NULL;
     }
-    vTaskDelay(TIMEOUT_SEND_EVENTS);
-    if(screens_handlers[new_screen].main_handler) {
-        ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                                    direct_loop, 
-                                    EVENTS_DIRECTION, 
-                                    ESP_EVENT_ANY_ID, 
-                                    screens_handlers[new_screen].main_handler, 
-                                    main_data,
-                                    &direction_handler
-                                ));
-                                send_direct(KEY_INIT);
-        // esp_event_post_to(direct_loop, EVENTS_DIRECTION, KEY_INIT, NULL, 0, TIMEOUT_SEND_EVENTS);
-    }
-    if(screens_handlers[new_screen].show_handler) {
-        ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                                    show_loop, 
-                                    EVENTS_SHOW, 
-                                    ESP_EVENT_ANY_ID, 
-                                    screens_handlers[new_screen].show_handler, 
-                                    main_data,
-                                    &show_handler
-                                ));
-    }
+    ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
+                            show_loop, 
+                            EVENTS_SHOW, 
+                            ESP_EVENT_ANY_ID, 
+                            screens_handlers[new_screen].show_handler, 
+                            main_data,
+                            &show_handler
+                        ));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
+                            direct_loop, 
+                            EVENTS_DIRECTION, 
+                            ESP_EVENT_ANY_ID, 
+                            screens_handlers[new_screen].main_handler, 
+                            main_data,
+                            &direction_handler
+                        ));
+    send_direct(KEY_INIT);
 }
 
 

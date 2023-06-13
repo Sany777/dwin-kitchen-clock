@@ -67,7 +67,19 @@ void print_histogram( uint16_t *points,
                         const uint16_t x_start,
                         const size_t width, 
                         const uint16_t y);
+
+void print_start_pos(uint16_t row, uint16_t column, const uint16_t text_color, size_t font);
 void send_chunc(const char *data, const size_t data_len);
 #define dwin_clock_get() 	uart_write_bytes(UART_DWIN, GET_TIME, sizeof(GET_TIME))
 void dwin_clock_set(struct tm *tmptr);
 void fill_area(const uint16_t x_s, const uint16_t y_s, const uint16_t color);
+
+
+void print_text_box(const uint16_t x, 
+                        const uint16_t y, 
+                        const uint16_t width, 
+                        const uint16_t height, 
+                        uint16_t color_text, 
+                        uint16_t color_rect, 
+                        uint16_t font,
+                        const char* str);

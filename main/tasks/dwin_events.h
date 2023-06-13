@@ -18,41 +18,6 @@
                                 }while(0)
                                     //stop_event_timer();                                     
 
-
-enum {
-    CPU_0,
-    CPU_1
-};
-
-
-/*screen tasks*/
-typedef enum {
-    MAIN_SCREEN,
-    CLOCK_SCREEN,
-    SEARCH_SSID_SCREEN,
-    SETTING_SCREEN,
-    SET_COLOR_SCREEN,
-    NOTIFICATION_SCREEN,
-    SERVER_SCREEN,
-    STATE_DEVICE_SCREEN,
-    TIMER_SCREEN,
-    INFO_SCREEN,
-    ESPNOW_DEVICES_SCREEN,
-    MAIN_HANDLERS_LIST_END
-} identefier_handler_screen_t;
-
-typedef enum {
-    MAIN_TASK,
-    SHOW_TASK,
-    FAST_TASK,
-    SLOW_TASK,
-    UART_TASK,
-    END_LIST_TASKS
-} identefier_system_task_t;
-
-#define SIZE_LIST_HANDLERS    MAIN_HANDLERS_LIST_END
-#define SIZE_LIST_TASKS       END_LIST_TASKS
-
 typedef struct {
     TaskFunction_t pTask;
     UBaseType_t priority;
@@ -87,7 +52,8 @@ extern  dwin_handler_t show_state_handler;
 extern  dwin_handler_t show_timer_stop_handler;
 
 /* events structure */
- static handlers_dwin_t screens_handlers[SIZE_LIST_HANDLERS] = {
+#define SIZE_LIST_TASKS       END_KEY_SCREEN_TASK
+static handlers_dwin_t screens_handlers[SIZE_LIST_TASKS] = {
     {
         .main_handler    = main_screen_handler,
         .show_handler    = show_main_handler,
@@ -137,24 +103,23 @@ void fast_services_task(void *pv);
 void uart_event_task(void *);
 
 
-#define send_direct(key)                                                           \
+#define send_direct(key, data)                                                           \
     do{                                                                            \
-        esp_event_post_to(direct_loop, EVENTS_DIRECTION, key, NULL, 0, 400);       \
+        esp_event_post_to(direct_loop, EVENTS_DIRECTION, key, data, sizeof(data), TIMEOUT_SEND_EVENTS);       \
     }while(0) 
 
-
-#define send_menager(key)                                                           \
+#define send_menager(key)                                                          \
     do{                                                                            \
-        esp_event_post_to(direct_loop, EVENTS_MANAGER, key, NULL, 0, 400);       \
+        esp_event_post_to(direct_loop, EVENTS_MANAGER, key, NULL, 0, 400);         \
     }while(0) 
 
-#define show_screen(key, dt)                                                            \
-    do{                                                                                 \
-        esp_event_post_to(show_loop, EVENTS_SHOW, key, dt, sizeof(dt), 300);            \
+#define show_screen(key, dt)                                                       \
+    do{                                                                            \
+        esp_event_post_to(show_loop, EVENTS_SHOW, key, dt, sizeof(dt), 300);       \
     }while(0) 
 
-#define start_ap()                                                                          \
-    do{                                                                                     \
+#define start_ap()                                                                 \
+    do{                                                                            \
         esp_event_post_to(fast_service_loop, WIFI_SET, INIT_AP, NULL, 0, 200);     \
     }while(0)    
 
@@ -165,7 +130,7 @@ void uart_event_task(void *);
 
 #define start_sta()                                                                         \
     do{                                                                                     \
-        esp_event_post_to(fast_service_loop, WIFI_SET, START_STA, NULL, 0, 200);   \
+        esp_event_post_to(fast_service_loop, WIFI_SET, START_STA, NULL, 0, 200);            \
     }while(0) 
 
 #define stop_espnow()                                                                           \
@@ -175,7 +140,7 @@ void uart_event_task(void *);
 
 #define start_espnow()                                                                          \
     do{                                                                                         \
-        esp_event_post_to(slow_service_loop, ESPNOW_SET, START_ESPNOW, NULL, 0, 200);  \
+        esp_event_post_to(slow_service_loop, ESPNOW_SET, START_ESPNOW, NULL, 0, 200);           \
     }while(0) 
 #define start_sntp()                                                                            \
     do{                                                                                         \
@@ -186,6 +151,7 @@ void uart_event_task(void *);
     do{                                                                                        \
         esp_event_post_to(slow_service_loop, WIFI_SET, STOP_SNTP, NULL, 0, WAIT_SERVICE);      \
     }while(0) 
+
 void init_dwin_events(main_data_t*);
 void check_net_data_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data);
 void set_screen_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data);

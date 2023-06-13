@@ -59,6 +59,7 @@ void ap_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void
         esp_event_post_to(show_loop, EVENTS_SHOW, UPDATE_DATA_COMPLETE, NULL, 0, WAIT_PROCEES);
     } else if(key == KEY_CLOSE) {
         esp_wifi_stop();
+        send_menager(MAIN_SCREEN);
     }
 }
 
@@ -173,7 +174,7 @@ void main_screen_handler(void* main_data, esp_event_base_t base, int32_t key, vo
         step = DEINIT_TASK;
         set_periodic_event( direct_loop, 
                             EVENTS_MANAGER, 
-                            KEY_MAIN_SCREEN, 
+                            MAIN_SCREEN, 
                             DELAY_AUTOCLOSE,
                             ONLY_ONCE );
     }
@@ -384,7 +385,9 @@ void notifications_screen_handler(void* main_data, esp_event_base_t base, int32_
     if(key == KEY_INIT){
         cur_day = 0;
         cur_notif = 0;
-        cur_type_data = AREA_HOUR;
+        cur_type_data = AREA_YEAR;
+        
+
     } else if(KEY_IS_AREA_NOTIF(key)) {
         area_SCREEN = GET_AREA_VALUE(key);
         cur_notif = GET_NOTIF_NUMBER(area_SCREEN);

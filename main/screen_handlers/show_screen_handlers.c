@@ -54,8 +54,8 @@ void show_ssid_handler(void* main_data,
                         ? (int)ssids_number
                         : (int)ssids_number*-1);
         print_end();
+        vTaskDelay(DELAY_SHOW_ITEM);
         for(int i=0; i<end_show; i++, start_ind++) {
-            vTaskDelay(DELAY_SHOW_ITEM);
             print_start(2+i, 0, GET_COLOR_AREA(i), FONT_INFO);
             send_str(" %d. %10.10s %u %8.8s",
                         start_ind+1,
@@ -65,7 +65,6 @@ void show_ssid_handler(void* main_data,
             print_end();
         }
         if(ssids_number != end_show){
-            vTaskDelay(DELAY_SHOW_ITEM);
             print_start(6, 10, RED, FONT_BUTTON);
             if(ssids_number > end_show){
                 send_str("->");
@@ -144,8 +143,8 @@ void show_notify_handler(void* main_data, esp_event_base_t base, int32_t cur_day
         print_start(1+day_count, 0, cur_day == day_count ? WHITE : BLUE, FONT_INFO);
         send_str("%.3s %s", WEEK_DAY[day_count], IS_DAY_ACTIVE(day_count) ? MES_ON : MES_OFF);
         print_end();
-        vTaskDelay(DELAY_SHOW_ITEM);
     }
+    vTaskDelay(DELAY_SHOW_ITEM);
     send_in_frame(1, 1, FONT_INFO, 
                         IS_DAY_ACTIVE(cur_day) 
                         ? COLOR_ENABLE 
@@ -161,7 +160,7 @@ void show_notify_handler(void* main_data, esp_event_base_t base, int32_t cur_day
                     : 0, 
                 GET_COLOR_AREA(area), 
                 NORMAL_FONT);
-        send_str("%s %d", 
+        send_str("%s %2.2d", 
                         area_min 
                         ? ":"
                         : IS_NOTIF_ACTIVE(notif_count, cur_day) 
@@ -198,11 +197,10 @@ void show_color_screen_handler(void* main_data,
                     ? "]"
                     : "");
         print_end();
-        vTaskDelay(DELAY_SHOW_ITEM/2);
     }
     uint16_t row=2, column = 1;
+    vTaskDelay(DELAY_SHOW_ITEM/2);
     for(int color_count=0; color_count<SIZE_USED_COLORS; color_count++) {
-        vTaskDelay(DELAY_SHOW_ITEM/2);
         print_start(row++, column, GET_COLOR(color_count), 3);
         send_str( "%s %s",
                     COLOR_NAME[color_count],
@@ -215,36 +213,36 @@ void show_color_screen_handler(void* main_data,
                     }
         print_end();
     }
-    send_in_frame(4, 9, color_DESC, FONT_BUTTON, "Set color");
+    print_text_box(290, 220, 120, 35, BLACK, YELLOW, 2, "Set color");
 }
 
 void show_state_handler(void* main_data, 
-                                    esp_event_base_t base, 
-                                    int32_t id, 
-                                    void* event_data) 
+                            esp_event_base_t base, 
+                            int32_t id, 
+                            void* event_data) 
 {
     EventBits_t xEventGroup = *(EventBits_t *)event_data;
-    send_in_frame(2, 15, color_DESC, NORMAL_FONT, 
+    send_in_frame(2, 15, color_DESC, 1, 
                             xEventGroup&BIT_ESPNOW_ALLOW
                                 ? "ESPNOW ON"
                                 : "ESPNOW OFF");
-    vTaskDelay(DELAY_SHOW_ITEM);
-    send_in_frame(5, 15, color_DESC, NORMAL_FONT, 
+    vTaskDelay(DELAY_SHOW_ITEM/2);
+    send_in_frame(5, 15, color_DESC, 1, 
                             xEventGroup&BIT_ESPNOW_ALLOW
                                 ? "Security ON" 
                                 : "Security OFF");
-    vTaskDelay(DELAY_SHOW_ITEM);
-    send_in_frame(8, 15, color_DESC, NORMAL_FONT,  
+    vTaskDelay(DELAY_SHOW_ITEM/2);
+    send_in_frame(8, 15, color_DESC, 1,  
                             xEventGroup&BIT_SOUNDS_ALLOW
                                 ? "Sound ON"
                                 : "Sound OFF");
-    vTaskDelay(DELAY_SHOW_ITEM);
-    send_in_frame(11, 15, color_DESC, NORMAL_FONT, 
+    vTaskDelay(DELAY_SHOW_ITEM/2);
+    send_in_frame(11, 15, color_DESC, 1, 
                             xEventGroup&BIT_SNTP_ALLOW
                             ? "SNTP ON"
                             : "STNP OFF");
-    vTaskDelay(DELAY_SHOW_ITEM);
-    print_start(1, 10, COLOR_DISABLE, NORMAL_FONT);
+    vTaskDelay(DELAY_SHOW_ITEM/2);
+    print_start(1, 10, COLOR_DISABLE, 1);
     send_str("State device\n\r WiFi %s.\n\r ESPNOW %s.\n\r Service openweather.com %s.\n\r SNTP %s",
                 xEventGroup&BIT_CON_STA_OK
                     ? "connect"
@@ -271,6 +269,8 @@ void show_state_handler(void* main_data,
                     : "not work-no\tconnection"
                 : "denied");
     print_end();
+    print_text_box(290, 220, 120, 35, BLACK, YELLOW, 2, "Set state");
+    print_text_box(200, 10, 120, 35, BLACK, YELLOW, 2, "Update state");
 }
 
 

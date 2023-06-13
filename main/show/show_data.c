@@ -40,19 +40,22 @@ void send_in_frame(uint8_t row,
 							const uint16_t color, 
 							const char *message)
 {
+	if(!message)return;
 	uint8_t length_max_piece = 0, lines = 0, end_print, start_print;
 	uint8_t length_pieces[MAX_LINES_IN_FRAME];
 	char tmp;
-	for (uint8_t length_cur = 0, i = 0;; length_cur++, i++)	{
+	for (uint8_t length_cur = 0, i = 0; ; length_cur++, i++)	{
 		tmp = message[i];
-		if (tmp == ' ' || tmp== '\t' || tmp == '\r' || tmp == '\n') {
+		if (tmp== '\t' || tmp == 0 || tmp == '\n') {
 			length_pieces[lines++] = length_cur;
-			if (lines >= MAX_LINES_IN_FRAME || tmp == myEOF)
-				break;
 			if (length_max_piece < length_cur)
 				length_max_piece = length_cur;
+			
+			if (lines >= MAX_LINES_IN_FRAME || tmp == 0)
+				break;
 			length_cur = 0;
 		}
+
 	}
 	/*frame - 2 sides*/
 	lines += 2;
@@ -77,7 +80,7 @@ void send_in_frame(uint8_t row,
 			start_print = length_max_piece/2-length_pieces[line_str]/2;
 			for (uint8_t i=0; i<length_max_piece; i++) {
 				if (i >= start_print && i <= end_print \
-					&& message[pos_char] != '\n' && message[pos_char] != myEOF) {
+					&& message[pos_char] != '\n' && message[pos_char]) {
 						send_char(message[pos_char++]);
 				} else {
 					send_char(' ');

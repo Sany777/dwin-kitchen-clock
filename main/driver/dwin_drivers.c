@@ -24,6 +24,11 @@ void print_start(uint16_t row, uint16_t column, const uint16_t text_color, size_
 {
 	column = column * font * 8;
 	row = row * font * 11;
+    print_start_pos(row, column, text_color, font);
+}
+
+void print_start_pos(uint16_t row, uint16_t column, const uint16_t text_color, size_t font) 
+{
     PRINT[PRINT_FONT] = font;
 	PRINT[PRINT_COL_1] = column/256;
     PRINT[PRINT_COL_2] = column%256;
@@ -170,18 +175,36 @@ void print_histogram( uint16_t *y_points,
     }
 }
 
+void print_text_box(const uint16_t x, 
+                        const uint16_t y, 
+                        const uint16_t width, 
+                        const uint16_t height, 
+                        uint16_t color_text, 
+                        uint16_t color_rect, 
+                        uint16_t font,
+                        const char* str)
+{
+    uint16_t 
+        x_e = x+width,
+        y_e = y+height;
+    set_color(color_rect, BLACK);
+    print_rect(x, y, x_e, y_e, true);
+    print_start_pos(y+font*2,x+font*2,color_text, font);
+    send_str_dwin(str);
+    print_end();
+}
 
-void print_rect(const uint16_t x_s, const uint16_t y_s, const uint16_t x_e, const uint16_t y_e, bool fill )
+void print_rect(const uint16_t x, const uint16_t y, const uint16_t x_e, const uint16_t y_e, bool fill )
 {
     char RECTANGLE_ON[] = {
         FRAME_HEADER, 
         fill
             ? COMMAND_FILL_RECTANGLE
             : COMMAND_BOX_RECTANGLE, 
-        x_s/256, 
-        x_s%256, 
-        y_s/256,
-        y_s%256, 
+        x/256, 
+        x%256, 
+        y/256,
+        y%256, 
         x_e/256, 
         x_e%256, 
         y_e/256, 

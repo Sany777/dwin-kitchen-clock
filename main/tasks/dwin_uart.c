@@ -59,17 +59,8 @@ for(;;) {
                             uint32_t key = buf_RX[INDEX_START_DATA_IN_RX+ind];
                             if(key){
                                 if(KEY_IS_SET_TASK(key)) {
-                                    ESP_LOGI(TAG, "get task");
-                                    send_direct(KEY_CLOSE);
-                                    // esp_event_post_to(
-                                    //     direct_loop,
-                                    //     EVENTS_DIRECTION,
-                                    //     KEY_CLOSE,
-                                    //     NULL,
-                                    //     0,
-                                    //     TIMEOUT_PUSH_KEY
-                                    // );
-                                    send_menager(GET_SCREEN_TASK(key));
+                                
+                                    send_menager(key);
                                     // esp_event_post_to(
                                     //     direct_loop,
                                     //     EVENTS_MANAGER,
@@ -79,7 +70,6 @@ for(;;) {
                                     //     TIMEOUT_PUSH_KEY
                                     // );
                                 } else {
-                                    ESP_LOGI(TAG, "get command");
                                     send_direct(key);
                                     // esp_event_post_to(
                                     //     direct_loop,

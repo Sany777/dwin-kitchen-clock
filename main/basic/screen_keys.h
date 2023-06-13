@@ -90,24 +90,23 @@ typedef enum area_settings{
 } area_settings_t;
 
 
-
-
+/* screen keys are linked with screens_handlers list */
 typedef enum Main_buttons{
-    KEY_MAIN_SCREEN = 1,
-    KEY_CLOCK_SCREEN,
-    KEY_SEARCH_SSID_SCREEN,
-    KEY_SETTING_SCREEN,
-    KEY_SET_COLOR_SCREEN,
-    KEY_NOTIF_SCREEN,
-    KEY_AP_SERVER,
-    KEY_DEVICE_STATUS,
-    KEY_TIMER_SCREEN,
-    KEY_INFO,
-    KEY_ESPNOW_DEVICES,
+    MAIN_SCREEN = 1,
+    CLOCK_SCREEN,
+    SEARCH_SSID_SCREEN,
+    SETTING_SCREEN,
+    SET_COLOR_SCREEN,
+    NOTIFICATION_SCREEN,
+    SERVER_SCREEN,
+    STATE_DEVICE_SCREEN,
+    TIMER_SCREEN,
+    INFO_SCREEN,
+    ESPNOW_DEVICES_SCREEN,
     END_KEY_SCREEN_TASK
 }task_key_t;
 
-#define START_SCREEN_TASK KEY_MAIN_SCREEN
+#define START_SCREEN_TASK MAIN_SCREEN
 
 
 /* AREA KEYS*/

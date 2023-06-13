@@ -16,7 +16,7 @@
 #define RUN  1
 #define ON           true
 #define OFF          false
-#define myEOF               0xFF
+#define myEOF               '\r'
 /****************************/
 
 #define SIZE_WEEK    7
@@ -87,7 +87,7 @@
 
 /* events delay*/
 #define WAIT_WIFI_EVENT          (1000/portTICK_PERIOD_MS)
-#define TIMEOUT_SEND_EVENTS      (100/portTICK_PERIOD_MS)
+#define TIMEOUT_SEND_EVENTS      (20/portTICK_PERIOD_MS)
 #define TICKS_TO_RUN_LOOP         100
 #define TASK_EVENT_SIZE           3
 #define DELAY_SLOW_LOOP          (1000/portTICK_PERIOD_MS)
