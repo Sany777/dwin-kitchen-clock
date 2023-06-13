@@ -40,7 +40,7 @@ extern "C" {
 #define DWIN_CHECK_NULL_AND_GO(ptr, str, goto_tag)                                                                                  \
                                             do{                                                                                     \
                                                 if (ptr == NULL) {                                                                  \
-                                                    ESP_LOGI(TAG, "%s", str);                                                       \
+                                                    ESP_LOGI("Err null!", "%s", str);                                                       \
                                                     goto goto_tag;                                                                  \
                                                 }                                                                                   \
                                             } while(0)
@@ -49,7 +49,7 @@ extern "C" {
 #define DWIN_CHECK_AND_GO(a, goto_tag)                                                                                             \
                                             do{                                                                                    \
                                                 if (ESP_OK != (a)) {                                                               \
-                                                    ESP_LOGI(TAG, "%s", esp_err_to_name(a));                                        \
+                                                    ESP_LOGI("dwin", "%s", esp_err_to_name(a));                                        \
                                                     goto goto_tag;                                                                  \
                                                 }                                                                                   \
                                             } while(0)

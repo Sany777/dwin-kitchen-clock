@@ -25,14 +25,14 @@ switch(action){
             if(!rx_espnow )xTaskCreate(espnow_task_rx, "espnow_task_rx", 5000, arg, 5, &rx_espnow);
             if(!tx_espnow)xTaskCreate(espnow_task_tx, "espnow_task_tx", 5000, arg, 5, &tx_espnow);
             if(!rx_espnow || !tx_espnow)return;
-            ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-                                direct_loop,
-                                EVENTS_DIRECTION,
-                                CHECK_NET_DATA,
-                                check_net_data_handler,
-                                arg,
-                                &handler_check
-                            ));
+            // ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
+            //                     direct_loop,
+            //                     EVENTS_DIRECTION,
+            //                     CHECK_NET_DATA,
+            //                     check_net_data_handler,
+            //                     arg,
+            //                     &handler_check
+            //                 ));
             ESP_ERROR_CHECK(esp_now_init());
             ESP_ERROR_CHECK( esp_now_set_pmk((uint8_t *)ESPNOW_PMK) );
             ESP_ERROR_CHECK( esp_now_register_send_cb(espnow_send_cb) );
@@ -91,12 +91,12 @@ switch(action){
             esp_now_deinit();
             xEventGroupClearBits(dwin_event_group, BIT_ESPNOW_RUN);
             xEventGroupClearBits(dwin_event_group, BIT_ESPNOW_CONECT);
-            ESP_ERROR_CHECK(esp_event_handler_instance_unregister_with(
-                    direct_loop,
-                    EVENTS_DIRECTION,
-                    CHECK_NET_DATA, 
-                    handler_check
-            ));
+            // ESP_ERROR_CHECK(esp_event_handler_instance_unregister_with(
+            //         direct_loop,
+            //         EVENTS_DIRECTION,
+            //         CHECK_NET_DATA, 
+            //         handler_check
+            // ));
         }
         break;
     }
@@ -225,10 +225,10 @@ void ap_handler(void* arg, esp_event_base_t event_base,
         set_run_webserver(NULL);
     } else if(event_id == WIFI_EVENT_AP_STACONNECTED){
         wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
-        esp_event_post_to(show_loop, EVENTS_SHOW, STATION_JOINE, event->mac, sizeof(event->mac), TIMEOUT_SEND_EVENTS);
+        // esp_event_post_to(show_loop, EVENTS_SHOW, STATION_JOINE, event->mac, sizeof(event->mac), TIMEOUT_SEND_EVENTS);
     } else if(event_id == WIFI_EVENT_AP_STADISCONNECTED){
         wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
-        esp_event_post_to(show_loop, EVENTS_SHOW, STATION_LEAVE, event->mac, sizeof(event->mac), TIMEOUT_SEND_EVENTS);
+        // esp_event_post_to(show_loop, EVENTS_SHOW, STATION_LEAVE, event->mac, sizeof(event->mac), TIMEOUT_SEND_EVENTS);
     }
 }
 

@@ -1,19 +1,24 @@
 #include "dwin_init.h"
 
-EventGroupHandle_t dwin_event_group, dwin_system_event;
+EventGroupHandle_t dwin_event_group;
+TaskHandle_t rx_espnow = NULL, tx_espnow = NULL;
+QueueHandle_t dwin_uart_events_queue = NULL, queue_espnow_tx = NULL, queue_espnow_rx = NULL, queue_direct = NULL, queue_show = NULL;
+#define SIZE_QUEUE_DIRECT 3
+
+
 
 void esp_init(void)
 {
     main_data_t *main_data = (main_data_t *) calloc(1, sizeof(main_data_t));
     assert(main_data);
-    buf_send_operation = malloc(SIZE_SHOW_BUF);
-    assert(buf_send_operation);
-    main_data->weather_data = calloc(1, sizeof(weather_data_t));
-    assert(main_data->weather_data);
+    buf_operation = malloc(SIZE_SHOW_BUF);
+    assert(buf_operation);
     dwin_event_group = xEventGroupCreate();
-    dwin_system_event = xEventGroupCreate();
+    queue_direct = xQueueCreate(SIZE_QUEUE_DIRECT, sizeof(uint16_t));
+    queue_show = xQueueCreate(1, sizeof(show_queue_data_t));
+    assert(queue_show);
     assert(dwin_event_group);
-    assert(dwin_system_event);
+    assert(queue_direct);
     main_data->notif_data = calloc(1,SIZE_BUF_NOTIFICATION);
     assert(main_data->notif_data);
     esp_err_t ret = nvs_flash_init();
@@ -22,7 +27,7 @@ void esp_init(void)
       ESP_ERROR_CHECK(nvs_flash_init());
     }
     int offset;
-    read_memory(&offset, DATA_OFFSET);
+    read_offset(&offset);
     temp_INDOOR = NO_TEMP_SENSOR;
     set_timezone(offset);
     init_uart();

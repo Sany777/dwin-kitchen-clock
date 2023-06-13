@@ -15,12 +15,12 @@
 
 /*screen handlers*/
 
-void search_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
-void ap_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
-void setting_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
-void main_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
-void clock_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
-void state_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
-void notifications_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
-void timer_screen_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data);
-void timer_run_handler(void* data, esp_event_base_t base, int32_t key, void* event_data);
+void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol);
+void ap_screen_handler(main_data_t* main_data, uint8_t command, char symbol);
+void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol);
+void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol);
+void clock_handler(main_data_t* main_data, uint8_t command, char symbol);
+void state_screen_handler(main_data_t* main_data, uint8_t command, char symbol);
+void notifications_screen_handler(main_data_t* main_data, uint8_t command, char symbol);
+void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol);
+void timer_run_handler(main_data_t* main_data, uint8_t command);

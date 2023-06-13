@@ -1,7 +1,5 @@
 #include "dwin_timer.h"
 
-
-
 esp_timer_handle_t periodic_timer = NULL;
 periodic_event_t *list_periodic_events = NULL;
 portMUX_TYPE periodic_timers_s = portMUX_INITIALIZER_UNLOCKED;
@@ -24,9 +22,9 @@ void resize_list()
         const size_t new_size = (number_event/STEP_RESIZE)*STEP_RESIZE + STEP_RESIZE;
         periodic_event_t *new_list_periodic_events = calloc(new_size, sizeof(periodic_event_t));
         if(new_list_periodic_events){
-            for(size_t oldi=0, ni=0; oldi<size_list; oldi++){
-                if(list_periodic_events[oldi].event_loop){
-                    memcpy(&new_list_periodic_events[ni++], &list_periodic_events[oldi], sizeof(periodic_event_t));
+            for(size_t oldi=0, newi=0; oldi<size_list; oldi++){
+                if(list_periodic_events[oldi].time){
+                    memcpy(&new_list_periodic_events[newi++], &list_periodic_events[oldi], sizeof(periodic_event_t));
                 }
             }
             size_list = new_size;
@@ -37,32 +35,26 @@ void resize_list()
     taskEXIT_CRITICAL(&periodic_timers_s);
 }
 
-void remove_periodic_event(esp_event_base_t base, int32_t event_id)
+void remove_periodic_event(uint8_t event_id)
 {
     if(number_event){
-        periodic_event_t *item;
+        const uint16_t command = (uint16_t)event_id*256;
         for(int i=0; i<size_list; i++){
-            item = &list_periodic_events[i];
-            if(item->event_loop
-                        && item->event_id == event_id 
-                        && item->base == base)
-                {
-                    item->event_loop = NULL;
-                    number_event--;
-                    if(number_event == 0 || size_list > (number_event + STEP_RESIZE)){
-                        resize_list();
-                    }
-                    return;
+            if(list_periodic_events[i].time && list_periodic_events[i].command == command){
+                list_periodic_events[i].time = 0;
+                number_event--;
+                if(number_event == 0 || size_list > (number_event + STEP_RESIZE)){
+                    resize_list();
                 }
+                return;
+            }
         }
     }
 }
 
 
 
-esp_err_t  set_periodic_event(esp_event_loop_handle_t event_loop, 
-                                esp_event_base_t base, 
-                                int32_t event_id, 
+esp_err_t  set_periodic_event(uint8_t event_id, 
                                 size_t sec, 
                                 mode_time_func_t mode)
 {
@@ -77,28 +69,22 @@ esp_err_t  set_periodic_event(esp_event_loop_handle_t event_loop,
         list_periodic_events = new_list_periodic_events;
         size_list += STEP_RESIZE;
     }
-    periodic_event_t *item = NULL, *empty = NULL, *cur_item = NULL;
+    uint16_t command = event_id*256;
+    periodic_event_t *item = NULL, *empty = NULL;
     for(int i=0; i<size_list; i++){
-        cur_item = &list_periodic_events[i];
-        if(cur_item->event_loop){
-            if(cur_item->event_id == event_id 
-                    && cur_item->base == base)
-            {
-                item = cur_item;
-                break;
-            }
-        } else {
-            empty = cur_item;
+        if(list_periodic_events[i].command == command){
+            item = &list_periodic_events[i];
+            break;
+        } else if(empty == NULL && list_periodic_events[i].time == 0){
+            empty = &list_periodic_events[i];
         }
     }
     if(!item) {
         item = empty;
-        item->base = base;
-        item->event_id = event_id;
+        item->command = command;
     }
-    item->event_loop = event_loop;
     item->time_init = sec;
-    item->time = 0;
+    item->time = sec;
     item->mode = mode;
     number_event++;
     if(!periodic_timer){
@@ -118,23 +104,18 @@ err:
 void periodic_timer_cb(void* arg)
 {
     if(number_event){
+        BaseType_t change_cntx = false;
         periodic_event_t *item = NULL;
         for(int i=0; i<size_list; i++){
             item = &list_periodic_events[i];
-            if(item->event_loop){
-                item->time++;
-                if(item->time == item->time_init){
-                    esp_event_isr_post_to( item->event_loop,
-                                            item->base,
-                                            item->event_id,
-                                            NULL,
-                                            0,
-                                            NULL );
+            if(item->time){
+                item->time--;
+                if(item->time == 0){
+                    xQueueSendFromISR(queue_direct, item->command, &change_cntx);
                     if(item->mode == RELOAD_COUNT){
-                        item->time = 0;
+                        item->time = item->time_init;
                     } else {
                         number_event--;
-                        item->event_loop = NULL;
                     }
                 }
             }
@@ -142,6 +123,7 @@ void periodic_timer_cb(void* arg)
         if(number_event == 0 || size_list > (number_event + STEP_RESIZE)){
             resize_list();
         }
+        if(change_cntx)taskYIELD();
     }
 }
 

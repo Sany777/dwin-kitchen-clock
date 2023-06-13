@@ -126,7 +126,7 @@ typedef enum Main_buttons{
 
 
 /* KEY BUTTON */
-typedef enum common_buttons_and_events{
+enum buttons_and_events{
     KEY_DELETE = 0x80,
     KEY_ENTER,
     KEY_BACKSPACE,
@@ -177,7 +177,7 @@ typedef enum common_buttons_and_events{
     UPDATE_DATA_COMPLETE,
     STATION_JOINE,
     STATION_LEAVE,
-    CHECK_NET_DATA,
+    CHECK_NET_DATA
 };
 
 /* PIC INDEX */

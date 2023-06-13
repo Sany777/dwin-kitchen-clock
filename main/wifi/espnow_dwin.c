@@ -1,7 +1,5 @@
 #include "espnow_dwin.h"
 
-QueueHandle_t queue_espnow_tx = NULL, queue_espnow_rx = NULL;
-TaskHandle_t rx_espnow = NULL, tx_espnow = NULL;
 
 
 void remove_espnow_device(const uint8_t *mac_addr)
@@ -184,7 +182,11 @@ if(xQueueReceive(queue_espnow_rx, &data_rx, portMAX_DELAY) == pdTRUE){
             crc = sensor_package->crc;
             sensor_package->crc = 0;
             if(crc == esp_crc16_le(UINT16_MAX, (uint8_t const *)sensor_package, SIZE_SENSOR_PACKAGE)){
-                set_sensor_data(main_data, data_rx.mac, sensor_package->temperature, sensor_package->humidity);
+                set_sensor_data(main_data, 
+                                    data_rx.mac, 
+                                    sensor_package->temperature, 
+                                    sensor_package->humidity, 
+                                    sensor_package->name);
             }
             break;
         }
@@ -266,7 +268,7 @@ if(xQueueReceive(queue_espnow_rx, &data_rx, portMAX_DELAY) == pdTRUE){
                     strncpy(name_SSID, network_package->ssid, MAX_STR_LEN);
                     strncpy(pwd_WIFI, network_package->pwd, MAX_STR_LEN);
                     start_sta();
-                    set_periodic_event(direct_loop, EVENTS_DIRECTION, CHECK_NET_DATA, 20, ONLY_ONCE);
+                    // set_periodic_event(direct_loop, EVENTS_DIRECTION, CHECK_NET_DATA, 20, ONLY_ONCE);
                 }
             }
             break;

@@ -39,21 +39,18 @@
 #include "sensor.h"
 #include "show_screen_handlers.h"
 
-ESP_EVENT_DECLARE_BASE(WIFI_SET); 
-ESP_EVENT_DECLARE_BASE(ESPNOW_SET); 
-ESP_EVENT_DECLARE_BASE(EVENTS_SERVICE); 
-ESP_EVENT_DECLARE_BASE(EVENTS_MANAGER); 
-ESP_EVENT_DECLARE_BASE(EVENTS_DIRECTION); 
-ESP_EVENT_DECLARE_BASE(EVENTS_SHOW);
 
+ESP_EVENT_DECLARE_BASE(ESPNOW_EVENTS);
+ESP_EVENT_DECLARE_BASE(WIFI_SET_EVENTS);
+ESP_EVENT_DECLARE_BASE(SNTP_EVENTS);
 
-extern char *buf_send_operation;
+extern char *buf_operation;
 extern EventGroupHandle_t dwin_event_group, dwin_system_event;
-extern esp_event_loop_handle_t 
-                direct_loop, 
-                show_loop, 
+extern esp_event_loop_handle_t
                 fast_service_loop,
                 slow_service_loop;
-extern QueueHandle_t dwin_uart_events_queue, queue_espnow_tx, queue_espnow_rx;
-extern char *buf_format_time;
+extern QueueHandle_t dwin_uart_events_queue, queue_espnow_tx, queue_espnow_rx, queue_direct, queue_show;
 extern TaskHandle_t rx_espnow, tx_espnow;
+extern uint16_t cur_screen_id;
+
+static char * TAG = "dwin";

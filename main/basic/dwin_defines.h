@@ -3,27 +3,27 @@
 #include "dwin_common.h"
 
 /*for weather_data item*/
-#define weather_PIC             ((((main_data_t *)main_data))->weather_data->weather_pic)
-#define sunrise_HOUR            ((((main_data_t *)main_data))->weather_data->sunrise_hour)
-#define sunrise_MIN             ((((main_data_t *)main_data))->weather_data->sunrise_min)
-#define sunset_HOUR             ((((main_data_t *)main_data))->weather_data->sunset_hour)
-#define sunset_MIN              ((((main_data_t *)main_data))->weather_data->sunset_min)
-#define time_ZONE               ((((main_data_t *)main_data))->weather_data->timezone)
-#define PoP                     ((((main_data_t *)main_data))->weather_data->pop)
-#define temp_FEELS_LIKE         (((main_data_t *)main_data)->weather_data->feels_like)
-#define dt_TX                   (((main_data_t *)main_data)->weather_data->dt_tx)
-#define temp_INDOOR             (((main_data_t *)main_data)->weather_data->indoor)
-#define temp_OUTDOOR            (((main_data_t *)main_data)->weather_data->outdoor)
-#define description_WEATHER     (((main_data_t *)main_data)->weather_data->description)
+#define weather_PIC             (main_data->weather_data.weather_pic)
+#define sunrise_HOUR            (main_data->weather_data.sunrise_hour)
+#define sunrise_MIN             (main_data->weather_data.sunrise_min)
+#define sunset_HOUR             (main_data->weather_data.sunset_hour)
+#define sunset_MIN              (main_data->weather_data.sunset_min)
+#define time_ZONE               (main_data->weather_data.timezone)
+#define PoP                     (main_data->weather_data.pop)
+#define temp_FEELS_LIKE         (main_data->weather_data.feels_like)
+#define dt_TX                   (main_data->weather_data.dt_tx)
+#define temp_INDOOR             (main_data->weather_data.indoor)
+#define temp_OUTDOOR            (main_data->weather_data.outdoor)
+#define description_WEATHER     (main_data->weather_data.description)
 
 /*for main_data instance*/
-#define area_SCREEN             (((main_data_t *)main_data)->area)
-#define pwd_WIFI                (((main_data_t *)main_data)->pwd_wifi)
-#define name_SSID               (((main_data_t *)main_data)->ssid_name)
-#define name_CITY               (((main_data_t *)main_data)->city_name)
-#define api_KEY                 (((main_data_t *)main_data)->buf_api)
-#define colors_INTERFACE        (((main_data_t *)main_data)->colors_interface)
-#define notification_DATA       (((main_data_t *)main_data)->notif_data)
+#define area_SCREEN             (main_data->area)
+#define pwd_WIFI                (main_data->pwd_wifi)
+#define name_SSID               (main_data->ssid_name)
+#define name_CITY               (main_data->city_name)
+#define api_KEY                 (main_data->buf_api)
+#define colors_INTERFACE        (main_data->colors_interface)
+#define notification_DATA       (main_data->notif_data)
 
 /*GET INPUT VALUE*/
 #define GET_AREA_VALUE(key_from_dwin)             ((key_from_dwin)-KEY_START_AREA)
@@ -103,9 +103,9 @@
 
 
 /*TIMER*/
-#define timer_MIN                   (timer_data[INDEX_MIN_T])
-#define timer_SEC                   (timer_data[INDEX_SEC_T])
-#define timer_HOUR                  (timer_data[INDEX_HOUR_T])
+#define timer_MIN                   (main_data->timer_data[INDEX_MIN_T])
+#define timer_SEC                   (main_data->timer_data[INDEX_SEC_T])
+#define timer_HOUR                  (main_data->timer_data[INDEX_HOUR_T])
 
 /*CHECK VALUE*/
 #define IS_DAY_WEEK(day_week)       ((day_week) >= 0 && (day_week) < SIZE_WEEK)
@@ -154,12 +154,12 @@
     #define MIN(a, b)((a) > (b)? (b): (a))
 #endif
 
-static const char *TAG = "show errore";
 
-#define DWIN_SHOW_ERR(a)                                                                           \
-                                do {                                                               \
-                                    if (ESP_OK != (a)) {                                           \
-                                        ESP_LOGE(TAG, " %s", esp_err_to_name(a));              \ 
-                                    }                                                              \
-                                } while (0)
+
+#define DWIN_SHOW_ERR(a) \
+    do {                                             \
+        if (ESP_OK != (a)) {                         \
+            ESP_LOGE(TAG,"%s", esp_err_to_name(a));  \ 
+        }                                            \
+    } while (0)
 

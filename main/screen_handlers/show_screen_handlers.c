@@ -1,11 +1,41 @@
 #include "show_screen_handlers.h"
 
 const int NORMAL_FONT = 2, FONT_INFO = 2, FONT_SECOND_INFO = 1, FONT_BUTTON = 3;
-#define REPEAT_SEND 3
+
+const char *MES_ON = "[ON]";
+const char *MES_OFF = "[OFF]";
+
+const char *WEEK_DAY[SIZE_WEEK] = {
+    "Sunday",
+    "Monday",
+    "Tuesday", 
+    "Wednesday", 
+    "Thursday", 
+    "Friday", 
+    "Saturday"
+};
+
+const char* ITEM_CUSTOM_NAME[] = {
+    "Clock", 
+    "Desc", 
+    "Info", 
+};
+
+const char* COLOR_NAME[] = { 
+    "WHITE", 
+    "CAEN",
+    "BLUE", 
+    "GREY",
+    "VIOLET", 
+    "LEMON", 
+    "RED", 
+    "GREEN",
+    "AQUA",
+    "ORANGE"
+};
 
 
-void show_ap_handler(void* main_data, 
-                        esp_event_base_t base,
+void show_ap_handler(main_data_t * main_data, 
                         int32_t state, 
                         void* event_data)
 {
@@ -31,8 +61,7 @@ void show_ap_handler(void* main_data,
 }
 
 /* if negative ssid number need show tail data */
-void show_ssid_handler(void* main_data, 
-                                esp_event_base_t base, 
+void show_ssid_handler(main_data_t * main_data,
                                 int32_t ssids_number, 
                                 void* event_data) 
 {
@@ -78,8 +107,7 @@ void show_ssid_handler(void* main_data,
 
 
 
-void show_settings_handler(void* main_data, 
-                            esp_event_base_t base, 
+void show_settings_handler(main_data_t * main_data,
                             int32_t id, 
                             void* event_data) 
 {
@@ -137,7 +165,9 @@ void show_settings_handler(void* main_data,
     }
 }
 
-void show_notify_handler(void* main_data, esp_event_base_t base, int32_t cur_day, void* event_data) 
+void show_notify_handler(main_data_t * main_data,
+                            int32_t cur_day, 
+                            void* event_data)
 {
     for(uint8_t day_count=0; day_count<SIZE_WEEK; day_count++) {
         print_start(1+day_count, 0, cur_day == day_count ? WHITE : BLUE, FONT_INFO);
@@ -181,8 +211,7 @@ void show_notify_handler(void* main_data, esp_event_base_t base, int32_t cur_day
     }
 }
 
-void show_color_screen_handler(void* main_data, 
-                                    esp_event_base_t base, 
+void show_color_screen_handler(main_data_t * main_data,
                                     int32_t id, 
                                     void* event_data) 
 {
@@ -216,8 +245,7 @@ void show_color_screen_handler(void* main_data,
     print_text_box(290, 220, 120, 35, BLACK, YELLOW, 2, "Set color");
 }
 
-void show_state_handler(void* main_data, 
-                            esp_event_base_t base, 
+void show_state_handler(main_data_t * main_data,
                             int32_t id, 
                             void* event_data) 
 {
@@ -275,8 +303,7 @@ void show_state_handler(void* main_data,
 
 
 
-void show_clock_handler(void* main_data, 
-                                    esp_event_base_t base, 
+void show_clock_handler(main_data_t * main_data,
                                     int32_t offset_time, 
                                     void* event_data)
 {
@@ -336,8 +363,7 @@ void show_clock_handler(void* main_data,
 
 
 
-void show_main_handler(void* main_data, 
-                                esp_event_base_t base, 
+void show_main_handler(main_data_t * main_data,
                                 int32_t key, 
                                 void* mode) 
 {
@@ -450,10 +476,9 @@ void show_main_handler(void* main_data,
     }
 }
 
-void show_timer_handler(void* main_data, 
-                                    esp_event_base_t base, 
-                                    int32_t key, 
-                                    void* event_data) 
+void show_timer_handler(main_data_t * main_data, 
+                                int32_t key, 
+                                void* event_data) 
 {
     if(!event_data)return;
     int8_t *timer_data = (int8_t *)event_data;
@@ -488,8 +513,7 @@ void show_timer_handler(void* main_data,
     }
 }
 
-void show_timer_stop_handler(void* main_data, 
-                                    esp_event_base_t base, 
+void show_timer_stop_handler(main_data_t * main_data,
                                     int32_t run, 
                                     void* event_data) 
 {

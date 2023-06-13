@@ -7,9 +7,10 @@
 #include "screen_keys.h"
 #include "dwin_config.h"
 
-
-typedef void dwin_handler_t (void*, esp_event_base_t, int32_t, void*);
-
+typedef struct {
+    int32_t command;
+    void* data;
+} show_queue_data_t;
 
 typedef enum espnow_action{
     TRY_AGAIN,
@@ -101,7 +102,6 @@ typedef enum data_identification{
 	DATA_NOTIF,
 	DATA_FLAGS,
 	END_DATA_IDENTEFIER_FOR_CICLE,
-    DATA_OFFSET,
 } data_identification_t;
 
 /*package espnow*/
@@ -110,6 +110,7 @@ typedef struct sensor_package{
     float temperature;
     int humidity;
     time_t wakeup;
+    char name[MAX_NAME_DEVICE+1];
 }__attribute__((packed))sensor_package_t;
 
 typedef struct{
@@ -125,7 +126,7 @@ typedef struct network_package{
 
 typedef struct time_package{
     uint16_t crc;
-    uint16_t time;
+    time_t time;
 } __attribute__((packed))time_package_t;
 
 typedef struct  action_packag{
@@ -152,11 +153,11 @@ typedef struct {
     uint8_t sunrise_min;
     uint8_t sunset_hour;
     uint8_t sunset_min;
-    char description[LEN_BUF_DESCRIPTION];
-    uint8_t pop[NUMBER_DATA_WEATHER];
     uint8_t dt_tx;
     int8_t outdoor;
     int8_t indoor;
+    char description[LEN_BUF_DESCRIPTION];
+    uint8_t pop[NUMBER_DATA_WEATHER];
     int8_t feels_like[NUMBER_DATA_WEATHER];
     int timezone;
 } weather_data_t;
@@ -165,10 +166,8 @@ typedef struct {
 typedef struct periodic_event {
     size_t time;
     size_t time_init;
-    uint32_t event_id;
+    uint16_t command;
     mode_time_func_t mode;
-    esp_event_base_t base;
-    esp_event_loop_handle_t event_loop;
 }periodic_event_t;
 
 typedef struct {
@@ -176,7 +175,7 @@ typedef struct {
     bool is_brodcast_dst;
     uint8_t rssi;
     uint8_t *parcel;
-    uint32_t parcel_len;
+    size_t parcel_len;
 }espnow_rx_data_t;
 
 
@@ -199,11 +198,11 @@ typedef struct device_inf {
 } device_inf_t;
 
 typedef struct sensor_data{
-    float temperature;
-    int humidity;
     uint8_t mac[SIZE_MAC];
-    char name[0];
-} __attribute__((packed))sensor_data_t;
+    char *name;
+    int8_t tem;
+    int8_t hum;
+}sensor_data_t;
 
 
 
@@ -215,6 +214,11 @@ typedef struct {
     char buf_api[SIZE_BUF];
     uint8_t colors_interface[COLOR_INTERFACE_NUMBER];
     uint8_t *notif_data;
-    weather_data_t *weather_data;
-    sensor_data_t *sensor_data[NUMBER_SENSOR];
+    int8_t timer_data[SIZE_TIMER];
+    sensor_data_t *sensor_data;
+    weather_data_t weather_data;
 } main_data_t;
+
+
+typedef void dwin_screen_handler_t (main_data_t*, uint8_t, char);
+typedef void dwin_show_handler_t (main_data_t*, int32_t, void*);

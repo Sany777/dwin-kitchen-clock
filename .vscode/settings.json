@@ -117,7 +117,9 @@
     "show_data.h": "c",
     "initializer_list": "c",
     "uart_pins.h": "c",
-    "parser.h": "c"
+    "parser.h": "c",
+    "dwin_weather.h": "c",
+    "sensor.h": "c"
   },
   "idf.port": "/dev/ttyACM0",
   "idf.flashType": "UART",

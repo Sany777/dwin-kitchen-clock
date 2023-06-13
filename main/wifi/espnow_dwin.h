@@ -25,7 +25,16 @@ static const uint8_t BRODCAST_MAC[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 
 #define MAX_TIME_GETTING_DATA      (3000/portTICK_PERIOD_MS)
-#define SIZE_MAC                   6
+// #define SIZE_MAC                   6
+
+
+
+
+
+
+
+
+
 
 #define SIZE_SENSOR_PACKAGE         (sizeof(sensor_package_t))
 #define SIZE_HELLO_PACKAGE          (sizeof(hello_package_t))

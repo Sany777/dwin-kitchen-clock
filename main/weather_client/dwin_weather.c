@@ -53,12 +53,13 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 }
 
 
-void get_weather_handler(void* main_data, esp_event_base_t base, int32_t key, void* event_data)
+void get_weather_handler(void* data, esp_event_base_t base, int32_t key, void* event_data)
 {
     EventBits_t xEventGroup = xEventGroupWaitBits( dwin_event_group, 
                                         BIT_PROCESS,   
                                         false, false, 
                                         WAIT_PROCEES);  
+    main_data_t *main_data = (void*) data;
     weather_PIC = NO_WEATHER_PIC;
     if(xEventGroup&BIT_WEATHER_OK){
         xEventGroupClearBits(dwin_event_group, BIT_WEATHER_OK);
@@ -151,10 +152,11 @@ st_3:
 st_2:
     free(url_buf);
 st_1:
-    esp_event_post_to(direct_loop, 
-                        EVENTS_DIRECTION, 
-                        UPDATE_DATA_COMPLETE, 
-                        NULL, 0, WAIT_WIFI_EVENT);
+// send_
+//     esp_event_post_to(direct_loop, 
+//                         EVENTS_DIRECTION, 
+//                         UPDATE_DATA_COMPLETE, 
+//                         NULL, 0, WAIT_WIFI_EVENT);
 }
 
 char ** find_str_key(char *buf, const size_t buf_len, const char *key)

@@ -1,14 +1,14 @@
 #include "show_data.h"
 
-char *buf_send_operation;
+char *buf_operation;
 
 void send_str(const char * format, ... )
 {
   va_list args;
   va_start (args, format);
-  vsnprintf (buf_send_operation, MAX_DATA_LEN, format, args);
+  vsnprintf (buf_operation, MAX_DATA_LEN, format, args);
   va_end (args);
-  uart_write_bytes(UART_DWIN, buf_send_operation, strlen(buf_send_operation));
+  uart_write_bytes(UART_DWIN, buf_operation, strlen(buf_operation));
 }
 
 
