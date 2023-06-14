@@ -42,16 +42,15 @@
 
 #define WAKE_INTERVAL 100
 
-void set_mode_wifi_handler(void* arg, esp_event_base_t event_base,
-                                int32_t action, void* event_data);
+
+
+
+void set_wifi(main_data_t* main_data, uint8_t action);
 void wifi_sta_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data);
 void ap_handler(void* arg, esp_event_base_t event_base,
                             int32_t event_id, void* event_data);
-void set_espnow_handler(void* arg, esp_event_base_t event_base,
-                                int32_t action, void* event_data);
-void init_sntp_handler(void* arg, esp_event_base_t event_base,
-                                int32_t event_id, void* event_data);
+void set_sntp(main_data_t* main_data, uint8_t action);
 void set_time_tv(struct timeval *tv);
 
 /*

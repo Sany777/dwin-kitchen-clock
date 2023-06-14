@@ -1,13 +1,28 @@
 #include "dwin_help.h"
 
-
+esp_err_t show_screen(int32_t key, const void *data_send, const size_t size_data)
+{                                     
+    show_queue_data_t to_send = {        
+        .command = key,  
+        .data = NULL             
+    };      
+    if(size_data){
+        to_send.data = (void*)malloc(size_data);
+        if(!to_send.data) return ESP_FAIL;
+        memcpy(to_send.data, data_send, size_data);
+    }                              
+    if(xQueueSend(queue_show, &to_send, WAIT_SHOW) == ESP_OK){
+        return ESP_OK;
+    } else if(to_send.data){
+        free(to_send.data);
+    }
+    return ESP_FAIL;
+}
 
 void set_timezone(int offset)
 {
     if(offset < 24 || offset > -24){
-        char buf_format_time[SIZE_BUF_FORMAT_CLOCK] = {0};
-        sprintf(buf_format_time, "EET%+dEEST,M3.5.0/3,M10.5.0/4", offset);
-        setenv("TZ", buf_format_time, 1);
+        setenv("TZ", TIME_ZONA_FORMAT, offset);
         tzset();
     }
 }
@@ -54,11 +69,7 @@ void set_time_tv(struct timeval *tv)
 {
     settimeofday(tv, NULL);
     xEventGroupSetBits(dwin_event_group, BIT_IS_TIME);
-    // esp_event_post_to(direct_loop, 
-    //                     EVENTS_DIRECTION, 
-    //                     UPDATE_DATA_COMPLETE, 
-    //                     NULL, 0,
-    //                     TIMEOUT_SEND_EVENTS);
+    set_new_event(UPDATE_DATA_COMPLETE);
 }
 
 void set_time_tm(struct tm *timeptr, const bool update_dwin)

@@ -1,8 +1,6 @@
 #include "sensor.h"
 
 
-
-
 void set_sensor_data(main_data_t *main_data, 
                         const uint8_t *mac, 
                         const float temperature,

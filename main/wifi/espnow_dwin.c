@@ -42,94 +42,94 @@ for(;;){
             mac = IS_ALL_ADDR(data_to_send.mac) ? NULL : data_to_send.mac;
         }
         parcel_len = SIZE_HELLO_PACKAGE;
-        switch(data_to_send.action){
-            case RESPONSE_ADD_NEW : max_atempt = NUMBER_RESPONSE_ADD_NEW;
-            case REQUEST_ADD_NEW : max_atempt = NUMBER_REQUEST_ADD_NEW;
-            {
-                hello_package_t *hello_package = malloc(SIZE_HELLO_PACKAGE);
-                if(hello_package){
-                    parcel_len = SIZE_HELLO_PACKAGE;
-                    parcel = (uint8_t *)hello_package;
-                    hello_package->action = data_to_send.action;
-                }
-                break;
+    switch(data_to_send.action){
+        case RESPONSE_ADD_NEW : max_atempt = NUMBER_RESPONSE_ADD_NEW;
+        case REQUEST_ADD_NEW : max_atempt = NUMBER_REQUEST_ADD_NEW;
+        {
+            hello_package_t *hello_package = malloc(SIZE_HELLO_PACKAGE);
+            if(hello_package){
+                parcel_len = SIZE_HELLO_PACKAGE;
+                parcel = (uint8_t *)hello_package;
+                hello_package->action = data_to_send.action;
             }
-            case NEED_TIME :
-            case NEED_NETWORK :
-            case NEED_DEVICE_INFO :
-            {
-                action_package_t *action_package = malloc(SIZE_ACTION_PACKAGE);
-                if(action_package){
-                    uint8_t mac[8];
-                    esp_read_mac(mac, ESP_MAC_WIFI_STA);
-                    memcpy(action_package->mac, mac, SIZE_MAC);
-                    max_atempt = MAX_ATEMPT_REQUEST;
-                    parcel = (uint8_t *)action_package;
-                    parcel_len = SIZE_ACTION_PACKAGE;
-                    action_package->action = data_to_send.action;
-                    action_package->crc = 0;
-                    action_package->crc = esp_crc16_le(UINT16_MAX, (uint8_t const *)parcel, parcel_len);
-                }
-                break;
-            }
-            case GIVE_NETWORK :
-            {
-                EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
-                if(xEventGroup&BIT_CON_STA_OK){
-                    network_package_t *network_package = malloc(SIZE_NETWORK_PACKAGE);
-                    if(network_package){
-                        max_atempt = MAX_ATEMPT_SEND_DATA;
-                        parcel_len = SIZE_NETWORK_PACKAGE;
-                        parcel = (uint8_t *)network_package;
-                        strncpy(network_package->pwd, pwd_WIFI, MAX_STR_LEN);
-                        strncpy(network_package->ssid, name_SSID, MAX_STR_LEN);
-                        network_package->crc = 0;
-                        network_package->crc = esp_crc16_le(UINT16_MAX, parcel, parcel_len);
-                    }
-                } 
-                break;
-            }
-            case GIVE_DIVICE_INFO :
-            {
-                device_inf_t *my_device = get_my_device();
-                if(my_device){
-                    max_atempt = MAX_ATEMPT_SEND_DATA;
-                    device_info_package_t *device_info_package = malloc(SIZE_INFO_PACKAGE);
-                    if(device_info_package){
-                        strncpy(device_info_package->name, my_device->name, MAX_NAME_DEVICE);
-                        parcel_len = SIZE_INFO_PACKAGE;
-                        parcel = (uint8_t *)device_info_package;
-                        device_info_package->type = MY_DEVICE_TYPE;
-                        device_info_package->crc = 0;
-                        device_info_package->crc = esp_crc16_le(UINT16_MAX, parcel, parcel_len);
-                    }
-                }
-                break;
-            }
-            case GIVE_TIME :
-            {
-                EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
-                if(xEventGroup&BIT_IS_TIME){
-                    time_package_t *time_package = malloc(SIZE_TIME_PACKAGE);
-                    if(time_package){
-                        max_atempt = MAX_ATEMPT_SEND_DATA;
-                        parcel_len = SIZE_TIME_PACKAGE;
-                        parcel = (uint8_t *)time_package;
-                        time(&time_package->time);
-                        time_package->crc = 0;
-                        time_package->crc = esp_crc16_le(UINT16_MAX, parcel, parcel_len);
-                    }
-                }
-                break;
-            }
-            default : break;
+            break;
         }
+        case NEED_TIME :
+        case NEED_NETWORK :
+        case NEED_DEVICE_INFO :
+        {
+            action_package_t *action_package = malloc(SIZE_ACTION_PACKAGE);
+            if(action_package){
+                uint8_t mac[8];
+                esp_read_mac(mac, ESP_MAC_WIFI_STA);
+                memcpy(action_package->mac, mac, SIZE_MAC);
+                max_atempt = MAX_ATEMPT_REQUEST;
+                parcel = (uint8_t *)action_package;
+                parcel_len = SIZE_ACTION_PACKAGE;
+                action_package->action = data_to_send.action;
+                action_package->crc = 0;
+                action_package->crc = esp_crc16_le(UINT16_MAX, (uint8_t const *)parcel, parcel_len);
+            }
+            break;
+        }
+        case GIVE_NETWORK :
+        {
+            EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
+            if(xEventGroup&BIT_CON_STA_OK){
+                network_package_t *network_package = malloc(SIZE_NETWORK_PACKAGE);
+                if(network_package){
+                    max_atempt = MAX_ATEMPT_SEND_DATA;
+                    parcel_len = SIZE_NETWORK_PACKAGE;
+                    parcel = (uint8_t *)network_package;
+                    strncpy(network_package->pwd, pwd_WIFI, MAX_STR_LEN);
+                    strncpy(network_package->ssid, name_SSID, MAX_STR_LEN);
+                    network_package->crc = 0;
+                    network_package->crc = esp_crc16_le(UINT16_MAX, parcel, parcel_len);
+                }
+            } 
+            break;
+        }
+        case GIVE_DIVICE_INFO :
+        {
+            device_inf_t *my_device = get_my_device();
+            if(my_device){
+                max_atempt = MAX_ATEMPT_SEND_DATA;
+                device_info_package_t *device_info_package = malloc(SIZE_INFO_PACKAGE);
+                if(device_info_package){
+                    strncpy(device_info_package->name, my_device->name, MAX_NAME_DEVICE);
+                    parcel_len = SIZE_INFO_PACKAGE;
+                    parcel = (uint8_t *)device_info_package;
+                    device_info_package->type = MY_DEVICE_TYPE;
+                    device_info_package->crc = 0;
+                    device_info_package->crc = esp_crc16_le(UINT16_MAX, parcel, parcel_len);
+                }
+            }
+            break;
+        }
+        case GIVE_TIME :
+        {
+            EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
+            if(xEventGroup&BIT_IS_TIME){
+                time_package_t *time_package = malloc(SIZE_TIME_PACKAGE);
+                if(time_package){
+                    max_atempt = MAX_ATEMPT_SEND_DATA;
+                    parcel_len = SIZE_TIME_PACKAGE;
+                    parcel = (uint8_t *)time_package;
+                    time(&time_package->time);
+                    time_package->crc = 0;
+                    time_package->crc = esp_crc16_le(UINT16_MAX, parcel, parcel_len);
+                }
+            }
+            break;
+        }
+        default : break;
+    }
     }
     while(parcel && send_count++ < max_atempt){
         if(esp_now_send(mac, (const uint8_t*)parcel, parcel_len) != ESP_OK){
             break;
         }
-        if(xTaskNotifyWait(0x00, 0xff, &res, (send_count+1)*TIMEOUT_SEND) == pdTRUE
+        if(xTaskNotifyWait(0x00, ULONG_MAX, &res, (send_count+1)*TIMEOUT_SEND) == pdTRUE
                 && res == ESP_NOW_SEND_SUCCESS)
         {
             send_ok = true;
@@ -267,8 +267,7 @@ if(xQueueReceive(queue_espnow_rx, &data_rx, portMAX_DELAY) == pdTRUE){
                 if(crc == esp_crc16_le(UINT16_MAX, (uint8_t const *)network_package, SIZE_NETWORK_PACKAGE)){
                     strncpy(name_SSID, network_package->ssid, MAX_STR_LEN);
                     strncpy(pwd_WIFI, network_package->pwd, MAX_STR_LEN);
-                    start_sta();
-                    // set_periodic_event(direct_loop, EVENTS_DIRECTION, CHECK_NET_DATA, 20, ONLY_ONCE);
+                    set_periodic_event(CHECK_NET_DATA, 20, ONLY_ONCE);
                 }
             }
             break;

@@ -18,5 +18,5 @@
 
 
 
-void get_weather_handler(void* args, esp_event_base_t base, int32_t key, void* event_data);
+void get_weather(main_data_t *main_data, uint8_t key);
 char** find_str_key(char *buf, const size_t buf_len, const char *key);

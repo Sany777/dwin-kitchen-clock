@@ -112,8 +112,6 @@ void read_all_memory(main_data_t *main_data)
 	}
 }
 
-
-
 void read_offset(int32_t *offset)
 {
 	nvs_handle_t nvs_handle_dwin;

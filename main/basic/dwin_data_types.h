@@ -7,6 +7,7 @@
 #include "screen_keys.h"
 #include "dwin_config.h"
 
+
 typedef struct {
     int32_t command;
     void* data;
@@ -44,6 +45,7 @@ typedef enum flag_state_device{
     SOUNDS_ALLOW,
     ESPNOW_ALLOW,
     SNTP_ALLOW,
+    GET_TIME_AUTO,
     SECURITY,
     WEATHER_OK,
     CON_STA_OK,
@@ -59,11 +61,12 @@ typedef enum flag_state_device{
     WORK_AP,
     SSID_FOUND,
     ESPNOW_RUN,
-    TIMER_RUN,
+
 }flag_state_device_t;
 
 /*events bit*/
 
+#define BIT_GET_TIME_AUTO       ( 1 << GET_TIME_AUTO )
 #define BIT_RESPONSE_400_SERVER ( 1 << RESPONSE_400_SERVER )
 #define BIT_SOUNDS_ALLOW        ( 1 << SOUNDS_ALLOW )
 #define BIT_ESPNOW_ALLOW        ( 1 << ESPNOW_ALLOW )
@@ -155,11 +158,9 @@ typedef struct {
     uint8_t sunset_min;
     uint8_t dt_tx;
     int8_t outdoor;
-    int8_t indoor;
     char description[LEN_BUF_DESCRIPTION];
     uint8_t pop[NUMBER_DATA_WEATHER];
     int8_t feels_like[NUMBER_DATA_WEATHER];
-    int timezone;
 } weather_data_t;
 
 /* data struct timer func*/
@@ -204,6 +205,14 @@ typedef struct sensor_data{
     int8_t hum;
 }sensor_data_t;
 
+typedef struct timer_data{
+    uint8_t mac[SIZE_MAC];
+    char *name;
+    int8_t *time_buf;
+    uint8_t num_week;
+}timer_data_t;
+
+
 
 
 typedef struct {
@@ -216,9 +225,21 @@ typedef struct {
     uint8_t *notif_data;
     int8_t timer_data[SIZE_TIMER];
     sensor_data_t *sensor_data;
+    timer_data_t *timers;
     weather_data_t weather_data;
 } main_data_t;
 
 
 typedef void dwin_screen_handler_t (main_data_t*, uint8_t, char);
 typedef void dwin_show_handler_t (main_data_t*, int32_t, void*);
+
+typedef struct {
+    TaskFunction_t pTask;
+    UBaseType_t priority;
+    uint32_t stack;
+} task_dwin_t;
+
+typedef struct {
+    dwin_screen_handler_t *main_handler;
+    dwin_show_handler_t *show_handler;
+} handlers_dwin_t;

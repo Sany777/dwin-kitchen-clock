@@ -2,8 +2,14 @@
 
 EventGroupHandle_t dwin_event_group;
 TaskHandle_t rx_espnow = NULL, tx_espnow = NULL;
-QueueHandle_t dwin_uart_events_queue = NULL, queue_espnow_tx = NULL, queue_espnow_rx = NULL, queue_direct = NULL, queue_show = NULL;
-#define SIZE_QUEUE_DIRECT 3
+QueueHandle_t 
+          dwin_uart_events_queue = NULL, 
+          queue_espnow_tx = NULL, 
+          queue_espnow_rx = NULL, 
+          queue_direct = NULL, 
+          queue_service = NULL, 
+          queue_show = NULL;
+#define SIZE_QUEUE_DIRECT 5
 
 
 
@@ -15,8 +21,10 @@ void esp_init(void)
     assert(buf_operation);
     dwin_event_group = xEventGroupCreate();
     queue_direct = xQueueCreate(SIZE_QUEUE_DIRECT, sizeof(uint16_t));
-    queue_show = xQueueCreate(1, sizeof(show_queue_data_t));
+    queue_show = xQueueCreate(3, sizeof(show_queue_data_t));
+    queue_service = xQueueCreate(3, sizeof(uint8_t));
     assert(queue_show);
+    assert(queue_service);
     assert(dwin_event_group);
     assert(queue_direct);
     main_data->notif_data = calloc(1,SIZE_BUF_NOTIFICATION);
@@ -28,7 +36,6 @@ void esp_init(void)
     }
     int offset;
     read_offset(&offset);
-    temp_INDOOR = NO_TEMP_SENSOR;
     set_timezone(offset);
     init_uart();
     // welcome();

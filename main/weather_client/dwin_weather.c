@@ -53,13 +53,12 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 }
 
 
-void get_weather_handler(void* data, esp_event_base_t base, int32_t key, void* event_data)
+void get_weather(main_data_t *main_data, uint8_t key)
 {
     EventBits_t xEventGroup = xEventGroupWaitBits( dwin_event_group, 
                                         BIT_PROCESS,   
                                         false, false, 
                                         WAIT_PROCEES);  
-    main_data_t *main_data = (void*) data;
     weather_PIC = NO_WEATHER_PIC;
     if(xEventGroup&BIT_WEATHER_OK){
         xEventGroupClearBits(dwin_event_group, BIT_WEATHER_OK);
@@ -68,7 +67,7 @@ void get_weather_handler(void* data, esp_event_base_t base, int32_t key, void* e
                                 || (strnlen(name_CITY, SIZE_BUF) == 0),
                                 st_1);
     if(!(xEventGroup&BIT_CON_STA_OK)){
-        start_sta();
+        set_new_event(START_STA);
         vTaskDelay(100);
         xEventGroup = xEventGroupWaitBits( dwin_event_group, 
                                             BIT_PROCESS,   
@@ -137,6 +136,14 @@ void get_weather_handler(void* data, esp_event_base_t base, int32_t key, void* e
     }
     temp_OUTDOOR = atoi(temp[0]);
     xEventGroupSetBits(dwin_event_group, BIT_WEATHER_OK);
+    if(xEventGroup&BIT_GET_TIME_AUTO && SNTP_ALLOW){
+            char **timezone = find_str_key(local_response_buffer, data_len, "\"timezone\":");
+            if(timezone){
+                int offset = atoi(timezone);
+                set_timezone((offset/60)/60 -1);
+                free(timezone);
+            }
+    }
 st_4:
     if(dt_txt)free(dt_txt);
     if(pop)free(pop);
@@ -152,11 +159,7 @@ st_3:
 st_2:
     free(url_buf);
 st_1:
-// send_
-//     esp_event_post_to(direct_loop, 
-//                         EVENTS_DIRECTION, 
-//                         UPDATE_DATA_COMPLETE, 
-//                         NULL, 0, WAIT_WIFI_EVENT);
+    set_new_event(UPDATE_DATA_COMPLETE);
 }
 
 char ** find_str_key(char *buf, const size_t buf_len, const char *key)

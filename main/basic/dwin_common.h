@@ -49,8 +49,13 @@ extern EventGroupHandle_t dwin_event_group, dwin_system_event;
 extern esp_event_loop_handle_t
                 fast_service_loop,
                 slow_service_loop;
-extern QueueHandle_t dwin_uart_events_queue, queue_espnow_tx, queue_espnow_rx, queue_direct, queue_show;
+extern QueueHandle_t dwin_uart_events_queue, 
+                        queue_espnow_tx, 
+                        queue_espnow_rx, 
+                        queue_direct, 
+                        queue_service,
+                        queue_show;
 extern TaskHandle_t rx_espnow, tx_espnow;
-extern uint16_t cur_screen_id;
+extern uint8_t cur_screen_id;
 
 static char * TAG = "dwin";

@@ -1,12 +1,12 @@
 #include "dwin_timer.h"
 
+#define STEP_RESIZE 3
 esp_timer_handle_t periodic_timer = NULL;
 periodic_event_t *list_periodic_events = NULL;
 portMUX_TYPE periodic_timers_s = portMUX_INITIALIZER_UNLOCKED;
 
 size_t number_event = 0;
 size_t size_list = 0;
-#define STEP_RESIZE 3
 
 void resize_list()
 {
@@ -35,10 +35,9 @@ void resize_list()
     taskEXIT_CRITICAL(&periodic_timers_s);
 }
 
-void remove_periodic_event(uint8_t event_id)
+void remove_periodic_event(uint8_t command)
 {
     if(number_event){
-        const uint16_t command = (uint16_t)event_id*256;
         for(int i=0; i<size_list; i++){
             if(list_periodic_events[i].time && list_periodic_events[i].command == command){
                 list_periodic_events[i].time = 0;
@@ -53,8 +52,14 @@ void remove_periodic_event(uint8_t event_id)
 }
 
 
+void set_new_event(uint8_t command)
+{
+    uint8_t send[2] = {command, 0};
+    xQueueSend(queue_direct, send, 200);
+}
 
-esp_err_t  set_periodic_event(uint8_t event_id, 
+
+esp_err_t set_periodic_event(uint8_t command,
                                 size_t sec, 
                                 mode_time_func_t mode)
 {
@@ -69,7 +74,6 @@ esp_err_t  set_periodic_event(uint8_t event_id,
         list_periodic_events = new_list_periodic_events;
         size_list += STEP_RESIZE;
     }
-    uint16_t command = event_id*256;
     periodic_event_t *item = NULL, *empty = NULL;
     for(int i=0; i<size_list; i++){
         if(list_periodic_events[i].command == command){
@@ -104,14 +108,16 @@ err:
 void periodic_timer_cb(void* arg)
 {
     if(number_event){
-        BaseType_t change_cntx = false;
+        BaseType_t change_cntx = false, need_change = false;
         periodic_event_t *item = NULL;
         for(int i=0; i<size_list; i++){
             item = &list_periodic_events[i];
             if(item->time){
                 item->time--;
                 if(item->time == 0){
-                    xQueueSendFromISR(queue_direct, item->command, &change_cntx);
+                    uint8_t send[2] = {item->command, 0};
+                    xQueueSendFromISR(queue_direct, send, &change_cntx);
+                    if(!need_change && change_cntx)need_change = true;
                     if(item->mode == RELOAD_COUNT){
                         item->time = item->time_init;
                     } else {
@@ -123,7 +129,7 @@ void periodic_timer_cb(void* arg)
         if(number_event == 0 || size_list > (number_event + STEP_RESIZE)){
             resize_list();
         }
-        if(change_cntx)taskYIELD();
+        if(need_change)portYIELD_FROM_ISR();
     }
 }
 

@@ -34,7 +34,7 @@ void uart_event_task(void *pv)
 {
     bool heder_ok;    
 	int byte_rx_count, rxBytes;
-    char *buf_RX = (char*) malloc(UART_BUF_SIZE);
+    uint8_t *buf_RX = (uint8_t*) malloc(UART_BUF_SIZE);
     assert(buf_RX);
     uart_event_t event;
 for(;;) {
@@ -55,9 +55,7 @@ for(;;) {
                         && (buf_RX[byte_rx_count] == 0x3C))
                     {
                         if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == TOUCH_CODE) {
-                            uint16_t key = buf_RX[INDEX_START_DATA_IN_RX]*256;
-                            key += buf_RX[INDEX_IDENTIF_CHAR_IN_RX];
-                            xQueueSend(queue_direct, key, 200);
+                            if(queue_direct) xQueueSend(queue_direct, &buf_RX[INDEX_START_DATA_IN_RX], 200);
                         } else if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == KEY_GET_CLOCK){
                             struct tm tm_time = {
                                 .tm_year = GET_DEC(buf_RX[1]),

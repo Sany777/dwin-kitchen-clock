@@ -12,7 +12,9 @@
 #define PoP                     (main_data->weather_data.pop)
 #define temp_FEELS_LIKE         (main_data->weather_data.feels_like)
 #define dt_TX                   (main_data->weather_data.dt_tx)
-#define temp_INDOOR             (main_data->weather_data.indoor)
+#define temp_INDOOR             (main_data->sensor_data)
+#define temp_INDOOR_0           (main_data->sensor_data[0].tem)
+#define temp_INDOOR_1           (main_data->sensor_data[1].tem)
 #define temp_OUTDOOR            (main_data->weather_data.outdoor)
 #define description_WEATHER     (main_data->weather_data.description)
 
@@ -106,7 +108,7 @@
 #define timer_MIN                   (main_data->timer_data[INDEX_MIN_T])
 #define timer_SEC                   (main_data->timer_data[INDEX_SEC_T])
 #define timer_HOUR                  (main_data->timer_data[INDEX_HOUR_T])
-
+#define timer_DATA                  (main_data->timer_data)
 /*CHECK VALUE*/
 #define IS_DAY_WEEK(day_week)       ((day_week) >= 0 && (day_week) < SIZE_WEEK)
 #define IS_MIN_OR_SEC(val)          ((val) >= 0 && (val) <= MAX_MIN_SEC)

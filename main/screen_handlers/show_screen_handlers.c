@@ -364,11 +364,12 @@ void show_clock_handler(main_data_t * main_data,
 
 
 void show_main_handler(main_data_t * main_data,
-                                int32_t key, 
+                                int32_t details, 
                                 void* mode) 
 {
-    dwin_set_pic(weather_PIC);
-    if(key == KEY_DETAILS_SCREEN){
+    if(details){
+        dwin_set_pic(NO_WEATHER_PIC);
+        vTaskDelay(DELAY_SHOW_ITEM);
         print_start(0,6, GREEN, FONT_BUTTON);
         send_str_dwin(name_CITY);
         print_end();
@@ -410,82 +411,80 @@ void show_main_handler(main_data_t * main_data,
         vTaskDelay(DELAY_SHOW_ITEM*2);
         print_lines(get_y_points(temp_FEELS_LIKE, NUMBER_ITEM_WEATHER, 80), NUMBER_ITEM_WEATHER, 70, 470, 260);
     } else {
-
+        dwin_set_pic(weather_PIC);
         struct tm *cur_time = get_time_tm();
-        for(uint32_t i=0; i<5; i++) {
-            vTaskDelay(DELAY_SHOW_ITEM);
-            switch (i) {
-                case 0:
-                {
-                    print_start(3, 3, color_CLOCK, 6);
-                    if(IS_HOUR(cur_time->tm_hour) && IS_MIN_OR_SEC(cur_time->tm_min)){
-                        send_str("%2.d : %2.2d", cur_time->tm_hour, cur_time->tm_min);
-                    } else {
-                        send_str_dwin("updating");
-                    }
-                    break;
+    for(uint32_t i=0; i<5; i++) {
+        vTaskDelay(DELAY_SHOW_ITEM);
+        switch (i) {
+            case 0:
+            {
+                print_start(3, 3, color_CLOCK, 6);
+                if(IS_HOUR(cur_time->tm_hour) && IS_MIN_OR_SEC(cur_time->tm_min)){
+                    send_str("%2.d : %2.2d", cur_time->tm_hour, cur_time->tm_min);
+                } else {
+                    send_str_dwin("updating");
                 }
-                case 1:
-                {
-                    print_start(8, 12, color_CLOCK, 2);
-                    send_str("%s %d\r\n     %s", 
-                                WEEK_DAY[cur_time->tm_wday], 
-                                cur_time->tm_mday,
-                                mode
-                                ? "[!]"
-                                : "");
-                    break;
+                break;
+            }
+            case 1:
+            {
+                print_start(8, 12, color_CLOCK, 2);
+                send_str("%s %d\r\n     %s", 
+                            WEEK_DAY[cur_time->tm_wday], 
+                            cur_time->tm_mday,
+                            mode
+                            ? "[!]"
+                            : "");
+                break;
+            }
+            case 2:
+            {
+                if(weather_PIC == NO_WEATHER_PIC && !temp_INDOOR) return;
+                print_start(1, 0, get_color_temp(temp_FEELS_LIKE[0]), FONT_INFO);
+                if(weather_PIC != NO_WEATHER_PIC){
+                    send_str(" outdoor        t*C %d\n\r feels like     t*C %d\n\r Fall-out       %d%%", 
+                                    temp_OUTDOOR, 
+                                    temp_FEELS_LIKE[0],
+                                    PoP[0]);
                 }
-                case 2:
-                {
-                    if(weather_PIC == NO_WEATHER_PIC && temp_INDOOR == NO_TEMP_SENSOR) return;
-                    print_start(1, 0, get_color_temp(temp_FEELS_LIKE[0]), FONT_INFO);
-                    if(weather_PIC != NO_WEATHER_PIC){
-                        send_str(" outdoor        t*C %d\n\r feels like     t*C %d\n\r Fall-out       %d%%", 
-                                        temp_OUTDOOR, 
-                                        temp_FEELS_LIKE[0],
-                                        PoP[0]);
-                    }
-                    if(temp_INDOOR > NO_TEMP_SENSOR) {
-                        print_end();
-                        print_start(3, 0, get_color_temp(temp_INDOOR), FONT_INFO);
-                        send_str("\n\r inside    t*C %f2.1", temp_INDOOR);
-                    }
-                    break;
+                if(temp_INDOOR) {
+                    print_end();
+                    print_start(3, 0, get_color_temp(temp_INDOOR), FONT_INFO);
+                    send_str("\n\r inside    t*C %f2.1", temp_INDOOR);
                 }
-                case 3:
-                {
-                    print_start(3, 3, LEMON, FONT_BUTTON);
-                    send_str("%8s", description_WEATHER);
-                    break;
-                }
-                case 4:
-                {
-                    print_start(23, 15, color_INFO, FONT_SECOND_INFO);
-                    send_str("Sunrise  %d:%2.2d  Sunset %d:%2.2d",
-                                sunrise_HOUR,
-                                sunrise_MIN,
-                                sunset_HOUR,
-                                sunset_MIN);
-                    break;
-                }
-                default   : break;
+                break;
+            }
+            case 3:
+            {
+                print_start(3, 3, LEMON, FONT_BUTTON);
+                send_str("%8s", description_WEATHER);
+                break;
+            }
+            case 4:
+            {
+                print_start(23, 15, color_INFO, FONT_SECOND_INFO);
+                send_str("Sunrise  %d:%2.2d  Sunset %d:%2.2d",
+                            sunrise_HOUR,
+                            sunrise_MIN,
+                            sunset_HOUR,
+                            sunset_MIN);
+                break;
+            }
+            default   : break;
             }
             print_end();
         }
     }
 }
 
-void show_timer_handler(main_data_t * main_data, 
+void show_timer_handler(main_data_t *main_data, 
                                 int32_t key, 
                                 void* event_data) 
 {
-    if(!event_data)return;
-    int8_t *timer_data = (int8_t *)event_data;
+    print_start(1, 5, color_CLOCK, FONT_INFO);
+    send_str_dwin(asctime(get_time_tm()));
+    print_end();
     if(key == KEY_DECREMENT){
-        print_start(1, 5, color_CLOCK, FONT_INFO);
-        send_str_dwin(asctime(get_time_tm()));
-        print_end();
         print_start(2, 2, color_CLOCK, 6);
         if(timer_HOUR){
             send_str("%d : %2.2d : %2.2d",
@@ -507,28 +506,10 @@ void show_timer_handler(main_data_t * main_data,
         vTaskDelay(DELAY_SHOW_ITEM);
         for(int i=0; i<SIZE_TIMER; i++){
             print_start(1, (i+1)*2, GET_COLOR_AREA(i), 6);
-            send_str("%2.2d", timer_data[i]);   
+            send_str("%2.2d", timer_DATA[i]);   
             print_end();
         }
     }
-}
-
-void show_timer_stop_handler(main_data_t * main_data,
-                                    int32_t run, 
-                                    void* event_data) 
-{
-    if(!event_data)return;
-    int8_t *timer_data = (int8_t *)event_data;
-    print_start(0, 5, color_CLOCK, FONT_INFO);
-    send_str("%s", asctime(get_time_tm()));
-    print_end();
-    vTaskDelay(DELAY_SHOW_ITEM);
-    for(int i=0; i<SIZE_TIMER; i++){
-        print_start(1, (i+1)*2, GET_COLOR_AREA(i), 6);
-        send_str("%2.2d", timer_data[i]);   
-        print_end();
-    }
-    
 }
 
 

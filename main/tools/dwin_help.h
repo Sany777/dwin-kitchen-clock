@@ -1,7 +1,7 @@
 #pragma once 
 #include "dwin_common.h"
 
-
+esp_err_t show_screen(int32_t key, const void *data_send, const size_t size_data);
 uint16_t *get_y_points(  int8_t *points, 
                             const int number,
                             const uint16_t height );

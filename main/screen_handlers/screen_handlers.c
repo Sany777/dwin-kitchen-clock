@@ -49,14 +49,13 @@ void search_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         ap_count_show *= -1;
     }
     dwin_set_pic(SEARCH_PIC);
-    // esp_event_post_to(show_loop, EVENTS_SHOW, ap_count_show, ap_info, sizeof(ap_info), TIMEOUT_SEND_EVENTS);
+    show_screen(ap_count_show, &ap_info, sizeof(ap_info));
 }
 
 void ap_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
     if(command == KEY_INIT) {
-        start_ap();
-        // esp_event_post_to(show_loop, EVENTS_SHOW, UPDATE_DATA_COMPLETE, NULL, 0, WAIT_PROCEES);
+        set_new_event(INIT_AP);
     } else if(command == KEY_CLOSE) {
         esp_wifi_stop();
     }
@@ -69,6 +68,7 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
     static char *selected_buf;
     static int pic;
     static bool need_write;
+    bool preparing = false;
     if(command == KEY_INIT) {
         area_SCREEN = END_AREA_SETTINGS;
         selected_buf = NULL;
@@ -94,7 +94,8 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
         }
         pos = strlen(selected_buf);
     } else if(command == KEY_SYNC) {
-        get_weather();
+        set_new_event(GET_WEATHER);
+        preparing = true;
     } else if(command == UPDATE_DATA_COMPLETE) {
         dwin_set_pic(pic);
     } else if(command == KEY_ENTER && !need_write) {
@@ -126,12 +127,7 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
             }
         }
     }
-    // esp_event_post_to(show_loop, 
-    //                     EVENTS_SHOW, 
-    //                     UPDATE_DATA_COMPLETE, 
-    //                     NULL, 
-    //                     0, 
-    //                     TIMEOUT_SEND_EVENTS);
+    show_screen(preparing ? 1 : 0, NULL, 0);
 }
 
 void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
@@ -142,21 +138,16 @@ void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         step = INIT_TASK;
     } else if(command == KEY_DETAILS_SCREEN){
         if(!details){
-            dwin_set_pic(NO_WEATHER_PIC);
             details = true;
-            set_periodic_event( 
-                            KEY_DETAILS_SCREEN, 
-                            30,
-                            ONLY_ONCE);
-            return;
+            set_periodic_event(KEY_DETAILS_SCREEN, 
+                                30,
+                                ONLY_ONCE);
         } else {
+            remove_periodic_event(KEY_DETAILS_SCREEN);
             details = false;
         }
-        // xEventGroupWaitBits(dwin_event_group, BIT_PROCESS, false, false, WAIT_PROCEES);
-        return;
     } else if(command == KEY_CLOSE) {
-        if(menu_active)menu_active = false;
-        else menu_active = true;     
+        menu_active = !menu_active;     
         if(menu_active){
             step = DEINIT_TASK;
         } else {
@@ -170,69 +161,52 @@ void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         }
     } else if(command == KEY_DEINIT){
         step = DEINIT_TASK;
-        // set_periodic_event(  
-        //                     MAIN_SCREEN, 
-        //                     DELAY_AUTOCLOSE,
-        //                     ONLY_ONCE );
     }
 if(last_step != step){
     last_step = step;
     switch(step){
         case INIT_TASK :
         {
-            // set_periodic_event(slow_service_loop,
-            //             WIFI_SET_EVENTS,
-            //             GET_WEATHER,
-            //             DELAI_FIRST_UPDATE_WEATHER,
-            //             ONLY_ONCE);
-            // set_periodic_event(show_loop,
-            //             EVENTS_SHOW, 
-            //             DATA_SHOW, 
-            //             DELAI_UPDATE_TIME_ON_SCREEN, 
-            //             RELOAD_COUNT);
+            set_periodic_event(GET_WEATHER, 
+                                DELAI_FIRST_UPDATE_WEATHER, 
+                                ONLY_ONCE);
+            set_periodic_event(UPDATE_DATA_COMPLETE, 
+                                DELAI_UPDATE_TIME_ON_SCREEN, 
+                                RELOAD_COUNT);
             break;
         }
         case DEINIT_TASK :
         {
-            // remove_periodic_event(WIFI_SET_EVENTS, GET_WEATHER);
-            // remove_periodic_event(EVENTS_SHOW, DATA_SHOW);
+            remove_periodic_event(GET_WEATHER);
+            remove_periodic_event(UPDATE_DATA_COMPLETE);
             return;
         }
         case INIT_FAIL :
         {
-            // set_periodic_event(slow_service_loop, 
-            //                     WIFI_SET_EVENTS, 
-            //                     GET_WEATHER, 
-            //                     DELAI_UPDATE_WEATHER_FAIL, 
-            //                     RELOAD_COUNT);
+            set_periodic_event(GET_WEATHER, 
+                                DELAI_UPDATE_WEATHER_FAIL, 
+                                RELOAD_COUNT);
             return;
         }
         case INIT_OK :
         {
-            // set_periodic_event(slow_service_loop, 
-            //                         WIFI_SET_EVENTS, 
-            //                         GET_WEATHER, 
-            //                         DELAI_UPDATE_WEATHER, 
-            //                         RELOAD_COUNT);
+            set_periodic_event(GET_WEATHER, 
+                                DELAI_UPDATE_WEATHER, 
+                                RELOAD_COUNT);
             break;
         }
             default : break;
         }
     
     }
-    // esp_event_post_to(show_loop, 
-    //         EVENTS_SHOW, 
-    //         0, 
-    //         NULL, 
-    //         0, 
-    //         TIMEOUT_SEND_EVENTS);
-    // show_screen(KEY_DETAILS_SCREEN, NULL);
+    show_screen(details ? 1 : 0, NULL, 0);
+    
 }
 
 void clock_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
-    static int offset = -100;
-    static struct tm * dwin_time;
+    static int32_t offset = -100;
+    static struct tm *dwin_time;
     if(KEY_IS_AREA_CLOCK(command)) {
         area_SCREEN = GET_AREA_VALUE(command);
     } else if(KEY_IS_NUMBER(command)) {
@@ -298,7 +272,7 @@ void clock_handler(main_data_t* main_data, uint8_t command, char symbol)
         if(offset == -100){
             read_offset(&offset);
         }
-        start_sntp();
+        set_new_event(INIT_SNTP);
     } else if(command == KEY_INCREMENT){
         if(offset < 23){
             offset++;
@@ -315,7 +289,7 @@ void clock_handler(main_data_t* main_data, uint8_t command, char symbol)
         free(dwin_time);
         dwin_time = NULL;
     }
-    // esp_event_post_to(show_loop, EVENTS_SHOW, offset, dwin_time, sizeof(dwin_time), TIMEOUT_SEND_EVENTS);
+    show_screen(offset, &dwin_time, sizeof(dwin_time));
 }
 
 void state_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
@@ -330,17 +304,17 @@ void state_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
     } else if(command == KEY_ESPNOW_TOGGLE){
         if(xEventGroup&BIT_ESPNOW_ALLOW){
             xEventGroup = xEventGroupClearBits(dwin_event_group, BIT_ESPNOW_ALLOW);
-            stop_espnow();
+            set_new_event(STOP_ESPNOW);
        } else {
-            start_espnow();
+            set_new_event(START_ESPNOW);
             xEventGroupSetBits(dwin_event_group, BIT_ESPNOW_ALLOW);
        }
     } else if(command == KEY_SNTP_TOGGLE){
         if(xEventGroup&BIT_SNTP_ALLOW){
             xEventGroup = xEventGroupClearBits(dwin_event_group, BIT_SNTP_ALLOW);
-            stop_sntp();
+            set_new_event(STOP_SNTP);
         } else {
-            start_sntp();
+            set_new_event(INIT_SNTP);
             xEventGroup = xEventGroupSetBits(dwin_event_group, BIT_SNTP_ALLOW);
         }
     } else if(command == KEY_SECURITY){
@@ -352,7 +326,7 @@ void state_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
     } else if(command == KEY_ENTER){
         write_memory(NULL, DATA_FLAGS);
     }
-    // esp_event_post_to(show_loop, EVENTS_SHOW, UPDATE_DATA_COMPLETE, &xEventGroup, sizeof(xEventGroup), TIMEOUT_SEND_EVENTS);
+    show_screen(UPDATE_DATA_COMPLETE, &xEventGroup, sizeof(xEventGroup));
 }
 
 void set_color_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
@@ -360,15 +334,12 @@ void set_color_screen_handler(main_data_t* main_data, uint8_t command, char symb
     if(KEY_IS_AREA_CUSTOM(command)){
         area_SCREEN = GET_AREA_VALUE(command);
     } else if(KEY_IS_AREA_TOGGLE(command)){
-        uint8_t index_color = GET_AREA_VALUE_TOGGLE(command);
-        if(index_color < COLOR_INTERFACE_NUMBER){
-            colors_INTERFACE[area_SCREEN] = GET_COLOR(index_color);
-        }
+            colors_INTERFACE[area_SCREEN] = GET_COLOR(GET_AREA_VALUE_TOGGLE(command));
     } else if(command == KEY_ENTER){
         write_memory(main_data, DATA_COLOR);
     }
     if(command != KEY_CLOSE){
-        // esp_event_post_to(show_loop, EVENTS_SHOW, UPDATE_DATA_COMPLETE, NULL, 0, TIMEOUT_SEND_EVENTS);
+        show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
     }
 }
 
@@ -420,94 +391,68 @@ void notifications_screen_handler(main_data_t* main_data, uint8_t command, char 
     } else if(KEY_IS_AREA_TOGGLE(command)) {
         TOOGLE_NOTIF(GET_AREA_VALUE_TOGGLE(command), cur_day);
     }
-    // esp_event_post_to(show_loop, EVENTS_SHOW, cur_day, NULL, 0, TIMEOUT_SEND_EVENTS);
+    show_screen(cur_day, &cur_day, sizeof(cur_day));
 }
 
-
-
-void timer_run_handler(main_data_t* main_data, uint8_t command)
-{
-    static int count_buzer = NUMBER_SIG_BUZ;
-    if(timer_SEC == 0 && timer_MIN == 0 && timer_HOUR){
-        if(count_buzer){
-            dwin_buzer(LOUD_BUZZER);
-            count_buzer--;
-        } else {
-            // esp_event_post_to(direct_loop, EVENTS_DIRECTION, KEY_INIT, NULL, 0, TIMEOUT_SEND_EVENTS);
-            count_buzer = NUMBER_SIG_BUZ;
-            return;
-        }
-    } else {
-        dwin_set_pic(TIMER_RUN_PIC);
-        timer_SEC--;
-        if(timer_SEC < 0){
-            timer_SEC = 0;
-            timer_MIN--;
-            if(timer_MIN < 0){
-                timer_MIN = 0;
-                timer_HOUR--;
-                if(timer_HOUR < 0){
-                    timer_HOUR = 0;
-                }
-            }
-        }
-    }
-    // show_screen(TIMER_SHOW, timer_data);
-}
 
 void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
     static uint8_t new_area;
-    static int8_t *timer_data;
-    static esp_event_handler_instance_t run_handler;
+    static bool timer_run;
+    static int count_buzer = NUMBER_SIG_BUZ;
     if(command == KEY_CLOSE) {
-        if(run_handler){
-            // ESP_ERROR_CHECK(esp_event_handler_instance_unregister_with(
-            //         slow_service_loop,
-            //         EVENTS_SHOW,
-            //         TIMER_SHOW,
-            //         run_handler
-            //     ));
-            run_handler = NULL;
+        if(timer_run){
+            remove_periodic_event(KEY_DECREMENT);
+            timer_run = false;
         }
         return;
     }
     if(command == KEY_ENTER){
-        // set_periodic_event(
-        //     slow_service_loop,
-        //     EVENTS_SHOW, 
-        //     TIMER_SHOW, 
-        //     1,
-        //     RELOAD_COUNT);
-        return;
-    }
-    if(command == KEY_PAUSA){
-        // remove_periodic_event(EVENTS_SHOW, TIMER_SHOW);
-
+        if(!timer_run){
+            timer_run = true;
+            set_periodic_event(KEY_DECREMENT, 1, RELOAD_COUNT);
+        }
+    } else if(command == KEY_DECREMENT) {
+        if(timer_SEC == 0 && timer_MIN == 0 && timer_HOUR){
+            if(count_buzer){
+                dwin_buzer(LOUD_BUZZER);
+                count_buzer--;
+                return;
+            } else {
+                dwin_set_pic(TIMER_STOP_PIC);
+                timer_run = false;
+                count_buzer = NUMBER_SIG_BUZ;
+                remove_periodic_event(KEY_DECREMENT);
+            }
+        } else {
+            dwin_set_pic(TIMER_RUN_PIC);
+            timer_SEC--;
+            if(timer_SEC < 0){
+                timer_SEC = 0;
+                timer_MIN--;
+                if(timer_MIN < 0){
+                    timer_MIN = 0;
+                    timer_HOUR--;
+                    if(timer_HOUR < 0){
+                        timer_HOUR = 0;
+                    }
+                }
+            }
+        }
+    } else if(command == KEY_PAUSA) {
+        if(timer_run){
+            remove_periodic_event(KEY_INCREMENT);
+            timer_run = false;
+        }
     } else if(command == KEY_INIT) {
         area_SCREEN = AREA_MIN;
-        if(!timer_data){
-            timer_data = malloc(SIZE_TIMER);
-            if(!timer_data)return;
-        } else {
-            dwin_set_pic(TIMER_STOP_PIC);
+        if(timer_run){
+            remove_periodic_event(KEY_INCREMENT);
+            timer_run = false;
         }
         timer_HOUR = 0;
         timer_MIN = 10;
         timer_SEC = 0;
-        if(!run_handler){
-            // ESP_ERROR_CHECK(esp_event_handler_instance_register_with(
-            //         slow_service_loop,
-            //         EVENTS_SHOW,
-            //         TIMER_SHOW,
-            //         timer_run_handler,
-            //         (void *)timer_data,
-            //         &run_handler
-            //     ));
-        } else {
-            // remove_periodic_event(EVENTS_SHOW, TIMER_SHOW);
-        }
-        vTaskDelay(100);
     }
     if(KEY_IS_AREA_TIMERS(command)) {
         new_area = GET_AREA_VALUE(command);
@@ -550,5 +495,5 @@ void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
             default : break;
         }
     }
-    // show_screen(KEY_STOP, timer_data);
+    show_screen(timer_run ? TIMER_RUN : KEY_STOP, NULL, 0);
 }
