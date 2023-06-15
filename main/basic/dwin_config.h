@@ -77,7 +77,7 @@
 #define QUIET_BUZZER         30
 
 /* delays show data */
-#define DELAY_SHOW_ITEM          (70/portTICK_PERIOD_MS)
+#define DELAY_SHOW_ITEM          (40/portTICK_PERIOD_MS)
 #define DELAY_SHOW_MESSAGE       (2000/portTICK_PERIOD_MS)
 #define DELAY_CHANGE_PIC         (50/portTICK_PERIOD_MS)
 
@@ -161,3 +161,5 @@
 #define WAIT_SHOW 100
 #define WAIT_SET_NEW_EVENT 100
 #define DELAY_AUTOCLOSE  (180/portTICK_PERIOD_MS)
+
+#define REPEAT_SHOW 2

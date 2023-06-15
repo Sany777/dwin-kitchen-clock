@@ -3,7 +3,7 @@
 #include "dwin_config.h"
 /*for commands : buzzer, set pic, set brightnes*/
 #define INDEX_VARIABLE_VALUE    2
-#define TOUCH_CODE              0x79
+#define TOUCH_CODE              0x78
 #define LEN_FRAME               2
 
 /*fragments dwin commands*/

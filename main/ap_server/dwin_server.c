@@ -326,7 +326,8 @@ static esp_err_t handler_clear_screen(httpd_req_t *req)
 static esp_err_t handler_send_hello(httpd_req_t *req)
 {
     send_hello();
-    EventBits_t evBits = xEventGroupWaitBits(dwin_event_group, BIT_DWIN_RESPONSE_OK, false, false, WAIT_PROCEES);
+    xEventGroupClearBits(dwin_event_group, BIT_DWIN_RESPONSE_OK);
+    EventBits_t evBits = xEventGroupWaitBits(dwin_event_group, BIT_DWIN_RESPONSE_OK, false, false, 1000);
     if(evBits&BIT_DWIN_RESPONSE_OK){
         httpd_resp_sendstr(req, "Dwin ok");
     } else {
@@ -338,8 +339,7 @@ static esp_err_t handler_send_hello(httpd_req_t *req)
 static esp_err_t handler_close(httpd_req_t *req)
 {
     httpd_resp_sendstr(req, "Goodbay!");
-    vTaskDelay(100);
-    esp_wifi_stop();
+    set_periodic_event(MAIN_SCREEN, 1, ONLY_ONCE);
     return ESP_OK;
 }
 

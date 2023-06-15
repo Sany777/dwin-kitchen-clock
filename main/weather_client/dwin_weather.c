@@ -159,7 +159,7 @@ st_3:
 st_2:
     free(url_buf);
 st_1:
-    set_new_event(UPDATE_DATA_COMPLETE);
+    set_new_event(UPDATE_WEATHER_COMPLETE);
 }
 
 char ** find_str_key(char *buf, const size_t buf_len, const char *key)

@@ -110,17 +110,17 @@ typedef enum Main_buttons{
 
 
 /* AREA KEYS*/
-#define KEY_START_AREA                  0X20
+#define KEY_START_AREA                  0X40
 #define MAX_AREA_UNIT_ON_SCREEN         20
 #define END_KEY_AREA                    (KEY_START_AREA+MAX_AREA_UNIT_ON_SCREEN)
 /* DAY KEYS */
-#define KEY_DAY_1                       0X40
+#define KEY_DAY_1                       0X60
 #define END_KEY_DAY                     (KEY_DAY_1+SIZE_WEEK)
 /* TOGGLE DAY KEYS */
-#define KEY_TOGGLE_DAY_1                0X50
+#define KEY_TOGGLE_DAY_1                0X70
 #define END_KEY_TOGGLE_DAY              (KEY_TOGGLE_DAY_1+SIZE_WEEK)  
 /* TOGGLE KEYS */
-#define KEY_TOGGLE_1                    0X60
+#define KEY_TOGGLE_1                    0X20
 #define MAX_TOGGLE_UNIT_ON_SCREEN       20
 #define END_KEY_TOGGLES                 (KEY_TOGGLE_1+MAX_TOGGLE_UNIT_ON_SCREEN)
 
@@ -175,9 +175,13 @@ enum buttons_and_events{
     GET_DATA_FROM_DEVICE,
     DATA_SHOW,
     TIMER_RUN,
+    UPDATE_WEATHER_COMPLETE,
+    UPDATE_TIME_COMPLETE,
     UPDATE_DATA_COMPLETE,
     STATION_JOINE,
     STATION_LEAVE,
+DETAILS_SCREEN,
+NORMAL_SCREEN,
     CHECK_NET_DATA,
     IS_NOTIFY, 
     NOT_NOTIFY,

@@ -40,9 +40,9 @@ void show_ap_handler(main_data_t * main_data,
                         void* event_data)
 {
     dwin_set_pic(SHOW_INFO_PIC);
-    vTaskDelay(DELAY_SHOW_ITEM*2);
+    vTaskDelay(DELAY_SHOW_ITEM);
     print_start(1, 2, WHITE, FONT_INFO);
-    if(!event_data){
+    if(event_data == NULL){
         send_str(
                 "Connect to the AP \n\r with the name: \"%s\",\r\n enter the paswword: \"%s\"\n\r and go to \"%s\".",
                 AP_WIFI_SSID,
@@ -170,12 +170,12 @@ void show_notify_handler(main_data_t * main_data,
                             void* event_data)
 {
     for(uint8_t day_count=0; day_count<SIZE_WEEK; day_count++) {
-        print_start(1+day_count, 0, cur_day == day_count ? WHITE : BLUE, FONT_INFO);
+        print_start(1+day_count, 1, cur_day == day_count ? WHITE : BLUE, FONT_INFO);
         send_str("%.3s %s", WEEK_DAY[day_count], IS_DAY_ACTIVE(day_count) ? MES_ON : MES_OFF);
         print_end();
     }
     vTaskDelay(DELAY_SHOW_ITEM);
-    send_in_frame(1, 1, FONT_INFO, 
+    send_in_frame(0, 12, FONT_INFO, 
                         IS_DAY_ACTIVE(cur_day) 
                         ? COLOR_ENABLE 
                         : COLOR_DISABLE, 
@@ -186,27 +186,24 @@ void show_notify_handler(main_data_t * main_data,
         vTaskDelay(DELAY_SHOW_ITEM);
         print_start(2+notif_count, 
                 6 + area_min 
-                    ? 3
-                    : 0, 
+                    ? 10
+                    : 1, 
                 GET_COLOR_AREA(area), 
-                NORMAL_FONT);
-        send_str("%s %2.2d", 
+                3);
+        print_end();
+        
+        send_str("  %2.2d  %s", 
+                        !area_min 
+                        ? VALUE_NOTIF_MIN(notif_count, cur_day)
+                        : VALUE_NOTIF_HOUR(notif_count, cur_day),
                         area_min 
                         ? ":"
                         : IS_NOTIF_ACTIVE(notif_count, cur_day) 
                             ? MES_ON
-                            : MES_OFF,
-                        area_min 
-                        ? VALUE_NOTIF_MIN(notif_count, cur_day)
-                        : VALUE_NOTIF_HOUR(notif_count, cur_day)
+                            : MES_OFF
                     );
-
-        if(area%MEMBER_IN_NOTIF == 0){
-            area_min = true;
-        } else {
-            area_min = false;
-            notif_count++;
-        }
+        area_min = !area_min;
+        if(area_min)notif_count++;
         print_end();
     }
 }
@@ -322,22 +319,22 @@ void show_clock_handler(main_data_t * main_data,
                 break;
             case 2:
                 print_start(3, 15, GET_COLOR_AREA(i), NORMAL_FONT);
-                send_str("day %d", cur_time->tm_mday);
+                send_str("day %2.2d", cur_time->tm_mday);
                 break;
             case 3:
                 print_start(5, 1, GET_COLOR_AREA(i), NORMAL_FONT);
-                send_str("hour %d", cur_time->tm_hour);
+                send_str("hour %2.2d", cur_time->tm_hour);
                 break;
             case 4:
                 print_start(5, 9, GET_COLOR_AREA(i), NORMAL_FONT);
-                send_str("min %d", cur_time->tm_min);
+                send_str("min %2.2d", cur_time->tm_min);
                 break;
             case 5:
                 print_start(5, 13, GET_COLOR_AREA(i), NORMAL_FONT);
-                send_str("sec %d", cur_time->tm_sec);
+                send_str("sec %2.2d", cur_time->tm_sec);
                 break;
             case 6:
-                print_start(0, 2, color_DESC, FONT_INFO);
+                print_start(5, 2, color_DESC, 1);
                 send_str("Mode update time [%s], there is %sactual time.\n\r",
                     xEventGroup&BIT_SNTP_ALLOW
                         ? "SNTP"
@@ -347,8 +344,8 @@ void show_clock_handler(main_data_t * main_data,
                         : "");
                 break;
             case 7:
-                print_start(0, 3, color_DESC, FONT_INFO);
-                send_str("Service SNTP %swork. Offset time :  [+] %+d [-]",
+                print_start(2, 3, color_DESC, 1);
+                send_str("Service SNTP %swork. Offset time :  [+] %+2.2d [-]",
                         xEventGroup&BIT_SNTP_WORK
                         ? ""
                         : "not ",
@@ -364,17 +361,15 @@ void show_clock_handler(main_data_t * main_data,
 
 
 void show_main_handler(main_data_t * main_data,
-                                int32_t details, 
+                                int32_t id, 
                                 void* mode) 
 {
-    if(details){
-        dwin_set_pic(NO_WEATHER_PIC);
-        vTaskDelay(DELAY_SHOW_ITEM);
-        print_start(0,6, GREEN, FONT_BUTTON);
+    if((uint8_t)id == DETAILS_SCREEN){
+        print_start(0,9, GREEN, FONT_BUTTON);
         send_str_dwin(name_CITY);
         print_end();
         vTaskDelay(DELAY_SHOW_ITEM);
-        print_start(4, 15, 
+        print_start(4, 14, 
                         color_INFO,
                         FONT_SECOND_INFO);
         send_str( "%2d:00    %2d:00    %2d:00    %2d:00    %2d:00", 
@@ -411,24 +406,19 @@ void show_main_handler(main_data_t * main_data,
         vTaskDelay(DELAY_SHOW_ITEM*2);
         print_lines(get_y_points(temp_FEELS_LIKE, NUMBER_ITEM_WEATHER, 80), NUMBER_ITEM_WEATHER, 70, 470, 260);
     } else {
-        dwin_set_pic(weather_PIC);
         struct tm *cur_time = get_time_tm();
     for(uint32_t i=0; i<5; i++) {
         vTaskDelay(DELAY_SHOW_ITEM);
         switch (i) {
             case 0:
             {
-                print_start(3, 3, color_CLOCK, 6);
-                if(IS_HOUR(cur_time->tm_hour) && IS_MIN_OR_SEC(cur_time->tm_min)){
-                    send_str("%2.d : %2.2d", cur_time->tm_hour, cur_time->tm_min);
-                } else {
-                    send_str_dwin("updating");
-                }
+                print_start(3, 3, color_CLOCK, 6);     
+                send_str("%2.2d : %2.2d", cur_time->tm_hour, cur_time->tm_min);
                 break;
             }
             case 1:
             {
-                print_start(8, 12, color_CLOCK, 2);
+                print_start(8, 11, color_CLOCK, 2);
                 send_str("%s %d\r\n     %s", 
                             WEEK_DAY[cur_time->tm_wday], 
                             cur_time->tm_mday,
@@ -442,27 +432,27 @@ void show_main_handler(main_data_t * main_data,
                 if(weather_PIC == NO_WEATHER_PIC && !temp_INDOOR) return;
                 print_start(1, 0, get_color_temp(temp_FEELS_LIKE[0]), FONT_INFO);
                 if(weather_PIC != NO_WEATHER_PIC){
-                    send_str(" outdoor        t*C %d\n\r feels like     t*C %d\n\r Fall-out       %d%%", 
+                    send_str(" Outdoor            t*C %d\n\r Feels like         t*C %d\n\r Chance of rain        %d%%", 
                                     temp_OUTDOOR, 
                                     temp_FEELS_LIKE[0],
                                     PoP[0]);
                 }
                 if(temp_INDOOR) {
                     print_end();
-                    print_start(3, 0, get_color_temp(temp_INDOOR), FONT_INFO);
-                    send_str("\n\r inside    t*C %f2.1", temp_INDOOR);
+                    print_start(3, 0, get_color_temp(temp_INDOOR[0].tem), FONT_INFO);
+                    send_str("\n\r Inside        t*C %f2.1", temp_INDOOR[0].tem);
                 }
                 break;
             }
             case 3:
             {
-                print_start(3, 3, LEMON, FONT_BUTTON);
+                print_start(3, 6, LEMON, FONT_BUTTON);
                 send_str("%8s", description_WEATHER);
                 break;
             }
             case 4:
             {
-                print_start(23, 15, color_INFO, FONT_SECOND_INFO);
+                print_start(23, 17, color_INFO, FONT_SECOND_INFO);
                 send_str("Sunrise  %d:%2.2d  Sunset %d:%2.2d",
                             sunrise_HOUR,
                             sunrise_MIN,
@@ -481,31 +471,29 @@ void show_timer_handler(main_data_t *main_data,
                                 int32_t key, 
                                 void* event_data) 
 {
-    print_start(1, 5, color_CLOCK, FONT_INFO);
-    send_str_dwin(asctime(get_time_tm()));
-    print_end();
-    if(key == KEY_DECREMENT){
+    if((uint8_t)key == KEY_DECREMENT){
+        print_start(2, 5, color_CLOCK, FONT_INFO);
+        send_str_dwin(asctime(get_time_tm()));
+        print_end();
+        vTaskDelay(DELAY_SHOW_ITEM);
         print_start(2, 2, color_CLOCK, 6);
-        if(timer_HOUR){
-            send_str("%d : %2.2d : %2.2d",
+        if(timer_HOUR != 0){
+            send_str("%2.d : %2.d : %2.2d",
                         timer_HOUR,
                         timer_MIN,
                         timer_SEC);
-        } else if(timer_MIN) {
+        } else if(timer_MIN != 0) {
             send_str("    %d : %2.2d",
                         timer_MIN,
                         timer_SEC);
         } else {
-        send_str("      %d", timer_SEC); 
+            send_str("      %d", timer_SEC); 
         }        
         print_end();
-    } else if(key == KEY_STOP){
-        print_start(0, 5, color_CLOCK, FONT_INFO);
-        send_str("%s", asctime(get_time_tm()));
-        print_end();
-        vTaskDelay(DELAY_SHOW_ITEM);
+    } else {
         for(int i=0; i<SIZE_TIMER; i++){
-            print_start(1, (i+1)*2, GET_COLOR_AREA(i), 6);
+            vTaskDelay(DELAY_SHOW_ITEM/2);
+            print_start(2, (i+1)*2, GET_COLOR_AREA(i), 6);
             send_str("%2.2d", timer_DATA[i]);   
             print_end();
         }

@@ -48,8 +48,8 @@ void init_dwin_events(main_data_t *main_data)
     // start_espnow();
 
 
-    set_new_event(INIT_AP);
-    set_periodic_event(INIT_AP, 10, ONLY_ONCE);
+    set_new_event(MAIN_SCREEN);
+
 
 }
 
@@ -83,39 +83,40 @@ void direction_task(void *pv)
     while(1) {
         if(xQueueReceive(queue_direct, 
                             data_in,
-                            cur_screen_id == MAIN_SCREEN
-                            || cur_screen_id == SERVER_SCREEN
-                                ? portMAX_DELAY
-                                : DELAY_AUTOCLOSE) != pdTRUE)
+                            portMAX_DELAY) == pdTRUE)
         {
-            data_in[0] = MAIN_SCREEN;
+            ESP_LOGI(TAG, "new evnt direct :0x%X", data_in[0]);
+            if(cur_screen_id != MAIN_SCREEN){
+                set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
+            }
+            if(KEY_IS_SET_TASK(data_in[0])){
+                area_SCREEN = 0;
+                screen_handler(main_data, KEY_CLOSE, 0);
+                cur_screen_id = data_in[0];
+                screen_handler(main_data, KEY_INIT, 0);
+            } else  if(data_in[0] >= START_SERVICE_EVENTS && data_in[0] <= END_SERVICE_EVENTS){
+                xQueueSend(queue_service, &data_in[0], 200);
+            } else {
+                screen_handler(main_data, data_in[0], data_in[1]);
+            }
+
         }
 
-        ESP_LOGI(TAG, "new evnt direct :0x%X", data_in[0]);
-        if(KEY_IS_SET_TASK(data_in[0])){
-            area_SCREEN = 0;
-            screen_handler(main_data, KEY_CLOSE, 0);
-            cur_screen_id = data_in[0];
-            screen_handler(main_data, KEY_INIT, 0);
-        } else  if(data_in[0] >= START_SERVICE_EVENTS && data_in[0] <= END_SERVICE_EVENTS){
-            xQueueSend(queue_service, &data_in[0], 200);
-        } else {
-            screen_handler(main_data, data_in[0], data_in[1]);
-        }
     }
 }
 
 
-
 void show_task(void *main_data)
 {
-    show_queue_data_t data;
+    show_queue_data_t data_in = {0};
     while(1) {
-        if(xQueueReceive(queue_show, &data, portMAX_DELAY) == pdTRUE){
-            show_handler(main_data, data.command, data.data);   
-            if(data.data){
-                free(data.data);
-                data.data = NULL;
+        if(xQueueReceive(queue_show, &data_in, portMAX_DELAY) == pdTRUE){
+            for(int i=0; i<REPEAT_SHOW; i++){
+                show_handler(main_data, data_in.command, data_in.data);   
+            }
+            if(data_in.data){
+                free(data_in.data);
+                data_in.data = NULL;
             }
         }
     }

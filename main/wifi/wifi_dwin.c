@@ -7,7 +7,6 @@
 
 void set_wifi(main_data_t* main_data, uint8_t action)
 {
-    ESP_LOGI(TAG, "set wifi");
     static bool init_espnow;
     static bool run_espnow;
     static wifi_config_t wifi_config;
@@ -94,12 +93,12 @@ switch(action){
             }
             esp_wifi_stop();
             vTaskDelay(200);
-            if(mode == WIFI_MODE_STA && netif){
-                esp_netif_destroy_default_wifi(netif);
-                netif = NULL;
-            }
         }
-        if(netif == NULL)netif = esp_netif_create_default_wifi_ap();
+        if(netif){
+            esp_netif_destroy_default_wifi(netif);
+            netif = NULL;  
+        }
+        netif = esp_netif_create_default_wifi_ap();
         mode = WIFI_MODE_AP;
         memset(&wifi_config, 0, sizeof(wifi_config));
         wifi_config.ap.max_connection = MAX_STA_CONN;
@@ -112,7 +111,7 @@ switch(action){
         esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &ap_handler, main_data);       
         esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_START, &ap_handler, main_data);
         esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STOP, &ap_handler, main_data);
-        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
+        ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config));
         ESP_ERROR_CHECK(esp_wifi_start());
         ESP_LOGI(TAG, "INIT AP");
@@ -125,7 +124,6 @@ switch(action){
     }
     case START_STA :
     {
-        EventBits_t xEventGroup = xEventGroupSync(dwin_event_group, BIT_PROCESS, BIT_WORK_AP|BIT_PROCESS, WAIT_PROCEES);
         if(xEventGroup&BIT_WORK_AP) return;
         esp_wifi_stop();
         if(!init_sta){
@@ -135,7 +133,7 @@ switch(action){
             esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_STOP, &wifi_sta_handler, main_data);
             init_sta = true;
         }
-        if(mode == WIFI_MODE_AP && netif){
+        if(mode == WIFI_MODE_AP){
             esp_netif_destroy_default_wifi(netif);
             netif = NULL;
             esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &ap_handler);
@@ -164,6 +162,17 @@ switch(action){
     case  CLOSE_CUR_CON :
     {
         esp_wifi_stop();
+        if(netif){
+            esp_netif_destroy_default_wifi(netif);
+            netif = NULL;
+             if(mode == WIFI_MODE_AP){
+                esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &ap_handler);
+                esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &ap_handler);
+                esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_START, &ap_handler);
+                esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_AP_STOP, &ap_handler);
+            }
+            mode = WIFI_MODE_NULL;
+        }
         break;
     }
     case DEINIT_SCAN_NETWORKS :
@@ -186,18 +195,22 @@ switch(action){
 
 void ap_handler(void* main_data, esp_event_base_t event_base,
                             int32_t event_id, void* event_data)
-{
+{      
     if(event_id == WIFI_EVENT_AP_START){
+        xEventGroupSetBits(dwin_event_group, BIT_WORK_AP);
+        show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
         set_run_webserver(main_data);
     } else if (event_id == WIFI_EVENT_AP_STOP){
         xEventGroupClearBits(dwin_event_group, BIT_WORK_AP);
         set_run_webserver(NULL);
     } else if(event_id == WIFI_EVENT_AP_STACONNECTED){
         wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
-        show_screen(STATION_JOINE, event->mac, sizeof(event->mac));
+        show_screen(STATION_JOINE, event->mac, SIZE_MAC);
+        remove_periodic_event(MAIN_SCREEN);
     } else if(event_id == WIFI_EVENT_AP_STADISCONNECTED){
         wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
-        show_screen(STATION_LEAVE, event->mac, sizeof(event->mac));
+        set_run_webserver(NULL);
+        set_new_event(MAIN_SCREEN);
     }
 }
 
