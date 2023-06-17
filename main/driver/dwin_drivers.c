@@ -154,10 +154,10 @@ void print_histogram( uint16_t *y_points,
         send_char(0);
         send_char(cur);
         if(cur != next){
-        //    if(iii > count){
+           if(iii > count){
             cur > next ? cur-- : cur++;
             iii = 0;
-        //    }
+           }
         }
         if(ii > w){
             i++;
@@ -240,4 +240,31 @@ void fill_area(const uint16_t x_s, const uint16_t y_s, const uint16_t color)
     send_char(color/256);
     send_char(color/256);
     print_end(); 
+}
+
+
+void dwin_clock_on(uint16_t row, uint16_t column, uint16_t textColor, uint8_t font)
+{
+    char clock_on_command[] = {
+        FRAME_HEADER,
+        CLOCK_ON_COMMAND,
+        font,
+        textColor / 256,
+        textColor % 256,
+        column / 256,
+        column % 256, 
+        row / 256, row % 256,
+        FRAME_END
+    };
+    uart_write_bytes(UART_DWIN, clock_on_command, sizeof(clock_on_command));
+}
+
+void dwin_clock_off(void)
+{
+    char clock_off_command[] = {
+        FRAME_HEADER,
+        CLOCK_OFF_COMMAND,
+        FRAME_END
+    };
+    uart_write_bytes(UART_DWIN, clock_off_command, sizeof(clock_off_command));
 }

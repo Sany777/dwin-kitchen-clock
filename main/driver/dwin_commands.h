@@ -34,6 +34,8 @@
 #define COMMAND_WORK_IN_VIDEOBUF              0x72
 #define HEADER_SET_CLOCK                      0xAA,0xE7,0x55,0xAA,0x5A,0xA5
 #define COMMAND_GET_TIME                      0x9B,0x5A
+#define CLOCK_ON_COMMAND                      0x9B,0xFF,0x00
+#define CLOCK_OFF_COMMAND                     0x9B,0x00
 
 #define START_DATA_CLOCK  6
 #define SIZE_SENDING_TIME 6

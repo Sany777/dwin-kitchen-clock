@@ -1,7 +1,7 @@
 #include "dwin_server.h"
 #include "stdlib.h"
 
-#define LEN_DATA_SEND_NOTIF (SIZE_BUF_NOTIFICATION*2+1)
+#define LEN_DATA_SEND_NOTIF (SIZE_NOTIFICATION*2+1)
 #define BASE_RESPONSE_SAVE "Save image to position"
 #define LEN_RESPONSE_SAVE (sizeof(BASE_RESPONSE_SAVE))
 #define BASE_PATH_SAVE_PIC "/sevepic"
@@ -514,23 +514,18 @@ static esp_err_t handler_give_data(httpd_req_t *req)
     cJSON_AddStringToObject(root, "Key", api_KEY);
     cJSON_AddStringToObject(root, "City", name_CITY);
     cJSON_AddNumberToObject(root, "Status", uxBits);
-    for(uint32_t day=0, notif=0, i_s=0, hour=0, min=0; i_s<LEN_DATA_SEND_NOTIF; notif++){
+    for(uint8_t day=0, notif=0, i_s=0, hour=0, min=0; ; day++){
+        if(day >= SIZE_WEEK){
+            notif++;
+            if(notif == NOTIF_PER_DAY) break;
+            day = 0;
+        }
         hour = VALUE_NOTIF_HOUR(notif, day);
         min = VALUE_NOTIF_MIN(notif, day);
-        if(!IS_HOUR(hour)){
-            hour = 10;
-        }
-        if(!IS_MIN_OR_SEC(min)){
-            min = 0;
-        }
         notif_send[i_s++] = hour/10 +'0';
         notif_send[i_s++] = hour%10 +'0';
         notif_send[i_s++] = min/10 +'0';
         notif_send[i_s++] = min%10 + '0';
-        if(notif == NOTIF_PER_DAY){
-            notif = 0;
-            day++;
-        }
     }
     notif_send[LEN_DATA_SEND_NOTIF-1] = 0;
     cJSON_AddStringToObject(root, "Notification", notif_send);
@@ -583,7 +578,7 @@ static esp_err_t set_notif_handler(httpd_req_t *req)
         DWIN_RESP_ERR(req, "Wrong data format", err);
     }
     char * const server_buf = malloc(LEN_DATA_SEND_NOTIF);
-        if(server_buf == NULL){
+    if(server_buf == NULL){
         DWIN_RESP_ERR(req, "Not enough storage", err);
     }
     main_data_t * main_data = (main_data_t *)req->user_ctx;
@@ -591,23 +586,23 @@ static esp_err_t set_notif_handler(httpd_req_t *req)
     if (received != total_len) {
         DWIN_RESP_ERR(req, "Data not read", _err);
     }
-    for(uint8_t i=0, num_notif = 0, day=0,val=0; total_len > i; num_notif++){
+    for(size_t  i=0,num_notif = 0,day=0,val=0; i<total_len; day++){
+        if(day >= SIZE_WEEK){
+            num_notif++;
+            if(num_notif == NOTIF_PER_DAY) break;
+            day = 0;
+        }
         val = GET_NUMBER(server_buf[i])*10 + GET_NUMBER(server_buf[i+1]);
         if(!IS_HOUR(val)){
            DWIN_RESP_ERR(req, "Value hour is wrong", _err); 
         }
         SET_NOTIF_HOUR(num_notif, day, val);
-        i += 2;
-        val = GET_NUMBER(server_buf[i])*10 + GET_NUMBER(server_buf[i+1]);
+        val = GET_NUMBER(server_buf[i+2])*10 + GET_NUMBER(server_buf[i+3]);
         if(!IS_MIN_OR_SEC(val)){
            DWIN_RESP_ERR(req, "Value minute is wrong", _err); 
         }
         SET_NOTIF_MIN(num_notif, day, val);
-        i += 2;
-        if(num_notif == NOTIF_PER_DAY){
-            day++;
-            num_notif = 0;
-        }
+        i+=4;
     }
     write_memory(main_data, DATA_NOTIF);
     httpd_resp_sendstr(req, "Update notification");
@@ -624,9 +619,10 @@ esp_err_t set_run_webserver(main_data_t *main_data)
 { 
     static char *server_buf;
     static httpd_handle_t server;
-    if(main_data && server_buf == NULL){
+    if(main_data){
+        if(server_buf)return ESP_OK;
         server_buf = malloc(SCRATCH_SIZE);
-        assert(server_buf);
+        if(!server_buf) return ESP_ERR_NO_MEM;
         httpd_config_t config = HTTPD_DEFAULT_CONFIG();
         config.max_uri_handlers = 29;
         config.uri_match_fn = httpd_uri_match_wildcard;
@@ -634,10 +630,13 @@ esp_err_t set_run_webserver(main_data_t *main_data)
         if (e != ESP_OK){
             return e;
         }
-    } else if(server_buf){
-        esp_err_t err = httpd_stop(server);
-        free(server_buf); 
-        server_buf = NULL;
+    } else{
+        esp_err_t err = ESP_OK;
+        if(server_buf){
+            err = httpd_stop(server);
+            free(server_buf); 
+            server_buf = NULL;
+        }
         return err;
     } 
     httpd_uri_t send_flags= {

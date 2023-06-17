@@ -28,7 +28,8 @@ extern  dwin_screen_handler_t  state_screen_handler;
 extern  dwin_screen_handler_t  notifications_screen_handler;
 extern  dwin_screen_handler_t  timer_screen_handler;
 extern  dwin_screen_handler_t  set_color_screen_handler;
-
+extern  dwin_screen_handler_t  device_screen_handler;
+extern  dwin_screen_handler_t  info_screen_handler;
 extern  dwin_show_handler_t  show_timer_handler;
 extern  dwin_show_handler_t  show_main_handler;
 extern  dwin_show_handler_t  show_clock_handler;
@@ -39,9 +40,11 @@ extern  dwin_show_handler_t  show_notify_handler;
 extern  dwin_show_handler_t  show_ap_handler;
 extern  dwin_show_handler_t  show_state_handler;
 extern  dwin_show_handler_t  show_timer_stop_handler;
+extern  dwin_show_handler_t  show_info_handler;
+extern  dwin_show_handler_t  show_device_handler;
 
 /* events structure */
-#define SIZE_LIST_TASKS       (END_KEY_SCREEN_TASK-1)
+#define SIZE_LIST_TASKS       (END_KEY_SCREEN_TASK-START_SCREEN_TASK)
 
 void init_dwin_events(main_data_t*);
 void show_task(void*);
@@ -120,7 +123,17 @@ static const handlers_dwin_t screens_handlers[SIZE_LIST_TASKS] = {
         .main_handler    = timer_screen_handler,
         .show_handler    = show_timer_handler
     },
+    {
+        .main_handler    = info_screen_handler,
+        .show_handler    = show_info_handler
+    },
+    {
+        .main_handler    = device_screen_handler,
+        .show_handler    = show_device_handler
+    },
 };
 
 
 void vApplicationIdleHook(void);
+
+

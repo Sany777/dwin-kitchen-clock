@@ -7,6 +7,9 @@ uint16_t *get_y_points(  int8_t *points,
                             const uint16_t height );
 char *get_data_from_uri( const char *uri_str, 
                          const char *base_path );
+bool notification_alarm(const main_data_t *main_data, 
+                            const struct tm* cur_time, 
+                            const bool alarm);
 char *get_chip(int model_id);
 void set_timezone(int hour);
 void set_time_tv(struct timeval *tv);

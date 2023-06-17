@@ -39,7 +39,7 @@ void remove_periodic_event(uint8_t command)
 {
     if(number_event){
         for(int i=0; i<size_list; i++){
-            if(list_periodic_events[i].time && list_periodic_events[i].command == command){
+            if(list_periodic_events[i].command == command){
                 list_periodic_events[i].time = 0;
                 number_event--;
                 if(number_event == 0 || size_list > (number_event + STEP_RESIZE)){

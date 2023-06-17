@@ -86,35 +86,35 @@ switch(action){
     }
     case INIT_AP :
     {
-        if(mode == WIFI_MODE_AP)break;
-        if(mode != WIFI_MODE_NULL){
-            if(xEventGroup&BIT_ESPNOW_RUN){
-                set_new_event(STOP_ESPNOW);
+        if(mode != WIFI_MODE_AP){
+            if(mode != WIFI_MODE_NULL){
+                if(xEventGroup&BIT_ESPNOW_RUN){
+                    set_new_event(STOP_ESPNOW);
+                }
+                esp_wifi_stop();
+                vTaskDelay(200);
             }
-            esp_wifi_stop();
-            vTaskDelay(200);
+            if(netif){
+                esp_netif_destroy_default_wifi(netif);
+                netif = NULL;  
+            }
+            netif = esp_netif_create_default_wifi_ap();
+            mode = WIFI_MODE_AP;
+            memset(&wifi_config, 0, sizeof(wifi_config));
+            wifi_config.ap.max_connection = MAX_STA_CONN;
+            wifi_config.ap.authmode = WIFI_AUTH_WPA_WPA2_PSK;
+            wifi_config.ap.channel = ESP_WIFI_CHANNEL;
+            wifi_config.ap.pmf_cfg.required = false;
+            strcpy((char *)wifi_config.ap.ssid, AP_WIFI_SSID);
+            strcpy((char *)wifi_config.ap.password, AP_WIFI_PWD);
+            esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &ap_handler, main_data);
+            esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &ap_handler, main_data);       
+            esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_START, &ap_handler, main_data);
+            esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STOP, &ap_handler, main_data);
+            ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
+            ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config));
         }
-        if(netif){
-            esp_netif_destroy_default_wifi(netif);
-            netif = NULL;  
-        }
-        netif = esp_netif_create_default_wifi_ap();
-        mode = WIFI_MODE_AP;
-        memset(&wifi_config, 0, sizeof(wifi_config));
-        wifi_config.ap.max_connection = MAX_STA_CONN;
-        wifi_config.ap.authmode = WIFI_AUTH_WPA_WPA2_PSK;
-        wifi_config.ap.channel = ESP_WIFI_CHANNEL;
-        wifi_config.ap.pmf_cfg.required = false;
-        strcpy((char *)wifi_config.ap.ssid, AP_WIFI_SSID);
-        strcpy((char *)wifi_config.ap.password, AP_WIFI_PWD);
-        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &ap_handler, main_data);
-        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &ap_handler, main_data);       
-        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_START, &ap_handler, main_data);
-        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STOP, &ap_handler, main_data);
-        ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
-        ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config));
         ESP_ERROR_CHECK(esp_wifi_start());
-        ESP_LOGI(TAG, "INIT AP");
         break;
     }
     case INIT_SCAN_NETWORKS :
@@ -197,18 +197,14 @@ void ap_handler(void* main_data, esp_event_base_t event_base,
                             int32_t event_id, void* event_data)
 {      
     if(event_id == WIFI_EVENT_AP_START){
-        xEventGroupSetBits(dwin_event_group, BIT_WORK_AP);
-        show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
         set_run_webserver(main_data);
     } else if (event_id == WIFI_EVENT_AP_STOP){
-        xEventGroupClearBits(dwin_event_group, BIT_WORK_AP);
         set_run_webserver(NULL);
     } else if(event_id == WIFI_EVENT_AP_STACONNECTED){
         wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
         show_screen(STATION_JOINE, event->mac, SIZE_MAC);
-        remove_periodic_event(MAIN_SCREEN);
+        set_new_event(STATION_JOINE);
     } else if(event_id == WIFI_EVENT_AP_STADISCONNECTED){
-        wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
         set_run_webserver(NULL);
         set_new_event(MAIN_SCREEN);
     }

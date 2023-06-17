@@ -1,12 +1,23 @@
 #include "screen_handlers.h"
 
-enum state_task{
-    NO_CHANGE,
-    INIT_TASK,
-    DEINIT_TASK,
-    INIT_FAIL,
-    INIT_OK,
-};
+
+
+
+void info_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
+{
+    if(command == KEY_INIT) {
+        dwin_set_pic(SHOW_INFO_PIC);
+    }
+}
+
+void device_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
+{
+
+    if(command == KEY_INIT) {
+        dwin_set_pic(SHOW_INFO_PIC);
+    }
+}
+
 
 void search_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
@@ -56,10 +67,15 @@ void search_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 void ap_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
     if(command == KEY_INIT) {
+        dwin_set_pic(SHOW_INFO_PIC);
+        show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
+        xEventGroupSetBits(dwin_event_group, BIT_WORK_AP);
         set_new_event(INIT_AP);
-        set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
     } else if(command == KEY_CLOSE) {
+        xEventGroupClearBits(dwin_event_group, BIT_WORK_AP);
         esp_wifi_stop();
+    } else if(command == STATION_JOINE){
+        remove_periodic_event(MAIN_SCREEN);
     }
 }
 
@@ -136,22 +152,29 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
 
 void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
-    static bool menu_active = false, details = false;
+    static bool menu_active, details, is_notify;
+    static struct tm *cur_time;
     switch(command){
         case KEY_INIT :
         {
+            details = false;
+            menu_active = false;
             set_periodic_event(UPDATE_TIME_COMPLETE, 
                                 DELAI_UPDATE_TIME_ON_SCREEN, 
                                 RELOAD_COUNT);
             set_periodic_event(GET_WEATHER, 
                                 DELAI_FIRST_UPDATE_WEATHER, 
                                 ONLY_ONCE);
+            remove_periodic_event(MAIN_SCREEN);
+            cur_time = get_time_tm();
             break;
         }
         case KEY_CLOSE :
         {
+            set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
             remove_periodic_event(GET_WEATHER);
             remove_periodic_event(UPDATE_TIME_COMPLETE);
+            remove_periodic_event(KEY_MENU_SCREEN);
             return;
         }
         case UPDATE_WEATHER_COMPLETE :
@@ -165,6 +188,7 @@ void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
                                     DELAI_UPDATE_WEATHER, 
                                     RELOAD_COUNT);
             }
+            cur_time = get_time_tm();
             break;
         }
         case KEY_DETAILS_SCREEN :
@@ -172,9 +196,10 @@ void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
             if(details){
                 details = false;
                 set_periodic_event(UPDATE_TIME_COMPLETE, 
-                                    60,
+                                    DELAI_UPDATE_TIME_ON_SCREEN,
                                     RELOAD_COUNT);
                 remove_periodic_event(KEY_DETAILS_SCREEN);
+                cur_time = get_time_tm();
             } else {
                 details = true;
                 remove_periodic_event(UPDATE_TIME_COMPLETE);
@@ -189,9 +214,10 @@ void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
             if(menu_active){
                 menu_active = false;
                 set_periodic_event(UPDATE_TIME_COMPLETE, 
-                                    60,
+                                    DELAI_UPDATE_TIME_ON_SCREEN,
                                     RELOAD_COUNT);
                 remove_periodic_event(KEY_MENU_SCREEN);
+                cur_time = get_time_tm();
             } else {
                 menu_active = true;
                 remove_periodic_event(UPDATE_TIME_COMPLETE);
@@ -199,6 +225,12 @@ void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
                                     30,
                                     ONLY_ONCE);
             }
+            break;
+        }
+        case UPDATE_TIME_COMPLETE:
+        {
+            cur_time = get_time_tm();
+            is_notify = notification_alarm(main_data, cur_time, true);
             break;
         }
             default : break;
@@ -210,7 +242,11 @@ void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         dwin_set_pic(MENU_PIC);
     } else {
         dwin_set_pic(weather_PIC);
-        show_screen(NORMAL_SCREEN, NULL, 0);
+        show_screen(is_notify 
+                        ? IS_NOTIFICATION
+                        : NORMAL_SCREEN,
+                    cur_time, 
+                    sizeof(struct tm));
     }
     set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
 }
@@ -372,9 +408,10 @@ void notifications_screen_handler(main_data_t* main_data, uint8_t command, char 
         return;
     }
     if(command == KEY_INIT){
-        cur_day = 0;
+        struct tm *cut_time = get_time_tm();
+        cur_day = cut_time->tm_wday;
         cur_notif = 0;
-        cur_type_data = AREA_YEAR;
+        cur_type_data = AREA_HOUR;
     } else if(KEY_IS_AREA_NOTIF(command)) {
         area_SCREEN = GET_AREA_VALUE(command);
         cur_notif = GET_NOTIF_NUMBER(area_SCREEN);
@@ -383,8 +420,8 @@ void notifications_screen_handler(main_data_t* main_data, uint8_t command, char 
         cur_day = GET_DAY(command);
     } else if(KEY_IS_AREA_TOGGLE_DAY(command)) {
        TOOGLE_DAY_NOTIF(GET_DAY_TOGGLE(command)); 
-    } else if(KEY_IS_NUMBER(command)) {
-        uint8_t number = GET_NUMBER(command);
+    } else if(KEY_IS_NUMBER(symbol)) {
+        uint8_t number = GET_NUMBER(symbol);
         switch(cur_type_data){
             case AREA_HOUR : 
             {
@@ -406,7 +443,6 @@ void notifications_screen_handler(main_data_t* main_data, uint8_t command, char 
         }
     } else if(command == KEY_ENTER) {
         write_memory(main_data, DATA_NOTIF);
-        return;
     } else if(KEY_IS_AREA_TOGGLE(command)) {
         TOOGLE_NOTIF(GET_AREA_VALUE_TOGGLE(command), cur_day);
     }
@@ -421,6 +457,7 @@ void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
     static bool timer_run;
     static int count_buzer = NUMBER_SIG_BUZ;
     if(command == KEY_CLOSE) {
+        dwin_clock_off();
         if(timer_run){
             remove_periodic_event(KEY_DECREMENT);
             timer_run = false;
@@ -429,18 +466,20 @@ void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
     }
     if(command == KEY_ENTER){
         if(!timer_run){
+            remove_periodic_event(MAIN_SCREEN);
+            dwin_clock_off();
             timer_run = true;
             set_periodic_event(KEY_DECREMENT, 1, RELOAD_COUNT);
         }
     } else if(command == KEY_DECREMENT) {
-        if(timer_SEC == 0 && timer_MIN == 0 && timer_HOUR){
+        if(timer_SEC == 0 && timer_MIN == 0 && timer_HOUR == 0){
             if(count_buzer){
                 dwin_buzer(LOUD_BUZZER);
                 count_buzer--;
             } else {
+                remove_periodic_event(KEY_DECREMENT);
                 set_new_event(KEY_INIT);
                 count_buzer = NUMBER_SIG_BUZ;
-                remove_periodic_event(KEY_DECREMENT);
             }
             return;
         } else {
@@ -448,10 +487,10 @@ void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
             vTaskDelay(DELAY_SHOW_ITEM);
             timer_SEC--;
             if(timer_SEC < 0){
-                timer_SEC = 0;
+                timer_SEC = 59;
                 timer_MIN--;
                 if(timer_MIN < 0){
-                    timer_MIN = 0;
+                    timer_MIN = 59;
                     timer_HOUR--;
                     if(timer_HOUR < 0){
                         timer_HOUR = 0;
@@ -461,12 +500,15 @@ void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         }
     } else if(command == KEY_PAUSA) {
         if(timer_run){
+            dwin_clock_on(10, 200, WHITE, 2);
             dwin_set_pic(TIMER_STOP_PIC);
             remove_periodic_event(KEY_DECREMENT);
             timer_run = false;
         }
     } else if(command == KEY_INIT) {
-        area_SCREEN = AREA_MIN;
+        dwin_clock_on(10, 200, WHITE, 2);
+        area_SCREEN = AREA_TIMER_MIN;
+        new_area = area_SCREEN;
         dwin_set_pic(TIMER_STOP_PIC);
         vTaskDelay(DELAY_SHOW_ITEM);
         if(timer_run){
@@ -478,22 +520,22 @@ void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         timer_SEC = 0;
     }
     if(KEY_IS_AREA_TIMERS(command)) {
-        new_area = GET_AREA_VALUE(command);
+        area_SCREEN = GET_AREA_VALUE(command);
         if(new_area == area_SCREEN) {
             switch(new_area) {
-                case AREA_HOUR :
+                case AREA_TIMER_HOUR :
                 {
                     timer_HOUR = (timer_HOUR + 1)%24; 
                     break;
                 }   
-                case AREA_MIN  :
+                case AREA_TIMER_MIN  :
                 {
                     timer_MIN += 5;
                     if(timer_MIN%5)timer_MIN = (timer_MIN/5)*5;
                     if(!IS_MIN_OR_SEC(timer_MIN))timer_MIN = 0;
                     break;
                 }   
-                case AREA_SEC  : 
+                case AREA_TIMER_SEC  : 
                 {
                     timer_SEC += 10; 
                     if(timer_SEC%10)timer_SEC = (timer_SEC/10)*10;
@@ -502,21 +544,21 @@ void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
                 default : break;
             }
         } else {
-            area_SCREEN = new_area;
+            new_area = area_SCREEN;
         } 
     } else if(KEY_IS_NUMBER(symbol)) {
         switch(area_SCREEN) {
-            case AREA_HOUR : 
+            case AREA_TIMER_HOUR : 
             {
               timer_HOUR = GET_NEW_HOUR_VALUE(timer_HOUR, GET_NUMBER(symbol)); 
               break;
             }
-            case AREA_MIN  : 
+            case AREA_TIMER_MIN  : 
             {
                 timer_MIN = GET_NEW_MIN_SEC_VALUE(timer_MIN, GET_NUMBER(symbol));
                 break;
             }
-            case AREA_SEC  :
+            case AREA_TIMER_SEC  :
             {
                timer_SEC = GET_NEW_MIN_SEC_VALUE(timer_SEC, GET_NUMBER(symbol)); 
                break;
@@ -525,5 +567,7 @@ void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         }
     }
     show_screen(timer_run ? TIMER_RUN : KEY_STOP, NULL, 0);
-    set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
+    if(!timer_run){
+        set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
+    }
 }

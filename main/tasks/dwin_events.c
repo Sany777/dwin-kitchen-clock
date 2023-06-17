@@ -85,7 +85,6 @@ void direction_task(void *pv)
                             data_in,
                             portMAX_DELAY) == pdTRUE)
         {
-            ESP_LOGI(TAG, "new evnt direct :0x%X", data_in[0]);
             if(cur_screen_id != MAIN_SCREEN){
                 set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
             }

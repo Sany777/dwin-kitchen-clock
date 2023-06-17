@@ -9,7 +9,7 @@ QueueHandle_t
           queue_direct = NULL, 
           queue_service = NULL, 
           queue_show = NULL;
-#define SIZE_QUEUE_DIRECT 5
+#define SIZE_QUEUE_DIRECT 10
 
 
 
@@ -22,12 +22,12 @@ void esp_init(void)
     dwin_event_group = xEventGroupCreate();
     queue_direct = xQueueCreate(SIZE_QUEUE_DIRECT, sizeof(uint16_t));
     queue_show = xQueueCreate(3, sizeof(show_queue_data_t));
-    queue_service = xQueueCreate(3, sizeof(uint8_t));
+    queue_service = xQueueCreate(SIZE_QUEUE_DIRECT, sizeof(uint8_t));
     assert(queue_show);
     assert(queue_service);
     assert(dwin_event_group);
     assert(queue_direct);
-    main_data->notif_data = calloc(1,SIZE_BUF_NOTIFICATION);
+    main_data->notif_data = malloc(SIZE_NOTIFICATION);
     assert(main_data->notif_data);
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {

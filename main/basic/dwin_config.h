@@ -37,7 +37,7 @@
 #define ESP_WIFI_CHANNEL   0
 #define MAX_OTA_SIZE  1500000
 /* Scratch server_buffer size */
-#define SCRATCH_SIZE  5500 // 5 KB
+#define SCRATCH_SIZE  5000 // 5 KB
 #define MAX_URI_LEN 50
 #define MAX_LEN_CHUNC_IMG 1000
 
@@ -49,7 +49,6 @@
 
 #define NOTIF_PER_DAY 4
 #define SIZE_NOTIFICATION       (SIZE_WEEK*NOTIF_PER_DAY*2)
-#define SIZE_BUF_NOTIFICATION   (SIZE_NOTIFICATION)
 #define SIZE_TIMER          3
 #define SIZE_BUF_TIME       7
 #define MAX_SLAVE_DEVICES   4
@@ -74,7 +73,7 @@
 /* buzzer */
 #define NUMBER_SIG_BUZ       10
 #define LOUD_BUZZER          70
-#define QUIET_BUZZER         30
+#define NORMAL_BUZZER        30
 
 /* delays show data */
 #define DELAY_SHOW_ITEM          (40/portTICK_PERIOD_MS)
@@ -149,7 +148,7 @@
 #define TIME_ZONA_FORMAT "EET+0EEST,M3.5.0/3,M10.5.0/4"
 #define SYNCH_10_HOUR 36000000
 #define SYNC_15_MIN 900000
-
+#define MIN_BEFORE_NOTIFICATION 5 
 
 #define SIZE_UART_EVENTS 10
 #define SIZE_SHOW_BUF 250

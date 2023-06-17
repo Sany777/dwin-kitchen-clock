@@ -34,6 +34,19 @@ const char* COLOR_NAME[] = {
     "ORANGE"
 };
 
+void show_info_handler(main_data_t * main_data, 
+                        int32_t state, 
+                        void* event_data)
+{
+
+}
+
+void show_device_handler(main_data_t * main_data, 
+                        int32_t state, 
+                        void* event_data)
+{
+    
+}
 
 void show_ap_handler(main_data_t * main_data, 
                         int32_t state, 
@@ -41,18 +54,17 @@ void show_ap_handler(main_data_t * main_data,
 {
     dwin_set_pic(SHOW_INFO_PIC);
     vTaskDelay(DELAY_SHOW_ITEM);
-    print_start(1, 2, WHITE, FONT_INFO);
+    print_start(2, 2, WHITE, FONT_INFO);
     if(event_data == NULL){
         send_str(
-                "Connect to the AP \n\r with the name: \"%s\",\r\n enter the paswword: \"%s\"\n\r and go to \"%s\".",
+                "Connect to the AP \n\r with the name: \"%s\",\r\n and enter the paswword: \"%s\".",
                 AP_WIFI_SSID,
-                AP_WIFI_PWD,
-                MY_IP);
+                AP_WIFI_PWD);
     } else {
         uint8_t *mac = (uint8_t *)event_data;
         if(state == STATION_JOINE){
            send_str( 
-                "Station "MACSTR" join.", MAC2STR(mac));
+                "Station "MACSTR" join.\r\n Follow the link \"%s\"", MAC2STR(mac), MY_IP);
         } else {
             send_str("Station "MACSTR" leave.", MAC2STR(mac));
         }
@@ -170,12 +182,17 @@ void show_notify_handler(main_data_t * main_data,
                             void* event_data)
 {
     for(uint8_t day_count=0; day_count<SIZE_WEEK; day_count++) {
-        print_start(1+day_count, 1, cur_day == day_count ? WHITE : BLUE, FONT_INFO);
+        print_start(day_count, 
+                        0, 
+                        cur_day == day_count 
+                            ? WHITE 
+                            : BLUE,
+                        3);
         send_str("%.3s %s", WEEK_DAY[day_count], IS_DAY_ACTIVE(day_count) ? MES_ON : MES_OFF);
         print_end();
     }
     vTaskDelay(DELAY_SHOW_ITEM);
-    send_in_frame(0, 12, FONT_INFO, 
+    send_in_frame(0, 14, FONT_INFO, 
                         IS_DAY_ACTIVE(cur_day) 
                         ? COLOR_ENABLE 
                         : COLOR_DISABLE, 
@@ -185,25 +202,21 @@ void show_notify_handler(main_data_t * main_data,
     for(int notif_count=0, area=0; notif_count<NOTIF_PER_DAY; area++) {  
         vTaskDelay(DELAY_SHOW_ITEM);
         print_start(2+notif_count, 
-                6 + area_min 
-                    ? 10
-                    : 1, 
+                6 + area%2*5, 
                 GET_COLOR_AREA(area), 
-                3);
-        print_end();
-        
-        send_str("  %2.2d  %s", 
-                        !area_min 
-                        ? VALUE_NOTIF_MIN(notif_count, cur_day)
-                        : VALUE_NOTIF_HOUR(notif_count, cur_day),
+                3);      
+        send_str(" %2.2d  %s", 
+                        area_min
+                            ? VALUE_NOTIF_MIN(notif_count, cur_day)
+                            : VALUE_NOTIF_HOUR(notif_count, cur_day),
                         area_min 
-                        ? ":"
-                        : IS_NOTIF_ACTIVE(notif_count, cur_day) 
-                            ? MES_ON
-                            : MES_OFF
+                            ? IS_NOTIF_ACTIVE(notif_count, cur_day) 
+                                ? MES_ON
+                                : MES_OFF
+                            : ":"
                     );
-        area_min = !area_min;
         if(area_min)notif_count++;
+        area_min = !area_min;
         print_end();
     }
 }
@@ -362,7 +375,7 @@ void show_clock_handler(main_data_t * main_data,
 
 void show_main_handler(main_data_t * main_data,
                                 int32_t id, 
-                                void* mode) 
+                                void* time_pv) 
 {
     if((uint8_t)id == DETAILS_SCREEN){
         print_start(0,9, GREEN, FONT_BUTTON);
@@ -406,7 +419,7 @@ void show_main_handler(main_data_t * main_data,
         vTaskDelay(DELAY_SHOW_ITEM*2);
         print_lines(get_y_points(temp_FEELS_LIKE, NUMBER_ITEM_WEATHER, 80), NUMBER_ITEM_WEATHER, 70, 470, 260);
     } else {
-        struct tm *cur_time = get_time_tm();
+    struct tm *cur_time = (struct tm *)time_pv;
     for(uint32_t i=0; i<5; i++) {
         vTaskDelay(DELAY_SHOW_ITEM);
         switch (i) {
@@ -422,9 +435,9 @@ void show_main_handler(main_data_t * main_data,
                 send_str("%s %d\r\n     %s", 
                             WEEK_DAY[cur_time->tm_wday], 
                             cur_time->tm_mday,
-                            mode
-                            ? "[!]"
-                            : "");
+                            (uint8_t)id == IS_NOTIFICATION
+                                ? "[!]"
+                                : "");
                 break;
             }
             case 2:
@@ -471,29 +484,34 @@ void show_timer_handler(main_data_t *main_data,
                                 int32_t key, 
                                 void* event_data) 
 {
-    if((uint8_t)key == KEY_DECREMENT){
-        print_start(2, 5, color_CLOCK, FONT_INFO);
+    if((uint8_t)key == TIMER_RUN){
+        print_start(0, 5, color_CLOCK, FONT_INFO);
         send_str_dwin(asctime(get_time_tm()));
         print_end();
         vTaskDelay(DELAY_SHOW_ITEM);
-        print_start(2, 2, color_CLOCK, 6);
-        if(timer_HOUR != 0){
-            send_str("%2.d : %2.d : %2.2d",
+        print_start(2, 2, 
+                    timer_MIN > 2
+                    ? color_CLOCK 
+                    : timer_MIN == 1 
+                        ? LEMON
+                        : ORANGE, 6);
+        if(timer_HOUR){
+            send_str("%.d : %.d : %2.2d",
                         timer_HOUR,
                         timer_MIN,
                         timer_SEC);
-        } else if(timer_MIN != 0) {
-            send_str("    %d : %2.2d",
+        } else if(timer_MIN) {
+            send_str("  %d : %2.2d",
                         timer_MIN,
                         timer_SEC);
         } else {
-            send_str("      %d", timer_SEC); 
+            send_str("    %d", timer_SEC); 
         }        
         print_end();
     } else {
         for(int i=0; i<SIZE_TIMER; i++){
             vTaskDelay(DELAY_SHOW_ITEM/2);
-            print_start(2, (i+1)*2, GET_COLOR_AREA(i), 6);
+            print_start(1, (i+1)*2, GET_COLOR_AREA(i), 6);
             send_str("%2.2d", timer_DATA[i]);   
             print_end();
         }
