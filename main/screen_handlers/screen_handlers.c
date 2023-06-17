@@ -6,16 +6,18 @@
 void info_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
     if(command == KEY_INIT) {
-        dwin_set_pic(SHOW_INFO_PIC);
+        dwin_set_pic(INFO_PIC);
     }
+    set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
 }
 
 void device_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
 
     if(command == KEY_INIT) {
-        dwin_set_pic(SHOW_INFO_PIC);
+        dwin_set_pic(INFO_PIC);
     }
+    set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
 }
 
 
@@ -67,7 +69,7 @@ void search_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 void ap_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
     if(command == KEY_INIT) {
-        dwin_set_pic(SHOW_INFO_PIC);
+        dwin_set_pic(INFO_PIC);
         show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
         xEventGroupSetBits(dwin_event_group, BIT_WORK_AP);
         set_new_event(INIT_AP);
@@ -90,8 +92,8 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
     if(command == KEY_INIT) {
         area_SCREEN = AREA_SSID;
         selected_buf = name_SSID;
-        command = KEY_START_AREA;
         pic = SETTING_LOW_LETTER_PIC;
+        pos = strlen(selected_buf);
     } else if(command == KEY_CLOSE) {
         if(need_write){
             write_memory(main_data, DATA_API);
@@ -114,10 +116,10 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
     } else if(command == KEY_SYNC) {
         set_new_event(GET_WEATHER);
         preparing = true;
-    } else if(command == UPDATE_DATA_COMPLETE) {
+    } else if(command == UPDATE_WEATHER_COMPLETE) {
         dwin_set_pic(pic);
     } else if(command == KEY_ENTER) {
-        if(need_write)need_write = true;
+        if(!need_write)need_write = true;
     } else if(command == KEY_SETTING_SCREEN_LOW) {
         pic = SETTING_LOW_LETTER_PIC;
     } else if(command == KEY_SETTING_SCREEN_UP) {
@@ -126,27 +128,26 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
         pic = SETTING_SYMBOL_PIC;
     } else if(selected_buf) {
         if(command == KEY_BACKSPACE) {
-            selected_buf[pos--] = 0;
+            selected_buf[--pos] = 0;
         } else if(command == KEY_DELETE) {
             selected_buf[0] = 0;
             pos = 0;
         } else if(KEY_IS_SYMBOL(symbol)){
             if(pos < MAX_STR_LEN) {
                 if(area_SCREEN == AREA_CITY){
-                    if(KEY_IS_CHAR(symbol) 
-                       || (symbol == '-' && pos != 0))
-                    {
+                    if(KEY_IS_CHAR(symbol)){
                         if(pos == 0 && symbol >= 'a' && symbol <= 'z') symbol = symbol + 'A' - 'a';
                         selected_buf[pos++] = symbol;
                     }
                 } else {
                     selected_buf[pos++] = symbol;
                 }
+                selected_buf[pos] = 0;
             }
         }
     }
-    show_screen(preparing ? 1 : 0, NULL, 0);
     set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
+    show_screen(preparing ? 1 : 0, NULL, 0);
 }
 
 
@@ -253,9 +254,9 @@ void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 
 void clock_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
-    static int32_t offset = -100;
+    static int32_t offset;
     static struct tm *dwin_time;
-
+    
     if(KEY_IS_AREA_CLOCK(command)) {
         area_SCREEN = GET_AREA_VALUE(command);
     } else if(KEY_IS_NUMBER(symbol)) {
@@ -298,106 +299,128 @@ void clock_handler(main_data_t* main_data, uint8_t command, char symbol)
             }
             default:break;
         }
-    } else if(command == KEY_ENTER) {
-        set_timezone(offset);
+    } else if(command == KEY_ENTER){
         write_offset(offset);
+        dwin_time->tm_year += 100;
+        dwin_time->tm_year -= 100;
+        set_timezone(offset);
         set_time_tm(dwin_time, true);
+        set_new_event(UPDATE_TIME_COMPLETE);
     } else if(command == KEY_SYNC) {
         EventBits_t xEventGroup = 
                     xEventGroupGetBits(dwin_event_group);                                                                 
         if(xEventGroup&BIT_SNTP_ALLOW){
-            xEventGroupClearBits(dwin_event_group, BIT_SNTP_ALLOW);
-        } else {
-            xEventGroupSetBits(dwin_event_group, BIT_SNTP_ALLOW);
             set_new_event(INIT_SNTP);
+        } else {
+            dwin_clock_get();
         }
-        write_memory(main_data, DATA_FLAGS); 
-    } else if(command == KEY_INIT) {
-        if(!dwin_time){
-            dwin_time = malloc(sizeof(struct tm));
-            assert(dwin_time);
+    } else if(KEY_IS_AREA_TOGGLE(command)){
+        if(GET_VALUE_TOGGLE(command) == 0){
+            EventBits_t xEventGroup = 
+                    xEventGroupGetBits(dwin_event_group);
+            if(xEventGroup&BIT_SNTP_ALLOW){
+                xEventGroupClearBits(dwin_event_group, BIT_SNTP_ALLOW);
+
+            } else {
+                xEventGroupSetBits(dwin_event_group, BIT_SNTP_ALLOW);
+            }
+            write_memory(main_data, DATA_FLAGS);
         }
-        time_t raw_time =  time(NULL);
-        gmtime_r(&raw_time, dwin_time);
-        if(offset == -100){
-            read_offset(&offset);
-        }
-    } else if(command == KEY_INCREMENT){
+    } else if(command == KEY_INCREMENT) {
         if(offset < 23){
             offset++;
         } else {
             offset = 0;
         }  
-    } else if(command == KEY_DECREMENT){
+    } else if(command == KEY_DECREMENT) {
          if(offset > -23){
             offset--;
          } else {
             offset = 0;
          }
-    } else if(command == KEY_CLOSE){
+    } else if(command == KEY_CLOSE) {
         free(dwin_time);
         dwin_time = NULL;
         return;
     }
-    show_screen(offset, &dwin_time, sizeof(dwin_time));
+     if(command == KEY_INIT 
+                || command == UPDATE_TIME_COMPLETE
+                || command == KEY_ENTER) {
+        if(!dwin_time){
+            dwin_time = malloc(sizeof(struct tm));
+            if(!dwin_time)return;
+            read_offset(&offset);
+        }
+        time_t time_now;
+        time(&time_now);
+        localtime_r(&time_now, dwin_time);
+        dwin_time->tm_year -= 100;
+    }
+    if(command == UPDATE_TIME_COMPLETE){
+        dwin_set_pic(CLOCK_PIC);
+    }
+    
     set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
+    show_screen(offset, dwin_time, sizeof(struct tm));
 }
 
 void state_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
-    if(command != KEY_CLOSE){
+    if(command == KEY_CLOSE){
         return;
     }
     EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
     if(command == KEY_SOUND_TOGGLE){
         if(xEventGroup&BIT_SOUNDS_ALLOW){
-            xEventGroup = xEventGroupClearBits(dwin_event_group, BIT_SOUNDS_ALLOW);
+            xEventGroupClearBits(dwin_event_group, BIT_SOUNDS_ALLOW);
         } else {
-            xEventGroup = xEventGroupSetBits(dwin_event_group, BIT_SOUNDS_ALLOW);
+            xEventGroupSetBits(dwin_event_group, BIT_SOUNDS_ALLOW);
         }
+    } else if(command == KEY_INIT){
+        dwin_set_pic(INFO_PIC);
     } else if(command == KEY_ESPNOW_TOGGLE){
         if(xEventGroup&BIT_ESPNOW_ALLOW){
-            xEventGroup = xEventGroupClearBits(dwin_event_group, BIT_ESPNOW_ALLOW);
-            set_new_event(STOP_ESPNOW);
+            xEventGroupClearBits(dwin_event_group, BIT_ESPNOW_ALLOW);
+            set_periodic_event(STOP_ESPNOW, 2, ONLY_ONCE);
        } else {
-            set_new_event(START_ESPNOW);
             xEventGroupSetBits(dwin_event_group, BIT_ESPNOW_ALLOW);
+            set_periodic_event(START_ESPNOW, 2, ONLY_ONCE);
        }
     } else if(command == KEY_SNTP_TOGGLE){
         if(xEventGroup&BIT_SNTP_ALLOW){
-            xEventGroup = xEventGroupClearBits(dwin_event_group, BIT_SNTP_ALLOW);
-            set_new_event(STOP_SNTP);
+            xEventGroupClearBits(dwin_event_group, BIT_SNTP_ALLOW);
+            set_periodic_event(STOP_SNTP, 2, ONLY_ONCE);
         } else {
+            xEventGroupSetBits(dwin_event_group, BIT_SNTP_ALLOW);
             set_new_event(INIT_SNTP);
-            xEventGroup = xEventGroupSetBits(dwin_event_group, BIT_SNTP_ALLOW);
         }
-    } else if(command == KEY_SECURITY){
+    } else if(command == KEY_SECURITY_TOGGLE){
         if(xEventGroup&BIT_SECURITY){
-            xEventGroup = xEventGroupClearBits(dwin_event_group, BIT_SECURITY);
+            xEventGroupClearBits(dwin_event_group, BIT_SECURITY);
         } else {
-            xEventGroup = xEventGroupSetBits(dwin_event_group, BIT_SECURITY);
+            xEventGroupSetBits(dwin_event_group, BIT_SECURITY);
         }
     } else if(command == KEY_ENTER){
-        write_memory(NULL, DATA_FLAGS);
+        write_memory(main_data, DATA_FLAGS);
     }
-    show_screen(UPDATE_DATA_COMPLETE, &xEventGroup, sizeof(xEventGroup));
     set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
+    show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
 }
 
 void set_color_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
-    if(command != KEY_CLOSE){
+    if(command == KEY_CLOSE){
         return;
     }
     if(KEY_IS_AREA_CUSTOM(command)){
         area_SCREEN = GET_AREA_VALUE(command);
     } else if(KEY_IS_AREA_TOGGLE(command)){
-            colors_INTERFACE[area_SCREEN] = GET_COLOR(GET_AREA_VALUE_TOGGLE(command));
+        colors_INTERFACE[area_SCREEN] = GET_VALUE_TOGGLE(command);
     } else if(command == KEY_ENTER){
         write_memory(main_data, DATA_COLOR);
     }
-    show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
     set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
+    show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
 }
 
 
@@ -444,7 +467,7 @@ void notifications_screen_handler(main_data_t* main_data, uint8_t command, char 
     } else if(command == KEY_ENTER) {
         write_memory(main_data, DATA_NOTIF);
     } else if(KEY_IS_AREA_TOGGLE(command)) {
-        TOOGLE_NOTIF(GET_AREA_VALUE_TOGGLE(command), cur_day);
+        TOOGLE_NOTIF(GET_VALUE_TOGGLE(command), cur_day);
     }
     set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
     show_screen(cur_day, &cur_day, sizeof(cur_day));

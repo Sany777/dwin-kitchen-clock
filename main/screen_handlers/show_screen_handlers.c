@@ -15,7 +15,7 @@ const char *WEEK_DAY[SIZE_WEEK] = {
     "Saturday"
 };
 
-const char* ITEM_CUSTOM_NAME[] = {
+const char* ITEM_COLOR_NAME[] = {
     "Clock", 
     "Desc", 
     "Info", 
@@ -52,7 +52,7 @@ void show_ap_handler(main_data_t * main_data,
                         int32_t state, 
                         void* event_data)
 {
-    dwin_set_pic(SHOW_INFO_PIC);
+    dwin_set_pic(INFO_PIC);
     vTaskDelay(DELAY_SHOW_ITEM);
     print_start(2, 2, WHITE, FONT_INFO);
     if(event_data == NULL){
@@ -125,13 +125,13 @@ void show_settings_handler(main_data_t * main_data,
 {
     EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
     for(uint8_t i=0; i<5; i++) {
-        vTaskDelay(DELAY_SHOW_ITEM);
+        vTaskDelay(DELAY_SHOW_ITEM/2);
         switch (i) {
             case 0 :
                 print_start(0, 7, xEventGroup&BIT_PROCESS 
-                                ? COLOR_ENABLE
-                                : COLOR_DISABLE,
-                                FONT_SECOND_INFO);
+                                    ? COLOR_ENABLE
+                                    : COLOR_DISABLE,
+                                    FONT_SECOND_INFO);
                 if(xEventGroup&BIT_PROCESS){
                     send_str("Connection attempt...");
                 }else if(xEventGroup&BIT_CON_STA_OK) {
@@ -148,22 +148,22 @@ void show_settings_handler(main_data_t * main_data,
                 }
                 break;
             case 1:
-                print_start(2, 1, GET_COLOR_AREA(i), NORMAL_FONT);
+                print_start(2, 1, GET_COLOR_AREA(AREA_SSID), NORMAL_FONT);
                 send_str("SSID  : %s", name_SSID);
                 break;
             case 2:
-                print_start(3, 1, GET_COLOR_AREA(i), NORMAL_FONT);
+                print_start(3, 1, GET_COLOR_AREA(AREA_PASSWORD), NORMAL_FONT);
                 send_str("Password : %s", 
                                     xEventGroup&BIT_SECURITY || area_SCREEN != AREA_PASSWORD
-                                    ? "*** WiFi password ***"
-                                    : pwd_WIFI);
+                                        ? "*** WiFi password ***"
+                                        : pwd_WIFI);
                 break;
             case 3:
-                print_start(4, 1, GET_COLOR_AREA(i), NORMAL_FONT);
+                print_start(4, 1, GET_COLOR_AREA(AREA_CITY), NORMAL_FONT);
                 send_str("Name city : %s", name_CITY);
                 break;
             case 4:
-                print_start(5, 1, GET_COLOR_AREA(i), NORMAL_FONT);
+                print_start(5, 1, GET_COLOR_AREA(AREA_API), NORMAL_FONT);
                 send_str("Key ");
                 if(area_SCREEN == AREA_API) {
                     send_str(api_KEY);
@@ -231,7 +231,7 @@ void show_color_screen_handler(main_data_t * main_data,
                     area_SCREEN == i
                     ? "["
                     : " ",
-                    ITEM_CUSTOM_NAME[i],
+                    ITEM_COLOR_NAME[i],
                     area_SCREEN == i
                     ? "]"
                     : "");
@@ -255,33 +255,42 @@ void show_color_screen_handler(main_data_t * main_data,
     print_text_box(290, 220, 120, 35, BLACK, YELLOW, 2, "Set color");
 }
 
-void show_state_handler(main_data_t * main_data,
+void show_state_handler(main_data_t *main_data,
                             int32_t id, 
                             void* event_data) 
 {
-    EventBits_t xEventGroup = *(EventBits_t *)event_data;
-    send_in_frame(2, 15, color_DESC, 1, 
+    EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
+    send_in_frame(5, 45, 1, xEventGroup&BIT_ESPNOW_ALLOW
+                                ? COLOR_ENABLE
+                                : COLOR_DISABLE, 
                             xEventGroup&BIT_ESPNOW_ALLOW
                                 ? "ESPNOW ON"
                                 : "ESPNOW OFF");
-    vTaskDelay(DELAY_SHOW_ITEM/2);
-    send_in_frame(5, 15, color_DESC, 1, 
-                            xEventGroup&BIT_ESPNOW_ALLOW
+    vTaskDelay(DELAY_SHOW_ITEM);
+    send_in_frame(9, 45,  1, xEventGroup&BIT_SECURITY
+                                ? COLOR_ENABLE 
+                                : COLOR_DISABLE,
+                            xEventGroup&BIT_SECURITY
                                 ? "Security ON" 
                                 : "Security OFF");
-    vTaskDelay(DELAY_SHOW_ITEM/2);
-    send_in_frame(8, 15, color_DESC, 1,  
+    vTaskDelay(DELAY_SHOW_ITEM);
+    send_in_frame(13, 45, 1, xEventGroup&BIT_SOUNDS_ALLOW
+                                ? COLOR_ENABLE 
+                                : COLOR_DISABLE,  
                             xEventGroup&BIT_SOUNDS_ALLOW
                                 ? "Sound ON"
                                 : "Sound OFF");
-    vTaskDelay(DELAY_SHOW_ITEM/2);
-    send_in_frame(11, 15, color_DESC, 1, 
+    vTaskDelay(DELAY_SHOW_ITEM);
+    send_in_frame(17, 45, 1, xEventGroup&BIT_SNTP_ALLOW
+                                ? COLOR_ENABLE 
+                                : COLOR_DISABLE,  
                             xEventGroup&BIT_SNTP_ALLOW
-                            ? "SNTP ON"
-                            : "STNP OFF");
-    vTaskDelay(DELAY_SHOW_ITEM/2);
-    print_start(1, 10, COLOR_DISABLE, 1);
-    send_str("State device\n\r WiFi %s.\n\r ESPNOW %s.\n\r Service openweather.com %s.\n\r SNTP %s",
+                                ? "SNTP ON"
+                                : "STNP OFF");
+    vTaskDelay(DELAY_SHOW_ITEM);
+    print_start(2, 7, COLOR_DISABLE, 1);
+    send_str("State device %s\n\n\r WiFi: %s.\n\n\r ESPNOW: %s.\n\n\r openweather.com: %s.\n\n\r SNTP: %s. %s%.15s%s%.15s",
+                MY_DEVICE_NAME,
                 xEventGroup&BIT_CON_STA_OK
                     ? "connect"
                     : xEventGroup&BIT_SSID_FOUND
@@ -289,8 +298,8 @@ void show_state_handler(main_data_t * main_data,
                         : "disconnect-SSID\tnot\tfound",
                 xEventGroup&BIT_ESPNOW_ALLOW
                     ? xEventGroup&BIT_ESPNOW_CONECT
-                        ? xEventGroup&BIT_SEN_1
-                            ? xEventGroup&BIT_SEN_2
+                        ? xEventGroup&BIT_SEN_1&&sensor_DATA
+                            ? xEventGroup&BIT_SEN_2&&sensor_DATA
                                 ? "connect\twith\tsensores"
                                 : "connect\twith\tsensor"
                             : "device"
@@ -302,13 +311,25 @@ void show_state_handler(main_data_t * main_data,
                         ? "not\twork-wrong key api"
                         : "not\twork-no connection",
                 xEventGroup&BIT_SNTP_ALLOW
-                ? xEventGroup&BIT_SNTP_WORK
-                    ? "work"
-                    : "not work-no\tconnection"
-                : "denied");
+                    ? xEventGroup&BIT_SNTP_WORK
+                        ? "work"
+                        : "not work-no\tconnection"
+                    : "denied",
+                xEventGroup&BIT_SEN_1&&sensor_DATA
+                    ? "\n\n\r Sensore 1: "
+                    : "",
+                xEventGroup&BIT_SEN_1&&sensor_DATA
+                    ? sensor_DATA[0].name
+                    : "",
+                xEventGroup&BIT_SEN_2&&sensor_DATA
+                    ? "\n\n\r Sensore 2: "
+                    : "",
+                xEventGroup&BIT_SEN_1&&sensor_DATA
+                    ? sensor_DATA[1].name
+                    : "");
     print_end();
-    print_text_box(290, 220, 120, 35, BLACK, YELLOW, 2, "Set state");
-    print_text_box(200, 10, 120, 35, BLACK, YELLOW, 2, "Update state");
+    print_text_box(290, 220, 43, 35, BLACK, YELLOW, 2, "Set");
+    print_text_box(140, 220, 80, 35, BLACK, YELLOW, 2, "Update");
 }
 
 
@@ -324,14 +345,14 @@ void show_clock_handler(main_data_t * main_data,
         switch (i) {
             case 0:
                 print_start(3, 1, GET_COLOR_AREA(i), NORMAL_FONT);
-                send_str("year 20%2.2d", cur_time->tm_hour);
+                send_str("year 20%2.2d", cur_time->tm_year);
                 break;
             case 1:
-                print_start(3, 9, GET_COLOR_AREA(i), NORMAL_FONT);
+                print_start(3, 10, GET_COLOR_AREA(i), NORMAL_FONT);
                 send_str("month %2.2d", cur_time->tm_mon+1);
                 break;
             case 2:
-                print_start(3, 15, GET_COLOR_AREA(i), NORMAL_FONT);
+                print_start(3, 18, GET_COLOR_AREA(i), NORMAL_FONT);
                 send_str("day %2.2d", cur_time->tm_mday);
                 break;
             case 3:
@@ -339,16 +360,16 @@ void show_clock_handler(main_data_t * main_data,
                 send_str("hour %2.2d", cur_time->tm_hour);
                 break;
             case 4:
-                print_start(5, 9, GET_COLOR_AREA(i), NORMAL_FONT);
+                print_start(5, 10, GET_COLOR_AREA(i), NORMAL_FONT);
                 send_str("min %2.2d", cur_time->tm_min);
                 break;
             case 5:
-                print_start(5, 13, GET_COLOR_AREA(i), NORMAL_FONT);
+                print_start(5, 18, GET_COLOR_AREA(i), NORMAL_FONT);
                 send_str("sec %2.2d", cur_time->tm_sec);
                 break;
             case 6:
-                print_start(5, 2, color_DESC, 1);
-                send_str("Mode update time [%s], there is %sactual time.\n\r",
+                print_start(0, 2, color_DESC, 1);
+                send_str("Mode update time [%s], there is %sactual time.",
                     xEventGroup&BIT_SNTP_ALLOW
                         ? "SNTP"
                         : "manual",
@@ -357,8 +378,8 @@ void show_clock_handler(main_data_t * main_data,
                         : "");
                 break;
             case 7:
-                print_start(2, 3, color_DESC, 1);
-                send_str("Service SNTP %swork. Offset time :  [+] %+2.2d [-]",
+                print_start(2, 2, color_DESC, 1);
+                send_str("Service SNTP %s work. Offset time :  [+] %+d [-]",
                         xEventGroup&BIT_SNTP_WORK
                         ? ""
                         : "not ",

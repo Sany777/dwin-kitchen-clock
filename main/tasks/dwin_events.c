@@ -110,9 +110,7 @@ void show_task(void *main_data)
     show_queue_data_t data_in = {0};
     while(1) {
         if(xQueueReceive(queue_show, &data_in, portMAX_DELAY) == pdTRUE){
-            for(int i=0; i<REPEAT_SHOW; i++){
-                show_handler(main_data, data_in.command, data_in.data);   
-            }
+            show_handler(main_data, data_in.command, data_in.data);   
             if(data_in.data){
                 free(data_in.data);
                 data_in.data = NULL;

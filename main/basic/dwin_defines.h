@@ -17,7 +17,7 @@
 #define temp_INDOOR_1           (main_data->sensor_data[1].tem)
 #define temp_OUTDOOR            (main_data->weather_data.outdoor)
 #define description_WEATHER     (main_data->weather_data.description)
-
+#define sensor_DATA            (main_data->sensor_data)
 /*for main_data instance*/
 #define area_SCREEN             (main_data->area)
 #define pwd_WIFI                (main_data->pwd_wifi)
@@ -30,7 +30,7 @@
 /*GET INPUT VALUE*/
 #define GET_AREA_VALUE(key_from_dwin)             ((key_from_dwin)-KEY_START_AREA)
 
-#define GET_AREA_VALUE_TOGGLE(key_from_dwin)      ((key_from_dwin)-KEY_TOGGLE_1)
+#define GET_VALUE_TOGGLE(key_from_dwin)      ((key_from_dwin)-KEY_TOGGLE_1)
 
 #define GET_DAY_TOGGLE(key_from_dwin)             ((key_from_dwin)-KEY_TOGGLE_DAY_1)
 

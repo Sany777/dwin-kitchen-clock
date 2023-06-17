@@ -73,7 +73,7 @@
 /* buzzer */
 #define NUMBER_SIG_BUZ       10
 #define LOUD_BUZZER          70
-#define NORMAL_BUZZER        30
+#define NORMAL_BUZZER        50
 
 /* delays show data */
 #define DELAY_SHOW_ITEM          (40/portTICK_PERIOD_MS)
@@ -117,7 +117,7 @@
 #define MAX_NAME_DEVICE 15
 
 #define MY_DEVICE_TYPE  DWIN_SCREEN_DEVICE
-#define MY_DEVICE_NAME "dwinScreen2"
+#define MY_DEVICE_NAME "dwinScreen"
 #define NUMBER_SENSOR 2
 
 #define VARIABLE_VALUE 0

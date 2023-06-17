@@ -23,7 +23,7 @@
 #define SIZE_USED_COLORS 10
 static const uint16_t USED_COLORS[SIZE_USED_COLORS] = {WHITE, CAEN, BLUE, GREY, VIOLET, LEMON, RED, GREEN, AQUA, ORANGE};
 
-#define COLOR_ENABLE LEMON
+#define COLOR_ENABLE  RED
 #define COLOR_DISABLE WHITE
 
 
@@ -58,19 +58,11 @@ typedef enum area_notifications{
 } area_notifications_t;
 
 typedef enum area_custom{
-    AREA_DESC_COLOR,
     AREA_CLOCK_COLOR,
+    AREA_DESC_COLOR,
     AREA_INFO_COLOR,
     END_AREA_COLORS
 } area_custom_t;
-
-typedef enum {
-    KEY_SOUND_TOGGLE,
-    KEY_ESPNOW_TOGGLE,
-    KEY_SNTP_TOGGLE,
-    KEY_SECURITY,
-    END_AREA_STATE
-} area_toggle_state_t;
 
 typedef enum {
     KEY_NOT_1_TOGGLE,
@@ -124,6 +116,13 @@ typedef enum Main_buttons{
 #define MAX_TOGGLE_UNIT_ON_SCREEN       20
 #define END_KEY_TOGGLES                 (KEY_TOGGLE_1+MAX_TOGGLE_UNIT_ON_SCREEN)
 
+typedef enum {
+    KEY_ESPNOW_TOGGLE = KEY_TOGGLE_1,
+    KEY_SECURITY_TOGGLE,
+    KEY_SOUND_TOGGLE ,
+    KEY_SNTP_TOGGLE,
+    END_AREA_STATE
+} area_toggle_state_t;
 
 /* KEY BUTTON */
 enum buttons_and_events{
@@ -214,7 +213,7 @@ typedef enum{
     NOTIF_PIC,
     CUSTOM_COLORS_PIC,
     MENU_PIC,
-    SHOW_INFO_PIC,
+    INFO_PIC,
     END_LIST_PIC
 } picture_t;
 

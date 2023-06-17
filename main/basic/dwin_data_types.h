@@ -86,7 +86,7 @@ typedef enum flag_state_device{
 #define BIT_ETHERNET            ( 1 << ETHERNET_OK )
 #define BIT_SEN_1               ( 1 << SENSOR_1_OK )
 #define BIT_SEN_2               ( 1 << SENSOR_2_OK )
-#define STORED_FLAGS            (1UL|BIT_SOUNDS_ALLOW|BIT_SNTP_ALLOW|BIT_ESPNOW_ALLOW|BIT_SECURITY )
+#define STORED_FLAGS            (1UL|BIT_SOUNDS_ALLOW|BIT_SNTP_ALLOW|BIT_ESPNOW_ALLOW|BIT_SECURITY|BIT_GET_TIME_AUTO)
 
 #define NUMBER_STORED_FLAGS 4
 

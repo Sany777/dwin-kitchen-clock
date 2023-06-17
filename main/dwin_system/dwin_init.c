@@ -38,6 +38,7 @@ void esp_init(void)
     read_offset(&offset);
     set_timezone(offset);
     init_uart();
+    set_new_event(INIT_SNTP);
     // welcome();
     read_all_memory(main_data);
     wifi_init();

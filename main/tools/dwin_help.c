@@ -22,7 +22,7 @@ bool notification_alarm(const main_data_t *main_data,
                             &&notif_hour >= 6 
                             && notif_hour <= 23)
                         {
-                            dwin_buzer(notif_hour == 7 
+                            dwin_buzer(notif_hour == 6 
                                         || notif_hour == 12 
                                         || notif_hour == 18 
                                             ? LOUD_BUZZER
@@ -66,8 +66,10 @@ esp_err_t show_screen(int32_t key, const void *data_send, const size_t size_data
 
 void set_timezone(int offset)
 {
-    if(offset < 24 || offset > -24){
-        setenv("TZ", TIME_ZONA_FORMAT, offset);
+    if(offset < 24 && offset > -24){
+        char env_format[sizeof(TIME_ZONA_FORMAT)+4];
+        sprintf(env_format, "EET%+dEEST,M3.5.0/3,M10.5.0/4", offset);
+        setenv("TZ", env_format, 1);
         tzset();
     }
 }
@@ -108,14 +110,14 @@ struct tm* get_time_tm()
     time_t time_now;
     time(&time_now);
     
-    return gmtime(&time_now);
+    return localtime(&time_now);
 }
 
 void set_time_tv(struct timeval *tv)
 {
     settimeofday(tv, NULL);
     xEventGroupSetBits(dwin_event_group, BIT_IS_TIME);
-    set_new_event(UPDATE_DATA_COMPLETE);
+    set_new_event(UPDATE_TIME_COMPLETE);
 }
 
 void set_time_tm(struct tm *timeptr, const bool update_dwin)

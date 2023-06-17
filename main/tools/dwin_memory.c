@@ -120,10 +120,10 @@ void read_offset(int32_t *offset)
 	nvs_close(nvs_handle_dwin);
 }
 
-void write_offset(int32_t *offset)
+void write_offset(int32_t offset)
 {
 	nvs_handle_t nvs_handle_dwin;
 	DWIN_SHOW_ERR(nvs_open("nvs", NVS_READWRITE, &nvs_handle_dwin));
-	nvs_set_i32(nvs_handle_dwin, "offset", *offset);
+	nvs_set_i32(nvs_handle_dwin, "offset", offset);
 	nvs_close(nvs_handle_dwin);
 }
