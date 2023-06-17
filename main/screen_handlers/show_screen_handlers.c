@@ -74,46 +74,29 @@ void show_ap_handler(main_data_t * main_data,
 
 /* if negative ssid number need show tail data */
 void show_ssid_handler(main_data_t * main_data,
-                                int32_t ssids_number, 
+                                int32_t ap_count, 
                                 void* event_data) 
 {
-    wifi_ap_record_t *wifi_record = (wifi_ap_record_t*)event_data;
-    print_start(1, 3, LEMON, NORMAL_FONT);
-    if(ssids_number == 0) {
-         send_str("\n\nNo networks found");
-    } else {
-        int32_t end_show, start_ind; 
-        if(ssids_number < 0){
-            end_show = (ssids_number * -1 ) - MAX_SSID_PEER_SCREEN;
-            start_ind = MAX_SSID_PEER_SCREEN;
-        } else {
-            start_ind = 0;
-            end_show = MIN(ssids_number, MAX_SSID_PEER_SCREEN);
-        }
-        send_str("Find %d SSID \r\n  Name      Signal    Auth.", 
-                        ssids_number > 0 
-                        ? (int)ssids_number
-                        : (int)ssids_number*-1);
-        print_end();
+    wifi_ap_record_t *ap_info = *(wifi_ap_record_t**)event_data;
+    print_start(1, 0, color_DESC, NORMAL_FONT);
+    send_str("N|       SSID         |RSSI |Ch.");
+    print_end();
+    bool first_page;
+    int i = 0;
+    if(ap_count < 0){
+        ap_count = ap_count*-1 - MAX_SSID_PEER_SCREEN;
+        first_page = false;
+        ap_info += MAX_SSID_PEER_SCREEN;
+        i = MAX_SSID_PEER_SCREEN;
+    } else{
+        first_page = true;
+    }
+    for (; i<ap_count && i<MAX_SSID_PEER_SCREEN; i++, ap_info++) {
         vTaskDelay(DELAY_SHOW_ITEM);
-        for(int i=0; i<end_show; i++, start_ind++) {
-            print_start(2+i, 0, GET_COLOR_AREA(i), FONT_INFO);
-            send_str(" %d. %10.10s %u %8.8s",
-                        start_ind+1,
-                        (char*) wifi_record[start_ind].ssid, 
-                        (uint8_t) wifi_record[start_ind].rssi, 
-                        get_auth_mode(wifi_record[start_ind].authmode));
-            print_end();
-        }
-        if(ssids_number != end_show){
-            print_start(6, 10, RED, FONT_BUTTON);
-            if(ssids_number > end_show){
-                send_str("->");
-            } else {
-               send_str("<-"); 
-            }
-            print_end();
-        }
+        print_start(i+1, 0, GET_COLOR_AREA(i), NORMAL_FONT);
+        send_str("\n\r%-d| %18.18s | %2.2d | %d ", i+1, ap_info->ssid, ap_info->rssi, ap_info->primary);
+        if(ap_count > MAX_SSID_PEER_SCREEN && i == MAX_SSID_PEER_SCREEN-1) send_str_dwin(first_page ? "  >>" : "<<");
+        print_end();
     }
 }
 
@@ -294,8 +277,8 @@ void show_state_handler(main_data_t *main_data,
                 xEventGroup&BIT_CON_STA_OK
                     ? "connect"
                     : xEventGroup&BIT_SSID_FOUND
-                        ? "disconnect-wrong\tpassword"
-                        : "disconnect-SSID\tnot\tfound",
+                        ? "disconnect\t-\twrong\tpassword"
+                        : "disconnect\t-\tSSID\tnot\tfound",
                 xEventGroup&BIT_ESPNOW_ALLOW
                     ? xEventGroup&BIT_ESPNOW_CONECT
                         ? xEventGroup&BIT_SEN_1&&sensor_DATA
@@ -308,12 +291,12 @@ void show_state_handler(main_data_t *main_data,
                 xEventGroup&BIT_WEATHER_OK
                     ? "work"
                     : xEventGroup&BIT_RESPONSE_400_SERVER
-                        ? "not\twork-wrong key api"
-                        : "not\twork-no connection",
+                        ? "not\twork - wrong key api"
+                        : "not\twork - no internet",
                 xEventGroup&BIT_SNTP_ALLOW
                     ? xEventGroup&BIT_SNTP_WORK
                         ? "work"
-                        : "not work-no\tconnection"
+                        : "not work - no internet"
                     : "denied",
                 xEventGroup&BIT_SEN_1&&sensor_DATA
                     ? "\n\n\r Sensore 1: "

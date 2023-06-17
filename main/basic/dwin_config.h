@@ -4,8 +4,8 @@
 #include "limits.h"
 
 
-#define MAX_SCAN_LIST_SIZE   20
-#define MAX_SSID_PEER_SCREEN 10
+#define MAX_SSID_PEER_SCREEN 9
+#define MAX_SCAN_LIST_SIZE   (MAX_SSID_PEER_SCREEN*2)
 
 /* for notify */
 #define NO_CLEAR_ENTRY     (0UL)
@@ -162,3 +162,5 @@
 #define DELAY_AUTOCLOSE  (180/portTICK_PERIOD_MS)
 
 #define REPEAT_SHOW 2
+
+#define MAX_AP_PAGE 9

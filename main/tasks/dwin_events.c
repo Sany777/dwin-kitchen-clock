@@ -93,7 +93,7 @@ void direction_task(void *pv)
                 screen_handler(main_data, KEY_CLOSE, 0);
                 cur_screen_id = data_in[0];
                 screen_handler(main_data, KEY_INIT, 0);
-            } else  if(data_in[0] >= START_SERVICE_EVENTS && data_in[0] <= END_SERVICE_EVENTS){
+            } else  if(data_in[0] > START_SERVICE_EVENTS && data_in[0] < END_SERVICE_EVENTS){
                 xQueueSend(queue_service, &data_in[0], 200);
             } else {
                 screen_handler(main_data, data_in[0], data_in[1]);

@@ -55,7 +55,7 @@ for(;;) {
                         && (buf_RX[byte_rx_count] == 0x3C))
                     {
                         if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == TOUCH_CODE) {
-                            if(queue_direct) xQueueSend(queue_direct, &buf_RX[INDEX_START_DATA_IN_RX], 200);
+                            xQueueSend(queue_direct, &buf_RX[INDEX_START_DATA_IN_RX], 300);
                         } else if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == KEY_GET_CLOCK){
                             struct tm tm_time = {
                                 .tm_year = GET_DEC(buf_RX[1]),

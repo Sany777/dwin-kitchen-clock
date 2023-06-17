@@ -70,7 +70,7 @@ static task_dwin_t const sevice_tasks[SIZE_SERVICE_TASK] = {
     {
         .pTask = direction_task,
         .priority = PRIORITY_FAST_SERVICE,
-        .stack = 2000
+        .stack = 10000
     },
     {
         .pTask = service_task,

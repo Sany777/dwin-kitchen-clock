@@ -18,7 +18,7 @@ switch(action){
     case START_ESPNOW :
     {
         if(!init_espnow){
-            if(xEventGroup&BIT_WORK_AP) return;
+            if(xEventGroup&BIT_NOT_ALLOW_STA) return;
             wifi_mode_t mode;
             esp_wifi_get_mode(&mode);
             if(!rx_espnow )xTaskCreate(espnow_task_rx, "espnow_task_rx", 5000, main_data, 5, &rx_espnow);
@@ -80,9 +80,9 @@ switch(action){
                 queue_espnow_tx = NULL;
             }
             esp_now_deinit();
-            xEventGroupClearBits(dwin_event_group, BIT_ESPNOW_RUN);
-            xEventGroupClearBits(dwin_event_group, BIT_ESPNOW_CONECT);
+            xEventGroupClearBits(dwin_event_group, BIT_ESPNOW_RUN|BIT_ESPNOW_CONECT);
         }
+        break;
     }
     case INIT_AP :
     {
@@ -117,21 +117,17 @@ switch(action){
         ESP_ERROR_CHECK(esp_wifi_start());
         break;
     }
-    case INIT_SCAN_NETWORKS :
-    {
-        esp_wifi_set_event_mask(EVENT_OFF_WIFI);
-        if(mode == WIFI_MODE_STA)break;
-    }
     case START_STA :
     {
-        if(xEventGroup&BIT_WORK_AP) return;
-        esp_wifi_stop();
+        if(xEventGroup&BIT_NOT_ALLOW_STA) return;
         if(!init_sta){
             esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_START, &wifi_sta_handler, main_data);
             esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_sta_handler, main_data);
             esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &wifi_sta_handler, main_data);
             esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_STOP, &wifi_sta_handler, main_data);
             init_sta = true;
+        } else {
+            esp_wifi_stop();
         }
         if(mode == WIFI_MODE_AP){
             esp_netif_destroy_default_wifi(netif);
@@ -148,12 +144,12 @@ switch(action){
         strncpy((char *)wifi_config.sta.password, pwd_WIFI, MAX_STR_LEN);
         wifi_config.sta.sae_pwe_h2e = WIFI_AUTH_WPA2_PSK;
         mode = WIFI_MODE_STA;
-        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+        DWIN_SHOW_ERR(esp_wifi_set_mode(WIFI_MODE_STA));
         #if CONFIG_ESPNOW_ENABLE_LONG_RANGE
             ESP_ERROR_CHECK(esp_wifi_set_protocol(ESP_IF_WIFI_STA, WIFI_PROTOCOL_11B|WIFI_PROTOCOL_11G|WIFI_PROTOCOL_11N|WIFI_PROTOCOL_LR));
         #endif
-        ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
-        ESP_ERROR_CHECK(esp_wifi_start());
+        DWIN_SHOW_ERR(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
+        DWIN_SHOW_ERR(esp_wifi_start());
         if(xEventGroup&BIT_ESPNOW_ALLOW && !(xEventGroup&BIT_ESPNOW_RUN)){
             set_new_event(INIT_ESPNOW);
         }
@@ -173,18 +169,6 @@ switch(action){
             }
             mode = WIFI_MODE_NULL;
         }
-        break;
-    }
-    case DEINIT_SCAN_NETWORKS :
-    {
-        ESP_ERROR_CHECK(esp_wifi_set_event_mask(EVENT_ON_WIFI));
-        break;
-    }
-    case START_SCAN_NETWORKS :
-    {
-        ESP_ERROR_CHECK(esp_wifi_scan_start(NULL, true));
-        vTaskDelay(DELAY_SCAN_SSID);
-        ESP_ERROR_CHECK(esp_wifi_scan_stop());
         break;
     }
     
@@ -217,7 +201,7 @@ void wifi_sta_handler(void* main_data, esp_event_base_t event_base,
     static int retry_num;
     static EventBits_t xEventGroup;
     xEventGroup = xEventGroupGetBits(dwin_event_group);
-    if(!(xEventGroup&BIT_WORK_AP)){
+    if(!(xEventGroup&BIT_NOT_ALLOW_STA)){
         if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
             retry_num = 0;
             esp_wifi_connect();

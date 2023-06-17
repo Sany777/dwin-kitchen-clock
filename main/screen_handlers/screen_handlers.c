@@ -32,32 +32,34 @@ void search_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
             ap_info = NULL;
             esp_wifi_clear_ap_list();
             init = false;
+            xEventGroupClearBits(dwin_event_group, BIT_NOT_ALLOW_STA);
         }
         return;
     }
-    if(command == KEY_SYNC || command == KEY_INIT) {
+    if(command == KEY_INIT) {
         if(!init) {
-            esp_event_post_to(fast_service_loop, WIFI_SET_EVENTS, INIT_SCAN_NETWORKS, NULL, 0, TIMEOUT_SEND_EVENTS);
-            ap_info = (wifi_ap_record_t*) calloc(MAX_SCAN_LIST_SIZE, sizeof(wifi_ap_record_t));
+            xEventGroupSetBits(dwin_event_group, BIT_NOT_ALLOW_STA);
+            ap_info = (wifi_ap_record_t*) malloc(MAX_SCAN_LIST_SIZE*sizeof(wifi_ap_record_t));
             if(!ap_info)return;
             init = true;
         }
-        esp_event_post_to(fast_service_loop, WIFI_SET_EVENTS, START_SCAN_NETWORKS, NULL, 0, TIMEOUT_SEND_EVENTS);
+        memset(ap_info, 0, MAX_SCAN_LIST_SIZE*sizeof(wifi_ap_record_t));
+        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+        ESP_ERROR_CHECK(esp_wifi_start());
+        esp_wifi_scan_start(NULL, true);
         ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
-        if(ap_count > MAX_SCAN_LIST_SIZE)ap_count = MAX_SCAN_LIST_SIZE;
         ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_count, ap_info));
         ap_count_show = ap_count;
     } else if(KEY_IS_AREA_SCAN_SSID(command)) {
         if(area_SCREEN == GET_AREA_VALUE(command)) {
             strncpy(name_SSID, (const char*)ap_info[area_SCREEN].ssid, MAX_STR_LEN);
-            dwin_set_pic(SEARCH_PIC);
             vTaskDelay(DELAY_CHANGE_PIC);
             send_message_dwin("The SSID has been set");
             vTaskDelay(DELAY_SHOW_MESSAGE);
         } else {
             if(GET_AREA_VALUE(command) < ap_count) area_SCREEN = GET_AREA_VALUE(command);
         }
-    } else if(command == KEY_NEXT && ap_count > MAX_SSID_PEER_SCREEN){
+    } else if(command == KEY_NEXT){
         /* next or previous page */
         ap_count_show *= -1;
     }
@@ -71,10 +73,10 @@ void ap_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
     if(command == KEY_INIT) {
         dwin_set_pic(INFO_PIC);
         show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
-        xEventGroupSetBits(dwin_event_group, BIT_WORK_AP);
+        xEventGroupSetBits(dwin_event_group, BIT_NOT_ALLOW_STA);
         set_new_event(INIT_AP);
     } else if(command == KEY_CLOSE) {
-        xEventGroupClearBits(dwin_event_group, BIT_WORK_AP);
+        xEventGroupClearBits(dwin_event_group, BIT_NOT_ALLOW_STA);
         esp_wifi_stop();
     } else if(command == STATION_JOINE){
         remove_periodic_event(MAIN_SCREEN);
@@ -94,6 +96,7 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
         selected_buf = name_SSID;
         pic = SETTING_LOW_LETTER_PIC;
         pos = strlen(selected_buf);
+        dwin_set_pic(pic);
     } else if(command == KEY_CLOSE) {
         if(need_write){
             write_memory(main_data, DATA_API);
@@ -106,10 +109,10 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
     } else if(KEY_IS_AREA_SETTING(command)) {
         area_SCREEN = GET_AREA_VALUE(command);
         switch(area_SCREEN) {
-            case AREA_PASSWORD : selected_buf = pwd_WIFI; break;
-            case AREA_CITY    : selected_buf = name_CITY; break;
-            case AREA_API     : selected_buf = api_KEY;   break;
-            case AREA_SSID    : selected_buf = name_SSID; break;
+            case AREA_PASSWORD : selected_buf = pwd_WIFI;  break;
+            case AREA_CITY     : selected_buf = name_CITY; break;
+            case AREA_API      : selected_buf = api_KEY;   break;
+            case AREA_SSID     : selected_buf = name_SSID; break;
             default : break;
         }
         pos = strlen(selected_buf);
@@ -392,7 +395,7 @@ void state_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
             set_periodic_event(STOP_SNTP, 2, ONLY_ONCE);
         } else {
             xEventGroupSetBits(dwin_event_group, BIT_SNTP_ALLOW);
-            set_new_event(INIT_SNTP);
+            set_periodic_event(INIT_SNTP, 2, ONLY_ONCE);
         }
     } else if(command == KEY_SECURITY_TOGGLE){
         if(xEventGroup&BIT_SECURITY){
@@ -402,6 +405,7 @@ void state_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         }
     } else if(command == KEY_ENTER){
         write_memory(main_data, DATA_FLAGS);
+        set_new_event(GET_WEATHER);
     }
     set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
     show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
