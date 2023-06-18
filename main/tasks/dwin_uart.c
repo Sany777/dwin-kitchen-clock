@@ -67,7 +67,6 @@ for(;;) {
                             };
                             set_time_tm(&tm_time);
                             set_new_event(UPDATE_TIME_COMPLETE);
-                            ESP_LOGI(TAG, "get time :%s", asctime(&tm_time));
                         } else {
                             xEventGroupSetBits(dwin_event_group, BIT_DWIN_RESPONSE_OK);
                         }

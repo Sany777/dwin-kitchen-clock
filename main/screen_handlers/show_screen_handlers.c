@@ -474,8 +474,8 @@ void show_main_handler(main_data_t * main_data,
             }
             case 3:
             {
-                print_start(3, 6, LEMON, FONT_BUTTON);
-                send_str("%8s", description_WEATHER);
+                print_start(4, 5, LEMON, FONT_BUTTON);
+                send_str("%15.15s", description_WEATHER);
                 break;
             }
             case 4:

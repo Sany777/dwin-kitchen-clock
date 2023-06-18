@@ -87,7 +87,7 @@ switch(action){
                     set_new_event(STOP_ESPNOW);
                 }
                 esp_wifi_stop();
-                vTaskDelay(200);
+                vTaskDelay(400);
             }
             if(netif){
                 esp_netif_destroy_default_wifi(netif);

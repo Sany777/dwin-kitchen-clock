@@ -77,7 +77,6 @@ void ap_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
     if(command == KEY_INIT) {
         dwin_set_pic(INFO_PIC);
-        set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
         show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
         xEventGroupSetBits(dwin_event_group, BIT_DENIED_STA);
         set_new_event(INIT_AP);
@@ -99,6 +98,7 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
     bool preparing = false;
     if(command == KEY_INIT) {
         dwin_set_pic(SETTING_LOW_LETTER_PIC);
+        vTaskDelay(DELAY_CHANGE_PIC);
         preparing = true;
         set_periodic_event(START_STA, 2, ONLY_ONCE);
         pic = SETTING_LOW_LETTER_PIC;
@@ -255,6 +255,7 @@ void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         dwin_set_pic(MENU_PIC);
     } else {
         dwin_set_pic(weather_PIC);
+        vTaskDelay(DELAY_CHANGE_PIC);
         show_screen(is_notify 
                         ? IS_NOTIFICATION
                         : NORMAL_SCREEN,
