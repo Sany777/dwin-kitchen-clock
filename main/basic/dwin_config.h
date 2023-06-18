@@ -77,7 +77,7 @@
 
 /* delays show data */
 #define DELAY_SHOW_ITEM          (40/portTICK_PERIOD_MS)
-#define DELAY_SHOW_MESSAGE       (2000/portTICK_PERIOD_MS)
+#define DELAY_SHOW_MESSAGE       (1000/portTICK_PERIOD_MS)
 #define DELAY_CHANGE_PIC         (50/portTICK_PERIOD_MS)
 
 /* delay process */

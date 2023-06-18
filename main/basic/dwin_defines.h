@@ -185,8 +185,8 @@
 
 #define GET_COLOR_AREA(n)                     ((n) == (area_SCREEN) ? COLOR_ENABLE : COLOR_DISABLE)
 
-#define GET_HEX(num)                          (num + 6 * (num / 10))
-#define GET_DEC(num)                          (num - 6 * (num / 16))
+#define DEC_TO_HEX(num)                          (num + 6 * (num / 10))
+#define HEX_TO_DEC(num)                          (num - 6 * (num / 16))
 
 
 #ifndef MIN

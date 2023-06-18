@@ -8,7 +8,6 @@ void info_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
     if(command == KEY_INIT) {
         dwin_set_pic(INFO_PIC);
     }
-    set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
 }
 
 void device_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
@@ -17,66 +16,73 @@ void device_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
     if(command == KEY_INIT) {
         dwin_set_pic(INFO_PIC);
     }
-    set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
 }
 
 
 void search_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
     static wifi_ap_record_t* ap_info; 
-    static uint16_t ap_count, ap_count_show;
-    static bool init;
+    static uint16_t ap_count;
+    static bool init, next_page;
     if(command == KEY_CLOSE) {
         if(init){
             free(ap_info);
             ap_info = NULL;
             esp_wifi_clear_ap_list();
             init = false;
-            xEventGroupClearBits(dwin_event_group, BIT_NOT_ALLOW_STA);
+            xEventGroupClearBits(dwin_event_group, BIT_DENIED_STA);
         }
+        set_new_event(START_STA);
         return;
     }
     if(command == KEY_INIT) {
         if(!init) {
-            xEventGroupSetBits(dwin_event_group, BIT_NOT_ALLOW_STA);
+            xEventGroupSetBits(dwin_event_group, BIT_DENIED_STA);
             ap_info = (wifi_ap_record_t*) malloc(MAX_SCAN_LIST_SIZE*sizeof(wifi_ap_record_t));
             if(!ap_info)return;
             init = true;
         }
-        memset(ap_info, 0, MAX_SCAN_LIST_SIZE*sizeof(wifi_ap_record_t));
         ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
         ESP_ERROR_CHECK(esp_wifi_start());
         esp_wifi_scan_start(NULL, true);
         ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
+        memset(ap_info, 0, MAX_SCAN_LIST_SIZE*sizeof(wifi_ap_record_t));
         ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_count, ap_info));
-        ap_count_show = ap_count;
+        next_page = false;
     } else if(KEY_IS_AREA_SCAN_SSID(command)) {
-        if(area_SCREEN == GET_AREA_VALUE(command)) {
-            strncpy(name_SSID, (const char*)ap_info[area_SCREEN].ssid, MAX_STR_LEN);
+        uint8_t select_area = GET_AREA_VALUE(command);
+        if(area_SCREEN == select_area) {
+            size_t ind = area_SCREEN;
+            if(next_page)ind += MAX_SSID_PEER_SCREEN;
+            strncpy(name_SSID, (const char*)ap_info[ind].ssid, MAX_STR_LEN);
             vTaskDelay(DELAY_CHANGE_PIC);
             send_message_dwin("The SSID has been set");
             vTaskDelay(DELAY_SHOW_MESSAGE);
-        } else {
-            if(GET_AREA_VALUE(command) < ap_count) area_SCREEN = GET_AREA_VALUE(command);
+        } else if(select_area < ap_count){
+             area_SCREEN = select_area;
         }
-    } else if(command == KEY_NEXT){
+    } else if(command == KEY_NEXT && ap_count>MAX_SSID_PEER_SCREEN){
         /* next or previous page */
-        ap_count_show *= -1;
+        next_page = !next_page;
     }
     dwin_set_pic(SEARCH_PIC);
-    show_screen(ap_count_show, &ap_info, sizeof(ap_info));
-    set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
+    show_screen(next_page 
+                    ? ap_count*-1
+                    :ap_count,
+                &ap_info, 
+                sizeof(ap_info));
 }
 
 void ap_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
     if(command == KEY_INIT) {
         dwin_set_pic(INFO_PIC);
+        set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
         show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
-        xEventGroupSetBits(dwin_event_group, BIT_NOT_ALLOW_STA);
+        xEventGroupSetBits(dwin_event_group, BIT_DENIED_STA);
         set_new_event(INIT_AP);
     } else if(command == KEY_CLOSE) {
-        xEventGroupClearBits(dwin_event_group, BIT_NOT_ALLOW_STA);
+        xEventGroupClearBits(dwin_event_group, BIT_DENIED_STA);
         esp_wifi_stop();
     } else if(command == STATION_JOINE){
         remove_periodic_event(MAIN_SCREEN);
@@ -92,11 +98,13 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
     static bool need_write;
     bool preparing = false;
     if(command == KEY_INIT) {
+        dwin_set_pic(SETTING_LOW_LETTER_PIC);
+        preparing = true;
+        set_periodic_event(START_STA, 2, ONLY_ONCE);
+        pic = SETTING_LOW_LETTER_PIC;
         area_SCREEN = AREA_SSID;
         selected_buf = name_SSID;
-        pic = SETTING_LOW_LETTER_PIC;
         pos = strlen(selected_buf);
-        dwin_set_pic(pic);
     } else if(command == KEY_CLOSE) {
         if(need_write){
             write_memory(main_data, DATA_API);
@@ -117,10 +125,11 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
         }
         pos = strlen(selected_buf);
     } else if(command == KEY_SYNC) {
-        set_new_event(GET_WEATHER);
+        set_periodic_event(GET_WEATHER, 1, ONLY_ONCE);
         preparing = true;
     } else if(command == UPDATE_WEATHER_COMPLETE) {
         dwin_set_pic(pic);
+        vTaskDelay(DELAY_CHANGE_PIC);
     } else if(command == KEY_ENTER) {
         if(!need_write)need_write = true;
     } else if(command == KEY_SETTING_SCREEN_LOW) {
@@ -149,7 +158,6 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
             }
         }
     }
-    set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
     show_screen(preparing ? 1 : 0, NULL, 0);
 }
 
@@ -175,7 +183,6 @@ void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         }
         case KEY_CLOSE :
         {
-            set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
             remove_periodic_event(GET_WEATHER);
             remove_periodic_event(UPDATE_TIME_COMPLETE);
             remove_periodic_event(KEY_MENU_SCREEN);
@@ -204,12 +211,14 @@ void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
                                     RELOAD_COUNT);
                 remove_periodic_event(KEY_DETAILS_SCREEN);
                 cur_time = get_time_tm();
-            } else {
+            } else  if(weather_PIC != NO_WEATHER_PIC){
                 details = true;
                 remove_periodic_event(UPDATE_TIME_COMPLETE);
                 set_periodic_event(KEY_DETAILS_SCREEN, 
                                     30,
                                     ONLY_ONCE);
+            } else {
+                set_new_event(GET_WEATHER);
             }
             break;
         }
@@ -239,7 +248,7 @@ void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         }
             default : break;
     }
-    if(details){
+    if(details ){
         dwin_set_pic(NO_WEATHER_PIC);
         show_screen(DETAILS_SCREEN, NULL, 0);
     } else if(menu_active){
@@ -252,7 +261,6 @@ void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
                     cur_time, 
                     sizeof(struct tm));
     }
-    set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
 }
 
 void clock_handler(main_data_t* main_data, uint8_t command, char symbol)
@@ -305,9 +313,10 @@ void clock_handler(main_data_t* main_data, uint8_t command, char symbol)
     } else if(command == KEY_ENTER){
         write_offset(offset);
         dwin_time->tm_year += 100;
-        dwin_time->tm_year -= 100;
         set_timezone(offset);
-        set_time_tm(dwin_time, true);
+        set_time_tm(dwin_time);
+        dwin_time->tm_year -= 100;
+        dwin_clock_set(dwin_time);
         set_new_event(UPDATE_TIME_COMPLETE);
     } else if(command == KEY_SYNC) {
         EventBits_t xEventGroup = 
@@ -354,16 +363,14 @@ void clock_handler(main_data_t* main_data, uint8_t command, char symbol)
             if(!dwin_time)return;
             read_offset(&offset);
         }
-        time_t time_now;
-        time(&time_now);
-        localtime_r(&time_now, dwin_time);
-        dwin_time->tm_year -= 100;
+
+        struct tm* cur_time = get_time_tm();
+        memcpy(dwin_time, cur_time, sizeof(struct tm));
+        dwin_time->tm_year %= 100;
     }
     if(command == UPDATE_TIME_COMPLETE){
         dwin_set_pic(CLOCK_PIC);
     }
-    
-    set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
     show_screen(offset, dwin_time, sizeof(struct tm));
 }
 
@@ -407,7 +414,6 @@ void state_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         write_memory(main_data, DATA_FLAGS);
         set_new_event(GET_WEATHER);
     }
-    set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
     show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
 }
 
@@ -423,7 +429,6 @@ void set_color_screen_handler(main_data_t* main_data, uint8_t command, char symb
     } else if(command == KEY_ENTER){
         write_memory(main_data, DATA_COLOR);
     }
-    set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
     show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
 }
 
@@ -473,7 +478,6 @@ void notifications_screen_handler(main_data_t* main_data, uint8_t command, char 
     } else if(KEY_IS_AREA_TOGGLE(command)) {
         TOOGLE_NOTIF(GET_VALUE_TOGGLE(command), cur_day);
     }
-    set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
     show_screen(cur_day, &cur_day, sizeof(cur_day));
 }
 
@@ -537,7 +541,6 @@ void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         area_SCREEN = AREA_TIMER_MIN;
         new_area = area_SCREEN;
         dwin_set_pic(TIMER_STOP_PIC);
-        vTaskDelay(DELAY_SHOW_ITEM);
         if(timer_run){
             remove_periodic_event(KEY_DECREMENT);
             timer_run = false;

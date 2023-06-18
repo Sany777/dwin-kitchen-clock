@@ -492,6 +492,7 @@ static esp_err_t handler_set_time(httpd_req_t *req)
     tv.tv_sec = time/1000;
     tv.tv_usec = time%1000;
     set_time_tv(&tv);
+    set_dwin_clock();
     httpd_resp_sendstr(req, "Set time successfully");
     return ESP_OK;
 err:

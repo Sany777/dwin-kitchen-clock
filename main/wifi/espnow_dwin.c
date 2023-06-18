@@ -15,7 +15,7 @@ void espnow_task_tx(void *pv)
 {
     main_data_t * const main_data = (main_data_t *)pv;
     uint8_t *parcel = NULL;
-    const uint8_t *mac;
+    const uint8_t *mac = NULL;
     uint8_t max_atempt = 0;
     size_t parcel_len = 0;
     espnow_send_t data_to_send = {

@@ -85,7 +85,10 @@ void direction_task(void *pv)
                             data_in,
                             portMAX_DELAY) == pdTRUE)
         {
-            if(cur_screen_id != MAIN_SCREEN){
+            if(cur_screen_id != MAIN_SCREEN 
+                    && cur_screen_id != TIMER_SCREEN 
+                    && cur_screen_id != SERVER_SCREEN)
+            {
                 set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
             }
             if(KEY_IS_SET_TASK(data_in[0])){

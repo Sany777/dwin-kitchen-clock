@@ -78,25 +78,35 @@ void show_ssid_handler(main_data_t * main_data,
                                 void* event_data) 
 {
     wifi_ap_record_t *ap_info = *(wifi_ap_record_t**)event_data;
-    print_start(1, 0, color_DESC, NORMAL_FONT);
-    send_str("N|       SSID         |RSSI |Ch.");
-    print_end();
-    bool first_page;
-    int i = 0;
-    if(ap_count < 0){
-        ap_count = ap_count*-1 - MAX_SSID_PEER_SCREEN;
-        first_page = false;
-        ap_info += MAX_SSID_PEER_SCREEN;
-        i = MAX_SSID_PEER_SCREEN;
-    } else{
-        first_page = true;
-    }
-    for (; i<ap_count && i<MAX_SSID_PEER_SCREEN; i++, ap_info++) {
-        vTaskDelay(DELAY_SHOW_ITEM);
-        print_start(i+1, 0, GET_COLOR_AREA(i), NORMAL_FONT);
-        send_str("\n\r%-d| %18.18s | %2.2d | %d ", i+1, ap_info->ssid, ap_info->rssi, ap_info->primary);
-        if(ap_count > MAX_SSID_PEER_SCREEN && i == MAX_SSID_PEER_SCREEN-1) send_str_dwin(first_page ? "  >>" : "<<");
+    bool first_page = true;
+    if(ap_count == 0){
+        print_start(1, 0, color_DESC, NORMAL_FONT);
+        send_str("No WiFi network found");
         print_end();
+    } else {
+        int ap_num = 0;
+        print_start(1, 0, color_DESC, NORMAL_FONT);
+        send_str(" N|       SSID          | RSSI| Ch.");
+        print_end();
+        if(ap_count < 0){
+            ap_count *= -1;
+            first_page = false;
+            ap_info += MAX_SSID_PEER_SCREEN;
+            ap_num = MAX_SSID_PEER_SCREEN;
+        } 
+        vTaskDelay(DELAY_SHOW_ITEM/2);
+        for (int i=0; ap_num<ap_count && i<MAX_SSID_PEER_SCREEN; i++, ap_num++, ap_info++) {
+            print_start(i+1, 0, GET_COLOR_AREA(i), NORMAL_FONT);
+            send_str("\n\r%2d|%20.20s | %2.2d | %d ", ap_num+1, ap_info->ssid, ap_info->rssi, ap_info->primary);
+            print_end();
+        }
+        vTaskDelay(DELAY_SHOW_ITEM/2);
+        if(ap_count > MAX_SSID_PEER_SCREEN){
+            print_text_box(420, 220, 55, 35, BLACK, YELLOW, 2, 
+                                first_page
+                                    ? "Next"
+                                    : "Prev");
+        } 
     }
 }
 
@@ -118,7 +128,7 @@ void show_settings_handler(main_data_t * main_data,
                 if(xEventGroup&BIT_PROCESS){
                     send_str("Connection attempt...");
                 }else if(xEventGroup&BIT_CON_STA_OK) {
-                    send_str("WiFi Ok |%s",
+                    send_str("WiFi Ok, %s",
                         xEventGroup&BIT_WEATHER_OK
                         ? "weather OK"
                         : xEventGroup&BIT_RESPONSE_400_SERVER
@@ -129,14 +139,15 @@ void show_settings_handler(main_data_t * main_data,
                 } else {
                     send_str(" SSID not found");
                 }
+                send_str_dwin("  [Search SSID]");
                 break;
             case 1:
                 print_start(2, 1, GET_COLOR_AREA(AREA_SSID), NORMAL_FONT);
-                send_str("SSID  : %s", name_SSID);
+                send_str("SSID      : %s", name_SSID);
                 break;
             case 2:
                 print_start(3, 1, GET_COLOR_AREA(AREA_PASSWORD), NORMAL_FONT);
-                send_str("Password : %s", 
+                send_str("Password  : %s", 
                                     xEventGroup&BIT_SECURITY || area_SCREEN != AREA_PASSWORD
                                         ? "*** WiFi password ***"
                                         : pwd_WIFI);
@@ -147,7 +158,7 @@ void show_settings_handler(main_data_t * main_data,
                 break;
             case 4:
                 print_start(5, 1, GET_COLOR_AREA(AREA_API), NORMAL_FONT);
-                send_str("Key ");
+                send_str("Key : ");
                 if(area_SCREEN == AREA_API) {
                     send_str(api_KEY);
                 } else {
@@ -311,8 +322,8 @@ void show_state_handler(main_data_t *main_data,
                     ? sensor_DATA[1].name
                     : "");
     print_end();
-    print_text_box(290, 220, 43, 35, BLACK, YELLOW, 2, "Set");
-    print_text_box(140, 220, 80, 35, BLACK, YELLOW, 2, "Update");
+    print_text_box(250, 220, 43, 35, BLACK, YELLOW, 2, "Set");
+    print_text_box(110, 220, 80, 35, BLACK, YELLOW, 2, "Update");
 }
 
 

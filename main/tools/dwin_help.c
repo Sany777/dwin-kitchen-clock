@@ -66,11 +66,14 @@ esp_err_t show_screen(int32_t key, const void *data_send, const size_t size_data
 
 void set_timezone(int offset)
 {
-    if(offset < 24 && offset > -24){
+    EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
+    if(xEventGroup&BIT_SNTP_ALLOW && offset < 24 && offset > -24){
         char env_format[sizeof(TIME_ZONA_FORMAT)+4];
         sprintf(env_format, "EET%+dEEST,M3.5.0/3,M10.5.0/4", offset);
         setenv("TZ", env_format, 1);
         tzset();
+    } else {
+        unsetenv("TZ");
     }
 }
 
@@ -105,12 +108,16 @@ uint16_t *get_y_points(  int8_t *points,
     return buf_out;
 }
 
-struct tm* get_time_tm()
+struct tm* get_time_tm(void)
 {
     time_t time_now;
     time(&time_now);
-    
-    return localtime(&time_now);
+    EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
+    if(xEventGroup&BIT_SNTP_ALLOW){
+        return localtime(&time_now);
+    } else {
+        return gmtime(&time_now);
+    }
 }
 
 void set_time_tv(struct timeval *tv)
@@ -120,15 +127,20 @@ void set_time_tv(struct timeval *tv)
     set_new_event(UPDATE_TIME_COMPLETE);
 }
 
-void set_time_tm(struct tm *timeptr, const bool update_dwin)
+void set_dwin_clock()
 {
-    if(timeptr->tm_hour < 24 && timeptr->tm_year >= 123){
+    struct tm* cur_tm = get_time_tm();
+    dwin_clock_set(cur_tm);
+}
+
+void set_time_tm(struct tm *timeptr)
+{
+    if(timeptr->tm_year >= 123 && timeptr->tm_year < 223){
         time_t time = mktime(timeptr);
         struct timeval tv = {
             .tv_sec = time,
         };
         set_time_tv(&tv);
-        if(update_dwin)dwin_clock_set(timeptr);
     }
 }
 

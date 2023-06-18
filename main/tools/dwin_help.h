@@ -13,5 +13,6 @@ bool notification_alarm(const main_data_t *main_data,
 char *get_chip(int model_id);
 void set_timezone(int hour);
 void set_time_tv(struct timeval *tv);
-void set_time_tm(struct tm *timeptr, const bool update_dwin);
-struct tm* get_time_tm();
+void set_time_tm(struct tm *timeptr);
+struct tm* get_time_tm(void);
+void set_dwin_clock();

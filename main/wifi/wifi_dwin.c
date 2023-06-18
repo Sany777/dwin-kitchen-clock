@@ -1,10 +1,5 @@
 #include "wifi_dwin.h"
  
-// char buff[INET6_ADDRSTRLEN];
-//             ip_addr_t const *ip = esp_sntp_getserver(i);
-            // if (ipaddr_ntoa_r(ip, buff, INET6_ADDRSTRLEN) != NULL)
-//                 ESP_LOGI(TAG, "server %d: %s", i, buff);
-
 void set_wifi(main_data_t* main_data, uint8_t action)
 {
     static bool init_espnow;
@@ -18,7 +13,7 @@ switch(action){
     case START_ESPNOW :
     {
         if(!init_espnow){
-            if(xEventGroup&BIT_NOT_ALLOW_STA) return;
+            if(xEventGroup&BIT_DENIED_STA) return;
             wifi_mode_t mode;
             esp_wifi_get_mode(&mode);
             if(!rx_espnow )xTaskCreate(espnow_task_rx, "espnow_task_rx", 5000, main_data, 5, &rx_espnow);
@@ -119,7 +114,7 @@ switch(action){
     }
     case START_STA :
     {
-        if(xEventGroup&BIT_NOT_ALLOW_STA) return;
+        if(xEventGroup&BIT_DENIED_STA) return;
         if(!init_sta){
             esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_START, &wifi_sta_handler, main_data);
             esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_sta_handler, main_data);
@@ -201,7 +196,7 @@ void wifi_sta_handler(void* main_data, esp_event_base_t event_base,
     static int retry_num;
     static EventBits_t xEventGroup;
     xEventGroup = xEventGroupGetBits(dwin_event_group);
-    if(!(xEventGroup&BIT_NOT_ALLOW_STA)){
+    if(!(xEventGroup&BIT_DENIED_STA)){
         if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
             retry_num = 0;
             esp_wifi_connect();
@@ -247,6 +242,7 @@ void wifi_sta_handler(void* main_data, esp_event_base_t event_base,
 void set_time_cb(struct timeval *tv)
 {
     set_time_tv(tv);
+    set_dwin_clock();
     if(sntp_get_sync_interval() < SYNCH_10_HOUR){
         sntp_set_sync_interval(SYNCH_10_HOUR);
         xEventGroupSetBits(dwin_event_group, BIT_SNTP_WORK);

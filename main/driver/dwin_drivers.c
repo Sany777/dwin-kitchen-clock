@@ -214,15 +214,15 @@ void print_rect(const uint16_t x, const uint16_t y, const uint16_t x_e, const ui
     uart_write_bytes(UART_DWIN, RECTANGLE_ON, sizeof(RECTANGLE_ON));
 }
 
-void dwin_clock_set(struct tm *tmptr) 
+void dwin_clock_set(const struct tm *tmptr) 
 {
     uint8_t time_to_send[SIZE_BUF_CLOCK_SET] = {HEADER_SET_CLOCK};
-    time_to_send[INDEX_YEAR]    = GET_HEX(tmptr->tm_year - 100);
-    time_to_send[INDEX_MONTH]   = GET_HEX(tmptr->tm_mon - 1);
-    time_to_send[INDEX_DAY]     = GET_HEX(tmptr->tm_mday);
-    time_to_send[INDEX_HOUR]    = GET_HEX(tmptr->tm_hour);
-    time_to_send[INDEX_MIN]     = GET_HEX(tmptr->tm_min);
-    time_to_send[INDEX_SEC]     = GET_HEX(tmptr->tm_sec);
+    time_to_send[INDEX_YEAR]    = DEC_TO_HEX(tmptr->tm_year%100);
+    time_to_send[INDEX_MONTH]   = DEC_TO_HEX(tmptr->tm_mon);
+    time_to_send[INDEX_DAY]     = DEC_TO_HEX(tmptr->tm_mday);
+    time_to_send[INDEX_HOUR]    = DEC_TO_HEX(tmptr->tm_hour);
+    time_to_send[INDEX_MIN]     = DEC_TO_HEX(tmptr->tm_min);
+    time_to_send[INDEX_SEC]     = DEC_TO_HEX(tmptr->tm_sec);
     uart_write_bytes(UART_DWIN, time_to_send, SIZE_BUF_CLOCK_SET);
 	print_end();
 }

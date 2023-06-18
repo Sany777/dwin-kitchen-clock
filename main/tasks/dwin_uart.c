@@ -58,14 +58,16 @@ for(;;) {
                             xQueueSend(queue_direct, &buf_RX[INDEX_START_DATA_IN_RX], 300);
                         } else if(buf_RX[INDEX_IDENTIF_DATA_IN_RX] == KEY_GET_CLOCK){
                             struct tm tm_time = {
-                                .tm_year = GET_DEC(buf_RX[1]),
-                                .tm_mon = GET_DEC(buf_RX[2]),
-                                .tm_mday = GET_DEC(buf_RX[3]),
-                                .tm_hour = GET_DEC(buf_RX[5]),
-                                .tm_min = GET_DEC(buf_RX[6]),
-                                .tm_sec = GET_DEC(buf_RX[7]),
+                                .tm_year = HEX_TO_DEC(buf_RX[3])+100,
+                                .tm_mon  = HEX_TO_DEC(buf_RX[4]),
+                                .tm_mday = HEX_TO_DEC(buf_RX[5]),
+                                .tm_hour = HEX_TO_DEC(buf_RX[7]),
+                                .tm_min  = HEX_TO_DEC(buf_RX[8]),
+                                .tm_sec  = HEX_TO_DEC(buf_RX[9]),
                             };
-                            set_time_tm(&tm_time, false);
+                            set_time_tm(&tm_time);
+                            set_new_event(UPDATE_TIME_COMPLETE);
+                            ESP_LOGI(TAG, "get time :%s", asctime(&tm_time));
                         } else {
                             xEventGroupSetBits(dwin_event_group, BIT_DWIN_RESPONSE_OK);
                         }
