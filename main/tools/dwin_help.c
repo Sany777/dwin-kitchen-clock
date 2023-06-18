@@ -79,11 +79,13 @@ esp_err_t show_screen(int32_t key, const void *data_send, const size_t size_data
 void set_timezone(int offset)
 {
     EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
-    if(xEventGroup&BIT_SNTP_ALLOW && offset < 24 && offset > -24){
-        char env_format[sizeof(TIME_ZONA_FORMAT)+4];
-        sprintf(env_format, "EET%+dEEST,M3.5.0/3,M10.5.0/4", offset);
-        setenv("TZ", env_format, 1);
-        tzset();
+    if(xEventGroup&BIT_SNTP_ALLOW){
+        if(offset < 24 && offset > -24){
+            char env_format[sizeof(TIME_ZONA_FORMAT)+4];
+            sprintf(env_format, "EET%+dEEST,M3.5.0/3,M10.5.0/4", offset);
+            setenv("TZ", env_format, 1);
+            tzset();
+        }
     } else {
         unsetenv("TZ");
     }

@@ -34,13 +34,13 @@ void esp_init(void)
       ESP_ERROR_CHECK(nvs_flash_erase());
       ESP_ERROR_CHECK(nvs_flash_init());
     }
+    read_all_memory(main_data);
     int offset;
     read_offset(&offset);
     set_timezone(offset);
     init_uart();
     set_new_event(INIT_SNTP);
     // welcome();
-    read_all_memory(main_data);
     wifi_init();
         
     // cancel_text_box();
