@@ -7,41 +7,53 @@ bool notification_alarm(const main_data_t *main_data,
                             const struct tm* cur_time, 
                             const bool alarm)
 {
+    bool res = false, signal = false;
     int wday = cur_time->tm_wday;
+    uint8_t notif_hour, notif_min, cur_hour, cur_min;
+    cur_hour = cur_time->tm_hour;
+    cur_min = cur_time->tm_min;
     if(IS_DAY_ACTIVE(wday)){
-        uint8_t notif_hour, notif_min, cur_hour, cur_min;
-        cur_hour = cur_time->tm_hour;
-        cur_min = cur_time->tm_min;
-        for(int notif=0; notif<NOTIF_PER_DAY; notif++){
+        for(int notif=0; notif<NOTIF_PER_DAY && !res; notif++){
             if(IS_NOTIF_ACTIVE(notif, wday)){
                 notif_hour = VALUE_NOTIF_HOUR(notif, wday);
                 notif_min = VALUE_NOTIF_MIN(notif, wday);
                 if(cur_hour == notif_hour){
                     if(cur_min == notif_min){
                         if(alarm 
-                            &&notif_hour >= 6 
-                            && notif_hour <= 23)
+                            && notif_hour >= 6 
+                            && notif_hour <= 23 )
                         {
-                            dwin_buzer(notif_hour == 6 
-                                        || notif_hour == 12 
-                                        || notif_hour == 18 
-                                            ? LOUD_BUZZER
-                                            : NORMAL_BUZZER);
+                            signal = true;  
                         }
-                        return true;
+                        res = true;
                     } else if (notif_min <= cur_min + MIN_BEFORE_NOTIFICATION
-                                && notif_min > cur_min){
-                        return true;
+                                && notif_min > cur_min)
+                    {
+                        res = true;
                     }
                 } else if(cur_hour+1 == notif_hour 
                             && notif_min <= MIN_BEFORE_NOTIFICATION
-                            && 60+notif_min < cur_min+MIN_BEFORE_NOTIFICATION){
-                    return true;
+                            && 60+notif_min < cur_min+MIN_BEFORE_NOTIFICATION)
+                {
+                    res = true;
                 }                             
             }
         }
     }
-    return false;
+    if(alarm 
+        && cur_hour >= 6 
+        && cur_hour <= 23 
+        && (signal || cur_min == 0))
+    {
+        dwin_buzer(cur_hour == 6 
+                        || cur_hour == 12 
+                        || cur_hour == 18 
+                        || signal
+                            ? LOUD_BUZZER
+                            : NORMAL_BUZZER);
+    }
+        
+    return res;
 }
 
 
