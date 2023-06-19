@@ -63,13 +63,14 @@ void get_weather(main_data_t *main_data, uint8_t key)
     if(xEventGroup&BIT_WEATHER_OK){
         xEventGroupClearBits(dwin_event_group, BIT_WEATHER_OK);
     }                                                            
+    if(xEventGroup&BIT_DENIED_STA) return;
     DWIN_CHECK_FALSE_AND_GO((strnlen(api_KEY, SIZE_BUF) == MAX_STR_LEN) 
                                 || (strnlen(name_CITY, SIZE_BUF) == 0),
                                 st_1);
     if(!(xEventGroup&BIT_CON_STA_OK)){
         set_new_event(START_STA);
         vTaskDelay(100);
-        xEventGroup = xEventGroupWaitBits( dwin_event_group, 
+        xEventGroup = xEventGroupWaitBits(dwin_event_group, 
                                             BIT_PROCESS,   
                                             false, false, 
                                             WAIT_PROCEES); 

@@ -6,7 +6,6 @@ ESP_EVENT_DEFINE_BASE(ESPNOW_EVENTS);
 ESP_EVENT_DEFINE_BASE(WIFI_SET_EVENTS);
 ESP_EVENT_DEFINE_BASE(SNTP_EVENTS);
 
-
 void init_dwin_events(main_data_t *main_data) 
 {
     for(int i=0; i<SIZE_SERVICE_TASK; i++){
@@ -19,38 +18,17 @@ void init_dwin_events(main_data_t *main_data)
             NULL
         );
     }
-    EventBits_t xEventGroup;
+    EventBits_t xEventGroup = xEventGroupSetBits(dwin_event_group, BIT_PROCESS);
+    set_new_event(START_STA);
     do{
         send_hello();
         xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_DWIN_RESPONSE_OK, false, false, 1000);
     }while(!(xEventGroup&BIT_DWIN_RESPONSE_OK));
     dwin_set_pic(NO_WEATHER_PIC);
-    // set_color(GREEN, WHITE);
-
-// clear_screen();
-// uart_write_bytes(UART_DWIN, send, 20);
-// send_str_dwin(send);
-    // vTaskDelay(1500/portTICK_PERIOD_MS);
-    // print_broken_line(points, 10, 10, 100);
-    // print_histogram(points, 7, 10, 400, 260);
-    // set_text_box(10, 10, 475, 267);
-    // fill_area(20, 20, RED);
-
-//  uart_write_bytes(UART_DWIN, points, 4);
-
-
-    // xEventGroupSetBits(dwin_event_group, BIT_SSID_FOUND|BIT_IS_TIME|BIT_CON_STA_OK|BIT_SEN_2);
-    // start_espnow();
-    // esp_event_post_to(slow_service_loop, ESPNOW_SET, STOP_ESPNOW, NULL, 0, WAIT_SERVICE);
-    // vTaskDelay(5000/portTICK_PERIOD_MS);
-    // start_espnow();
-    // esp_event_post_to(slow_service_loop, ESPNOW_SET, PAUSE_ESPNOW, NULL, 0, WAIT_SERVICE);
-    // start_espnow();
-
-
+    welcome();
+    xEventGroupWaitBits(dwin_event_group, BIT_PROCESS, true, true, 2000);
+    set_new_event(INIT_SNTP);
     set_new_event(MAIN_SCREEN);
-
-
 }
 
 
@@ -103,7 +81,6 @@ void direction_task(void *pv)
             }
 
         }
-
     }
 }
 

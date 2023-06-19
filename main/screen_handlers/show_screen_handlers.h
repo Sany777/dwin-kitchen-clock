@@ -2,6 +2,10 @@
 
 #include "dwin_common.h"
 
+void show_info_handler(main_data_t * main_data, 
+                        int32_t state, 
+                        void* event_data);
+
 void show_ap_handler(main_data_t* main_data, 
                                     int32_t, 
                                     void*);

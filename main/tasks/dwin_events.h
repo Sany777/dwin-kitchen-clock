@@ -3,11 +3,10 @@
 #include "dwin_common.h"
 
 
-
-#define PRIORITY_DIRECTION      5
+#define PRIORITY_UART           6
+#define PRIORITY_DIRECTION      (PRIORITY_UART-1)
 #define PRIORITY_FAST_SERVICE   (PRIORITY_DIRECTION-1)
 #define PRIORITY_SHOW           (PRIORITY_DIRECTION-2)
-#define PRIORITY_SLOW_SERVICE   (PRIORITY_DIRECTION-3)
 
 
 #define sleep_dwin(time_us)                                                                     \
@@ -65,22 +64,22 @@ static task_dwin_t const sevice_tasks[SIZE_SERVICE_TASK] = {
     {
         .pTask = show_task,
         .priority = PRIORITY_SHOW,
-        .stack = 2000
+        .stack = 4000
     },
     {
         .pTask = direction_task,
         .priority = PRIORITY_FAST_SERVICE,
-        .stack = 10000
+        .stack = 8000
     },
     {
         .pTask = service_task,
         .priority = PRIORITY_FAST_SERVICE,
-        .stack = 10000
+        .stack = 8000
     },
     {
         .pTask = uart_event_task,
-        .priority = 10,
-        .stack = 4048
+        .priority = PRIORITY_UART,
+        .stack = 4000
     },
 };
 

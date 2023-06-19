@@ -38,14 +38,51 @@ void show_info_handler(main_data_t * main_data,
                         int32_t state, 
                         void* event_data)
 {
+    print_start(2, 0, WHITE, FONT_INFO);
+    uint8_t mac[8];
+    if(esp_read_mac(mac, ESP_MAC_WIFI_STA) == ESP_OK){
+        send_str(" MAC WIFI STA: "MACSTR"", MAC2STR(mac));
+    }
+    if(esp_read_mac(mac, ESP_MAC_BT) == ESP_OK){
+        send_str("\n\r MAC BT : "MACSTR"", MAC2STR(mac));
+    }
+    send_str("\n\r Device name: %s,\r\n Configuration server data (WiFi AP)\n\r SSID: %s,\r\n password %s, \n\r IP: %s", 
+                        MY_DEVICE_NAME, 
+                        AP_WIFI_SSID, 
+                        AP_WIFI_PWD, MY_IP);
 
+    print_end();
 }
 
 void show_device_handler(main_data_t * main_data, 
                         int32_t state, 
                         void* event_data)
 {
-    
+    print_start(1, 5, WHITE, FONT_INFO);
+    device_inf_t *device = get_my_device();
+    if(device){
+        send_str_dwin("Device ESPNOW");
+        int count = 0;
+        while(device){
+            send_str("\n\n\r %2.0d. %s %s \"%s\" MAC: "MACSTR".\n\r", 
+                        count,
+                        count == 0
+                            ? "My device"
+                            : "Connected device",
+                        device->type == SENSOR_TEMP_DEVICE
+                            ? "sensor"
+                            : device->type == TIMER_DEVICE
+                                ? "timer"
+                                : "screen",
+                        device->name,
+                        MAC2STR(device->mac));
+            device = SLIST_NEXT(device, next);
+            count++;
+        }
+    } else {
+        send_str_dwin("ESPNOW not work");
+    }
+    print_end();
 }
 
 void show_ap_handler(main_data_t * main_data, 
@@ -139,7 +176,7 @@ void show_settings_handler(main_data_t * main_data,
                 } else {
                     send_str(" SSID not found");
                 }
-                send_str_dwin("  [Search SSID]");
+                send_str_dwin("  [SEARCH SSID]");
                 break;
             case 1:
                 print_start(2, 1, GET_COLOR_AREA(AREA_SSID), NORMAL_FONT);
@@ -162,7 +199,7 @@ void show_settings_handler(main_data_t * main_data,
                 if(area_SCREEN == AREA_API) {
                     send_str(api_KEY);
                 } else {
-                    send_str("*** Key for openweather.com ***");
+                    send_str("*** Key for opeearchnweather.com ***");
                 }
                 break;
             default : break;
@@ -283,7 +320,7 @@ void show_state_handler(main_data_t *main_data,
                                 : "STNP OFF");
     vTaskDelay(DELAY_SHOW_ITEM);
     print_start(2, 7, COLOR_DISABLE, 1);
-    send_str("State device %s\n\n\r WiFi: %s.\n\n\r ESPNOW: %s.\n\n\r openweather.com: %s.\n\n\r SNTP: %s. %s%.15s%s%.15s",
+    send_str("State device %s\n\n\r WiFi: %s.\n\n\r ESPNOW: %s.\n\n\r openweather.com: %s.\n\n\r SNTP: %s.",
                 MY_DEVICE_NAME,
                 xEventGroup&BIT_CON_STA_OK
                     ? "connect"
@@ -308,19 +345,15 @@ void show_state_handler(main_data_t *main_data,
                     ? xEventGroup&BIT_SNTP_WORK
                         ? "work"
                         : "not work - no internet"
-                    : "denied",
-                xEventGroup&BIT_SEN_1&&sensor_DATA
-                    ? "\n\n\r Sensore 1: "
-                    : "",
-                xEventGroup&BIT_SEN_1&&sensor_DATA
-                    ? sensor_DATA[0].name
-                    : "",
-                xEventGroup&BIT_SEN_2&&sensor_DATA
-                    ? "\n\n\r Sensore 2: "
-                    : "",
-                xEventGroup&BIT_SEN_1&&sensor_DATA
-                    ? sensor_DATA[1].name
-                    : "");
+                    : "denied");
+    if(sensor_DATA){
+        if(xEventGroup&BIT_SEN_1){
+            send_str("\n\n\rСonnected to the temperature sensor 1:\n\r  %15.15s, mac: "MACSTR", t*C: ", sensor_DATA[0].name, MAC2STR(sensor_DATA[0].mac), sensor_DATA[0].tem);
+        }
+        if(xEventGroup&BIT_SEN_2){
+            send_str("\n\n\rСonnected to the temperature sensor 2:\n\r  %15.15s, mac: "MACSTR", t*C", sensor_DATA[1].name, MAC2STR(sensor_DATA[1].mac), sensor_DATA[1].tem);
+        }
+    }
     print_end();
     print_text_box(250, 220, 43, 35, BLACK, YELLOW, 2, "Set");
     print_text_box(110, 220, 80, 35, BLACK, YELLOW, 2, "Update");
@@ -511,7 +544,7 @@ void show_timer_handler(main_data_t *main_data,
                         ? LEMON
                         : ORANGE, 6);
         if(timer_HOUR){
-            send_str("%.d : %.d : %2.2d",
+            send_str("%d : %2.2d : %2.2d",
                         timer_HOUR,
                         timer_MIN,
                         timer_SEC);

@@ -7,7 +7,10 @@ void info_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
     if(command == KEY_INIT) {
         dwin_set_pic(INFO_PIC);
+        vTaskDelay(DELAY_CHANGE_PIC);
+        show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
     }
+
 }
 
 void device_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
@@ -15,6 +18,8 @@ void device_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 
     if(command == KEY_INIT) {
         dwin_set_pic(INFO_PIC);
+        vTaskDelay(DELAY_CHANGE_PIC);
+        show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
     }
 }
 
@@ -68,7 +73,7 @@ void search_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
     dwin_set_pic(SEARCH_PIC);
     show_screen(next_page 
                     ? ap_count*-1
-                    :ap_count,
+                    : ap_count,
                 &ap_info, 
                 sizeof(ap_info));
 }

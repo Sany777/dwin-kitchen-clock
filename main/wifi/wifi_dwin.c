@@ -94,6 +94,10 @@ switch(action){
                 netif = NULL;  
             }
             netif = esp_netif_create_default_wifi_ap();
+            if(!netif){
+                set_new_event(MAIN_SCREEN);
+                return;
+            }
             mode = WIFI_MODE_AP;
             memset(&wifi_config, 0, sizeof(wifi_config));
             wifi_config.ap.max_connection = MAX_STA_CONN;
@@ -146,7 +150,7 @@ switch(action){
         DWIN_SHOW_ERR(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
         DWIN_SHOW_ERR(esp_wifi_start());
         if(xEventGroup&BIT_ESPNOW_ALLOW && !(xEventGroup&BIT_ESPNOW_RUN)){
-            set_new_event(INIT_ESPNOW);
+            set_periodic_event(INIT_ESPNOW, 30, ONLY_ONCE);
         }
         break;
     }

@@ -1,6 +1,7 @@
 #include "dwin_timer.h"
 
-#define STEP_RESIZE 3
+#define STEP_RESIZE 10
+
 esp_timer_handle_t periodic_timer = NULL;
 periodic_event_t *list_periodic_events = NULL;
 portMUX_TYPE periodic_timers_s = portMUX_INITIALIZER_UNLOCKED;
@@ -126,7 +127,7 @@ void periodic_timer_cb(void* arg)
                 }
             }
         }
-        if(number_event == 0 || size_list > (number_event + STEP_RESIZE)){
+        if(number_event == 0 || (size_list - number_event) > STEP_RESIZE){
             resize_list();
         }
         if(need_change)portYIELD_FROM_ISR();

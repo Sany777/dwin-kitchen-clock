@@ -39,14 +39,7 @@ void esp_init(void)
     read_offset(&offset);
     set_timezone(offset);
     init_uart();
-    set_new_event(INIT_SNTP);
-    // welcome();
     wifi_init();
-        
-    // cancel_text_box();
-    // set_color(GREEN,BLACK);
-    // clear_screen();
-
     init_dwin_events(main_data);
 }
 
