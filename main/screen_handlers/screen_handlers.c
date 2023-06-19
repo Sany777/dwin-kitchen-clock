@@ -85,6 +85,7 @@ void ap_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
         xEventGroupSetBits(dwin_event_group, BIT_DENIED_STA);
         set_new_event(INIT_AP);
+        set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
     } else if(command == KEY_CLOSE) {
         xEventGroupClearBits(dwin_event_group, BIT_DENIED_STA);
         esp_wifi_stop();

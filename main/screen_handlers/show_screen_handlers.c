@@ -38,7 +38,7 @@ void show_info_handler(main_data_t * main_data,
                         int32_t state, 
                         void* event_data)
 {
-    print_start(2, 0, WHITE, FONT_INFO);
+    print_start(2, 0, WHITE, FONT_SECOND_INFO);
     uint8_t mac[8];
     if(esp_read_mac(mac, ESP_MAC_WIFI_STA) == ESP_OK){
         send_str(" MAC WIFI STA: "MACSTR"", MAC2STR(mac));
@@ -46,7 +46,7 @@ void show_info_handler(main_data_t * main_data,
     if(esp_read_mac(mac, ESP_MAC_BT) == ESP_OK){
         send_str("\n\r MAC BT : "MACSTR"", MAC2STR(mac));
     }
-    send_str("\n\r Device name: %s,\r\n Configuration server data (WiFi AP)\n\r SSID: %s,\r\n password %s, \n\r IP: %s", 
+    send_str("\n\r Device name: %s,\r\n     Configuration server (WiFi AP)\n\r SSID: %s.\r\n Password: %s.\n\r IP: %s", 
                         MY_DEVICE_NAME, 
                         AP_WIFI_SSID, 
                         AP_WIFI_PWD, MY_IP);
@@ -58,13 +58,13 @@ void show_device_handler(main_data_t * main_data,
                         int32_t state, 
                         void* event_data)
 {
-    print_start(1, 5, WHITE, FONT_INFO);
+    print_start(1, 5, WHITE, FONT_SECOND_INFO);
     device_inf_t *device = get_my_device();
     if(device){
         send_str_dwin("Device ESPNOW");
         int count = 0;
         while(device){
-            send_str("\n\n\r %2.0d. %s %s \"%s\" MAC: "MACSTR".\n\r", 
+            send_str("\n\n\r %2.0d %s %s \"%s\" MAC: "MACSTR".", 
                         count,
                         count == 0
                             ? "My device"
@@ -319,8 +319,8 @@ void show_state_handler(main_data_t *main_data,
                                 ? "SNTP ON"
                                 : "STNP OFF");
     vTaskDelay(DELAY_SHOW_ITEM);
-    print_start(2, 7, COLOR_DISABLE, 1);
-    send_str("State device %s\n\n\r WiFi: %s.\n\n\r ESPNOW: %s.\n\n\r openweather.com: %s.\n\n\r SNTP: %s.",
+    print_start(1, 7, COLOR_DISABLE, 1);
+    send_str("State device %s\n\n\r WiFi: %s.\n\r ESPNOW: %s.\n\r openweather.com: %s.\n\r SNTP: %s.",
                 MY_DEVICE_NAME,
                 xEventGroup&BIT_CON_STA_OK
                     ? "connect"
