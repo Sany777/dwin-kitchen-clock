@@ -233,10 +233,10 @@ static esp_err_t handler_set_img(httpd_req_t *req)
         received = httpd_req_recv(req, server_buf, total_len);
         if (received <= 0) {
             DWIN_RESP_ERR(req, "Failed to post control value", err);
+            // ? func send
         }
         cur_len += received;
     }
-    send_chunc(server_buf, total_len);
     if(total_len < MAX_LEN_CHUNC_IMG){
         char *pos_pic_str = get_data_from_uri(req->uri, BASE_PATH_SAVE_PIC);
         if(!pos_pic_str){
@@ -251,7 +251,6 @@ static esp_err_t handler_set_img(httpd_req_t *req)
     httpd_resp_sendstr(req, "ok");
     return ESP_OK;
 err:
-    send_chunc(NULL, 0);
     return ESP_FAIL;
 }
 

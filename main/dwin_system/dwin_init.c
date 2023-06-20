@@ -1,5 +1,9 @@
 #include "dwin_init.h"
 
+ESP_EVENT_DEFINE_BASE(ESPNOW_EVENTS);
+ESP_EVENT_DEFINE_BASE(WIFI_SET_EVENTS);
+ESP_EVENT_DEFINE_BASE(SNTP_EVENTS);
+
 EventGroupHandle_t dwin_event_group;
 TaskHandle_t rx_espnow = NULL, tx_espnow = NULL;
 QueueHandle_t 
@@ -9,9 +13,6 @@ QueueHandle_t
           queue_direct = NULL, 
           queue_service = NULL, 
           queue_show = NULL;
-#define SIZE_QUEUE_DIRECT 10
-
-
 
 void esp_init(void)
 {
@@ -27,8 +28,6 @@ void esp_init(void)
     assert(queue_service);
     assert(dwin_event_group);
     assert(queue_direct);
-    main_data->notif_data = malloc(SIZE_NOTIFICATION);
-    assert(main_data->notif_data);
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
       ESP_ERROR_CHECK(nvs_flash_erase());
@@ -40,7 +39,27 @@ void esp_init(void)
     set_timezone(offset);
     init_uart();
     wifi_init();
-    init_dwin_events(main_data);
+    for(int i=0; i<SIZE_SERVICE_TASK; i++){
+      xTaskCreate(
+        sevice_tasks[i].pTask, 
+        "service",
+        sevice_tasks[i].stack, 
+        (void * const)main_data, 
+        sevice_tasks[i].priority,
+        NULL
+      );
+    }
+    EventBits_t xEventGroup = xEventGroupSetBits(dwin_event_group, BIT_PROCESS);
+    set_new_event(START_STA);
+    do{
+        send_hello();
+        xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_DWIN_RESPONSE_OK, false, false, 1000);
+    }while(!(xEventGroup&BIT_DWIN_RESPONSE_OK));
+    dwin_set_pic(NO_WEATHER_PIC);
+    welcome();
+    xEventGroupWaitBits(dwin_event_group, BIT_PROCESS, true, true, 2000);
+    set_new_event(INIT_SNTP);
+    set_new_event(MAIN_SCREEN);
 }
 
 

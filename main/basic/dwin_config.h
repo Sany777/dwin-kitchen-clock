@@ -124,8 +124,8 @@
 
 /* AP */
 #define AP_WIFI_SSID      "NASA"
-#define AP_WIFI_PWD      "dwinSecond"
-#define MY_IP "http://192.168.4.1"
+#define AP_WIFI_PWD       "dwinSecond"
+#define MY_IP             "http://192.168.4.1"
 
 /* weather service*/
 #define NUMBER_DATA_WEATHER 5
@@ -135,6 +135,7 @@
 #define NUMBER_ITEM_WEATHER  5
 #define FIRST_URL       "https://api.openweathermap.org/data/2.5/forecast?q="
 #define SECOND_URL      "&units=metric&cnt=5&appid="
+/* buffer qeather data parser*/
 #define INITIAL_SIZE_LIST_KEYS 10
 #define SHIFT_DT_TX 12
 #define STEP_DT_TX  3
@@ -145,7 +146,7 @@
 #define DELAI_UPDATE_WEATHER_FAIL 600
 /* Clock */
 #define DELAI_UPDATE_TIME_ON_SCREEN 60
-#define TIME_ZONA_FORMAT "EET+0EEST,M3.5.0/3,M10.5.0/4"
+#define TIME_ZONA_FORMAT "EET+2EEST,M3.5.0/3,M10.5.0/4"
 #define SYNCH_10_HOUR 36000000
 #define SYNC_15_MIN 900000
 #define MIN_BEFORE_NOTIFICATION 5 
@@ -153,14 +154,10 @@
 #define SIZE_UART_EVENTS 10
 #define SIZE_SHOW_BUF 250
 #define MAX_DATA_LEN  (SIZE_SHOW_BUF-1)
-
+/* sec - for events timer */
 #define DELAY_AUTOCLOSE 180
-#define NO_TEMP_SENSOR -100
-
 #define WAIT_SHOW 100
 #define WAIT_SET_NEW_EVENT 100
-#define DELAY_AUTOCLOSE  (180/portTICK_PERIOD_MS)
-
-#define REPEAT_SHOW 2
-
 #define MAX_AP_PAGE 9
+
+#define SIZE_QUEUE_DIRECT 10

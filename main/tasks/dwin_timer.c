@@ -56,7 +56,7 @@ void remove_periodic_event(uint8_t command)
 void set_new_event(uint8_t command)
 {
     uint8_t send[2] = {command, 0};
-    xQueueSend(queue_direct, send, 200);
+    xQueueSend(queue_direct, send, 300);
 }
 
 

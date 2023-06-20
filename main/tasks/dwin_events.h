@@ -2,20 +2,10 @@
 
 #include "dwin_common.h"
 
-
 #define PRIORITY_UART           6
 #define PRIORITY_DIRECTION      (PRIORITY_UART-1)
 #define PRIORITY_FAST_SERVICE   (PRIORITY_DIRECTION-1)
 #define PRIORITY_SHOW           (PRIORITY_DIRECTION-2)
-
-
-#define sleep_dwin(time_us)                                                                     \
-    do{                                                             \
-        ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(time_us));    \
-        uart_wait_tx_idle_polling(UART_DWIN);                       \
-        ESP_ERROR_CHECK(esp_light_sleep_start());                   \
-    }while(0)
-                                    //stop_event_timer();                                     
 
 extern  dwin_screen_handler_t  wifi_set_mode_handler;
 extern  dwin_screen_handler_t  search_screen_handler;
@@ -113,7 +103,6 @@ static const handlers_dwin_t screens_handlers[SIZE_LIST_TASKS] = {
         .main_handler    = ap_screen_handler,
         .show_handler    = show_ap_handler,
     },
-
     {
         .main_handler    = state_screen_handler,
         .show_handler    = show_state_handler,

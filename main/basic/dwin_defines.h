@@ -30,7 +30,7 @@
 /*GET INPUT VALUE*/
 #define GET_AREA_VALUE(key_from_dwin)             ((key_from_dwin)-KEY_START_AREA)
 
-#define GET_VALUE_TOGGLE(key_from_dwin)      ((key_from_dwin)-KEY_TOGGLE_1)
+#define GET_VALUE_TOGGLE(key_from_dwin)           ((key_from_dwin)-KEY_TOGGLE_1)
 
 #define GET_DAY_TOGGLE(key_from_dwin)             ((key_from_dwin)-KEY_TOGGLE_DAY_1)
 
@@ -185,8 +185,8 @@
 
 #define GET_COLOR_AREA(n)                     ((n) == (area_SCREEN) ? COLOR_ENABLE : COLOR_DISABLE)
 
-#define DEC_TO_HEX(num)                          (num + 6 * (num / 10))
-#define HEX_TO_DEC(num)                          (num - 6 * (num / 16))
+#define DEC_TO_HEX(num)                       (num + 6 * (num / 10))
+#define HEX_TO_DEC(num)                       (num - 6 * (num / 16))
 
 
 #ifndef MIN
@@ -196,9 +196,31 @@
 
 
 #define DWIN_SHOW_ERR(a) \
-    do {                                             \
-        if (ESP_OK != (a)) {                         \
-            ESP_LOGE(TAG,"%s", esp_err_to_name(a));  \ 
-        }                                            \
+    do {                                                \
+        if (ESP_OK != (a)) {                            \
+            ESP_LOGE(TAG,"%s", esp_err_to_name(a));     \ 
+        }                                               \
     } while (0)
 
+#define DWIN_IF_FALSE_GOTO(a, goto_tag)  \
+    do{                                  \
+        if (!(a)) {                      \
+            goto goto_tag;               \
+        }                                \
+    } while(0)
+
+#define DWIN_CHECK_NULL_AND_GO(ptr, str, goto_tag)  \
+    do{                                             \
+        if (ptr == NULL) {                          \
+            ESP_LOGI("Err null!", "%s", str);       \
+            goto goto_tag;                          \
+        }                                           \
+    } while(0)
+
+#define DWIN_CHECK_AND_GO(a, goto_tag)                  \
+    do{                                                 \
+        if (ESP_OK != (a)) {                            \
+            ESP_LOGI("dwin", "%s", esp_err_to_name(a)); \
+            goto goto_tag;                              \
+        }                                               \
+    } while(0)

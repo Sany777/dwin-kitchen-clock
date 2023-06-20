@@ -13,30 +13,17 @@
 #define INDEX_IDENTIF_CHAR_IN_RX    (3)
 
 #define init_update_dwin()			uart_write_bytes(UART_DWIN, INIT_UPDATE, sizeof(INIT_UPDATE))
-
 #define send_hello()  				uart_write_bytes(UART_DWIN, HELLO_COMMAND, sizeof(HELLO_COMMAND))
 #define print_end()					uart_write_bytes(UART_DWIN, END, sizeof(END));
-
-#define dwin_buzer(loud) 			do{ 													\
-										FULL_COMMAND_BUZZER[INDEX_VARIABLE_VALUE] = loud; 	\
-										uart_write_bytes(UART_DWIN, FULL_COMMAND_BUZZER, sizeof(FULL_COMMAND_BUZZER)); \
-									}while(0)
-
-#define dwin_set_brightness(brightness) 	while((brightness) >= 10 && (brightness) <= 100){ 					\
-												brightness = (brightness) / 2 + 13; 							\
-												SET_BRIGHT[INDEX_VARIABLE_VALUE] = convert_to_hex(brightness); 	\
-												uart_write_bytes(UART_DWIN, SET_BRIGHT, sizeof(SET_BRIGHT));												  \
-												break; 															\
-											}
-#define dwin_set_pic(picture_id)    															\
-									while((picture_id) < END_LIST_PIC){ 						\
-										SET_PIC[INDEX_VARIABLE_VALUE] = picture_id; 			\
-										uart_write_bytes(UART_DWIN, SET_PIC, sizeof(SET_PIC));  \
-										break; 													\
-									}
 #define hide_rect() 				uart_write_bytes(UART_DWIN, RECTANGLE_OFF, sizeof(RECTANGLE_OFF))
-#define cancel_text_box()			uart_write_bytes(UART_DWIN, CANCEL_TEXT_BOX, sizeof(CANCEL_TEXT_BOX))
+#define cancel_text_box()			uart_write_bytes(UART_DWIN, HELLO_COMMAND, sizeof(HELLO_COMMAND))
 #define clear_screen()				uart_write_bytes(UART_DWIN, CLEAR_SCREEN, sizeof(CLEAR_SCREEN))
+#define dwin_clock_get() 	        uart_write_bytes(UART_DWIN, GET_TIME, sizeof(GET_TIME))
+
+void dwin_buzer(uint8_t loud);
+void dwin_set_brightness(uint8_t brightness);
+void dwin_set_pic(uint8_t picture_id);				
+									
 
 void print_start(uint16_t row, uint16_t column, 
 					const uint16_t text_color, 
@@ -62,20 +49,16 @@ void print_rect(const uint16_t x_s,
 				const uint16_t y_e,
 				bool fill);
 
-void print_histogram( uint16_t *points, 
-                        const size_t points_number,
-                        const uint16_t x_start,
-                        const size_t width, 
-                        const uint16_t y);
-
 void print_start_pos(uint16_t row, uint16_t column, const uint16_t text_color, size_t font);
-void send_chunc(const char *data, const size_t data_len);
-#define dwin_clock_get() 	uart_write_bytes(UART_DWIN, GET_TIME, sizeof(GET_TIME))
 void dwin_clock_set(const struct tm *);
-void fill_area(const uint16_t x_s, const uint16_t y_s, const uint16_t color);
-void dwin_clock_on(uint16_t row, uint16_t column, uint16_t textColor, uint8_t font);
+void fill_area(const uint16_t x_s, 
+                const uint16_t y_s, 
+                const uint16_t color);
+void dwin_clock_on(const  uint16_t row, 
+                    const uint16_t column, 
+                    const uint16_t textColor, 
+                    const uint8_t font);
 void dwin_clock_off(void);
-
 void print_text_box(const uint16_t x, 
                         const uint16_t y, 
                         const uint16_t width, 
@@ -84,3 +67,4 @@ void print_text_box(const uint16_t x,
                         uint16_t color_rect, 
                         uint16_t font,
                         const char* str);
+

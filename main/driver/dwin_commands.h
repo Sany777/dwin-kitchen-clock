@@ -1,14 +1,13 @@
 #pragma once
 
 #include "dwin_config.h"
-/*for commands : buzzer, set pic, set brightnes*/
 #define INDEX_VARIABLE_VALUE    2
 #define TOUCH_CODE              0x78
-#define LEN_FRAME               2
 
 /*fragments dwin commands*/
 #define FRAME_HEADER            0xAA
 #define FRAME_END               0xCC,0x33,0xC3,0x3C
+#define COMMAND_HISTOGRAM       0x75
 #define COMMAND_SET_BOX         0x45
 #define COMMAND_PRINT           0x98
 #define MAX_BUZZER_TIME         0xef
@@ -32,34 +31,11 @@
 #define COMMAND_CLEAR_SCREEN                  0x52
 #define COMMAND_INIT_UPDATE                   0xf2,0xf2,0xf2,0x5A,0xA5,0x1E
 #define COMMAND_WORK_IN_VIDEOBUF              0x72
+#define COMMAND_FILL                          0x73
 #define HEADER_SET_CLOCK                      0xAA,0xE7,0x55,0xAA,0x5A,0xA5
 #define COMMAND_GET_TIME                      0x9B,0x5A
 #define CLOCK_ON_COMMAND                      0x9B,0xFF,0x00
 #define CLOCK_OFF_COMMAND                     0x9B,0x00
-
-#define START_DATA_CLOCK  6
-#define SIZE_SENDING_TIME 6
-#define SIZE_BUF_CLOCK_SET (SIZE_SENDING_TIME+START_DATA_CLOCK)
-
-enum index_clock {
-    INDEX_YEAR = START_DATA_CLOCK,
-    INDEX_MONTH,
-    INDEX_DAY,
-    INDEX_HOUR,
-    INDEX_MIN,
-    INDEX_SEC,
-    END_INDEX_CLOCK,
-};
-
-enum index_byte_print {
-    PRINT_COL_1=2,
-    PRINT_COL_2,
-    PRINT_ROW_1,
-    PRINT_ROW_2,
-    PRINT_FONT=8,
-    PRINT_COLOR_1,
-    PRINT_COLOR_2,
-};
 
 /****************************** FULL DWIN COMMANDS **********************************/
 
@@ -69,24 +45,11 @@ static const char CLEAR_SCREEN[] = {
     FRAME_END
 };
 
-static char SEND_IMG[] = {
-    FRAME_HEADER,
-    COMMAND_WORK_IN_VIDEOBUF,
-    VARIABLE_VALUE, //H Addr
-    VARIABLE_VALUE,
-    VARIABLE_VALUE, //M Addr
-    VARIABLE_VALUE,
-    VARIABLE_VALUE, //L Addr
-    VARIABLE_VALUE,
-};
-
 static char INIT_UPDATE[] = {
     FRAME_HEADER,
     COMMAND_INIT_UPDATE,
     FRAME_END,
 };
-
-
 
 static const char GET_TIME[] = {
     FRAME_HEADER, 
@@ -100,77 +63,11 @@ static const char HELLO_COMMAND[] = {
     FRAME_END
 };         
 
-static char ANIMATION[] = {
-    FRAME_HEADER, 
-    COMMAND_ANIMATION, 
-    VARIABLE_VALUE, //pic id
-    FRAME_END,
-};
-
-static const char ANIMATION_OFF[] = {
-    FRAME_HEADER, 
-    COMMAND_ANIMATION, 
-    0xff,
-    FRAME_END,
-};
-
-static char SAVE_PIC[] = {
-    FRAME_HEADER, 
-    COMMAND_PIC_SAVE, 
-    VARIABLE_VALUE, //pic id
-    FRAME_END,
-};
 
 static const char RECTANGLE_OFF[] = {
     FRAME_HEADER, 
     COMMAND_OFF_RECTANGLE, 
     FRAME_END,
-};
-
-
-
-static uint8_t PRINT[] = {
-    FRAME_HEADER, 
-    COMMAND_PRINT, 
-    VARIABLE_VALUE, 
-    VARIABLE_VALUE, 
-    VARIABLE_VALUE, 
-    VARIABLE_VALUE, 
-    0x00,
-    0x81,
-    VARIABLE_VALUE,
-    VARIABLE_VALUE,
-    VARIABLE_VALUE,
-    0xFF,
-    0XFF
-};
-
-static char SET_PIC[] = {
-    FRAME_HEADER, 
-    COMMAND_SET_PIC, 
-    VARIABLE_VALUE,
-    FRAME_END
-};
-
-
-static char SET_BRIGHT[] = {
-    FRAME_HEADER, 
-    COMMAND_SET_BRIGHT, 
-    VARIABLE_VALUE,
-    FRAME_END
-};
-
-static char FULL_COMMAND_BUZZER[] = {
-    FRAME_HEADER, 
-    COMMAND_BUZZER, 
-    VARIABLE_VALUE, 
-    FRAME_END
-};
-
-static const char CANCEL_TEXT_BOX[] = {
-    FRAME_HEADER, 
-    0x00,
-    FRAME_END
 };
 
 static const char END[] = { FRAME_END };

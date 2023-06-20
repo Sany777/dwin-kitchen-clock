@@ -12,17 +12,6 @@ void send_str(const char * format, ... )
 }
 
 
-void show_mac(uint8_t *mac, char *str)
-{
-    if(mac){
-        ESP_LOGI(TAG, "Station "MACSTR" %s",
-                 MAC2STR(mac), str);
-    } else {
-        ESP_LOGI(TAG, "%s", str);
-    }
-}
-
-
 /* SPECIAL SYMBOLS DWIN SCREEN*/ 
 #define CORNER_TOP_LEFT     	1
 #define CORNER_TOP_RIGHT    	2

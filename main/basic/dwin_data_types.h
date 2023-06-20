@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include <sys/queue.h>
 #include "esp_event_base.h"
-
 #include "screen_keys.h"
 #include "dwin_config.h"
 
@@ -45,7 +44,6 @@ typedef enum flag_state_device{
     SOUNDS_ALLOW,
     ESPNOW_ALLOW,
     SNTP_ALLOW,
-    GET_TIME_AUTO,
     SECURITY,
     WEATHER_OK,
     CON_STA_OK,
@@ -65,8 +63,6 @@ typedef enum flag_state_device{
 }flag_state_device_t;
 
 /*events bit*/
-
-#define BIT_GET_TIME_AUTO       ( 1 << GET_TIME_AUTO )
 #define BIT_RESPONSE_400_SERVER ( 1 << RESPONSE_400_SERVER )
 #define BIT_SOUNDS_ALLOW        ( 1 << SOUNDS_ALLOW )
 #define BIT_ESPNOW_ALLOW        ( 1 << ESPNOW_ALLOW )
@@ -86,7 +82,7 @@ typedef enum flag_state_device{
 #define BIT_ETHERNET            ( 1 << ETHERNET_OK )
 #define BIT_SEN_1               ( 1 << SENSOR_1_OK )
 #define BIT_SEN_2               ( 1 << SENSOR_2_OK )
-#define STORED_FLAGS            (1UL|BIT_SOUNDS_ALLOW|BIT_SNTP_ALLOW|BIT_ESPNOW_ALLOW|BIT_SECURITY|BIT_GET_TIME_AUTO)
+#define STORED_FLAGS            (1UL|BIT_SOUNDS_ALLOW|BIT_SNTP_ALLOW|BIT_ESPNOW_ALLOW|BIT_SECURITY)
 
 #define NUMBER_STORED_FLAGS 4
 
@@ -147,8 +143,6 @@ typedef struct device_espnow {
     uint8_t type;
     char name[MAX_NAME_DEVICE+1];
 } __attribute__((packed)) device_info_package_t;
-
-
 
 typedef struct {
     uint8_t weather_pic;
@@ -212,9 +206,6 @@ typedef struct timer_data{
     uint8_t num_week;
 }timer_data_t;
 
-
-
-
 typedef struct {
     uint8_t area;
     char pwd_wifi[SIZE_BUF];
@@ -222,7 +213,7 @@ typedef struct {
     char city_name[SIZE_BUF];
     char buf_api[SIZE_BUF];
     uint8_t colors_interface[COLOR_INTERFACE_NUMBER];
-    uint8_t *notif_data;
+    uint8_t notif_data[SIZE_NOTIFICATION];
     int8_t timer_data[SIZE_TIMER];
     sensor_data_t *sensor_data;
     timer_data_t *timers;

@@ -14,21 +14,9 @@ void init_uart()
     ESP_ERROR_CHECK(uart_driver_install(UART_DWIN, UART_BUF_SIZE, 0, SIZE_UART_EVENTS, (QueueHandle_t *)&dwin_uart_events_queue, 0));
     assert(dwin_uart_events_queue);
     ESP_ERROR_CHECK(uart_param_config(UART_DWIN, &uart_config));
-    esp_log_level_set(TAG, ESP_LOG_INFO);
     uart_set_pin(UART_DWIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-    // ESP_ERROR_CHECK(gpio_sleep_set_direction(
-    //                             RXD_PIN, 
-    //                             GPIO_MODE_INPUT));
-    // ESP_ERROR_CHECK(gpio_sleep_set_pull_mode(
-    //                             RXD_PIN, 
-    //                             GPIO_PULLUP_ONLY));
-    // ESP_ERROR_CHECK(uart_set_wakeup_threshold(
-    //                             UART_DWIN, 
-    //                             UART_WAKEUP_THRESHOLD));
-    // ESP_ERROR_CHECK(esp_sleep_enable_uart_wakeup(
-    //                         UART_DWIN));
+    esp_log_level_set(TAG, ESP_LOG_INFO);
 }
-
 
 void uart_event_task(void *pv)
 {

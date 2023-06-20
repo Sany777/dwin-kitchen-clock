@@ -1,7 +1,5 @@
 #pragma once
 
-// #include <stdint.h>
-
 #include "dwin_config.h"
 
 /*COLORS*/
@@ -21,8 +19,30 @@
 #define NUMBER_COLORS END_AREA_COLORS
 
 #define SIZE_USED_COLORS 10
-static const uint16_t USED_COLORS[SIZE_USED_COLORS] = {WHITE, CAEN, BLUE, GREY, VIOLET, LEMON, RED, GREEN, AQUA, ORANGE};
-
+static const uint16_t USED_COLORS[SIZE_USED_COLORS] = {
+    WHITE, 
+    CAEN, 
+    BLUE, 
+    GREY, 
+    VIOLET, 
+    LEMON, 
+    RED, 
+    GREEN, 
+    AQUA, 
+    ORANGE
+};
+static const char* COLOR_NAME[] = { 
+    "WHITE", 
+    "CAEN",
+    "BLUE", 
+    "GREY",
+    "VIOLET", 
+    "LEMON", 
+    "RED", 
+    "GREEN",
+    "AQUA",
+    "ORANGE"
+};
 #define COLOR_ENABLE  RED
 #define COLOR_DISABLE WHITE
 
@@ -99,7 +119,6 @@ typedef enum Main_buttons{
 }task_key_t;
 
 #define START_SCREEN_TASK MAIN_SCREEN
-
 
 /* AREA KEYS*/
 #define KEY_START_AREA                  0X40

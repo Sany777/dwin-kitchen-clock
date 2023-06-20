@@ -1,25 +1,5 @@
 #include "dwin_drivers.h"
 
-void send_chunc(const char *data, const size_t data_len)
-{
-    static uint32_t addr = 0;
-    if(data == NULL || data_len == 0){
-        addr = 0;
-        return;
-    }
-    for(int shift=6, i=INDEX_VARIABLE_VALUE; shift>0; shift--, i++){
-        SEND_IMG[i] = addr<<shift*8;
-    }
-    uart_write_bytes(UART_DWIN, SEND_IMG, sizeof(SEND_IMG));
-    uart_write_bytes(UART_DWIN, data, data_len);
-    print_end();
-    if(data_len<MAX_LEN_CHUNC_IMG){
-        addr = 0;
-    } else {
-        addr += data_len;
-    }
-}
-
 void print_start(uint16_t row, uint16_t column, const uint16_t text_color, size_t font) 
 {
 	column = column * font * 8;
@@ -27,22 +7,72 @@ void print_start(uint16_t row, uint16_t column, const uint16_t text_color, size_
     print_start_pos(row, column, text_color, font);
 }
 
+void dwin_buzer(uint8_t loud)
+{
+    uint8_t full_command_buzzer[] = {
+        FRAME_HEADER, 
+        COMMAND_BUZZER, 
+        loud, 
+        FRAME_END
+    };
+    uart_write_bytes(UART_DWIN, full_command_buzzer, sizeof(full_command_buzzer));
+}
+
+void dwin_set_pic(uint8_t picture_id)
+{
+    if(picture_id < END_LIST_PIC){ 	
+        uint8_t SET_PIC[] = {
+            FRAME_HEADER, 
+            COMMAND_SET_PIC, 
+            picture_id,
+            FRAME_END
+        };						
+        uart_write_bytes(UART_DWIN, SET_PIC, sizeof(SET_PIC));
+    }
+} 	
+
+void dwin_set_brightness(uint8_t brightness)
+{
+    if(brightness >= 10 && brightness <= 100){ 
+        uint8_t set_bright[] = {
+            FRAME_HEADER, 
+            COMMAND_SET_BRIGHT, 
+            DEC_TO_HEX(brightness),
+            FRAME_END
+        };
+        uart_write_bytes(UART_DWIN, set_bright, sizeof(set_bright));	
+    }
+}
+
 void print_start_pos(uint16_t row, uint16_t column, const uint16_t text_color, size_t font) 
 {
-    PRINT[PRINT_FONT] = font;
-	PRINT[PRINT_COL_1] = column/256;
-    PRINT[PRINT_COL_2] = column%256;
-    PRINT[PRINT_ROW_1] = row/256;
-    PRINT[PRINT_ROW_2] = row%256;
-    PRINT[PRINT_COLOR_1] = text_color/256;
-    PRINT[PRINT_COLOR_2] = text_color%256;
-	uart_write_bytes(UART_DWIN, PRINT, sizeof(PRINT));
+    uint8_t print_command[] = {
+        FRAME_HEADER, 
+        COMMAND_PRINT, 
+        column/256, 
+        column%256, 
+        row/256, 
+        row%256, 
+        0x00,
+        0x81,
+        text_color/256,
+        text_color%256,
+        font,
+        0xFF,
+        0XFF
+    };
+	uart_write_bytes(UART_DWIN, print_command, sizeof(print_command));
 }
 
 void save_pic(const uint8_t pic)
 {
-    SAVE_PIC[INDEX_VARIABLE_VALUE] = pic;
-    uart_write_bytes(UART_DWIN, SAVE_PIC, sizeof(SAVE_PIC));
+    uint8_t save_command[] = {
+        FRAME_HEADER, 
+        COMMAND_PIC_SAVE, 
+        pic,
+        FRAME_END
+    };
+    uart_write_bytes(UART_DWIN, save_command, sizeof(save_command));
 }
 
 void set_text_box(  const uint16_t x_s, 
@@ -50,7 +80,7 @@ void set_text_box(  const uint16_t x_s,
                     const uint16_t x_e, 
                     const uint16_t y_e  )
 {
-    char SET_TEXT_BOX[] = {
+    uint8_t SET_TEXT_BOX[] = {
         FRAME_HEADER, 
         COMMAND_SET_BOX,
         x_s/256,
@@ -68,7 +98,7 @@ void set_text_box(  const uint16_t x_s,
 
 void set_color(const uint16_t foreground, const uint16_t background)
 {
-    char SET_COLOR[] = {
+    uint8_t SET_COLOR[] = {
         FRAME_HEADER,
         COMMAND_SET_COLOR,
         foreground/256,
@@ -85,7 +115,7 @@ void print_circle(  const uint16_t x,
                     const uint16_t radius, 
                     const bool fill  )
 {
-    char CIRCULAR[] = {
+    uint8_t CIRCULAR[] = {
         FRAME_HEADER,
         fill 
             ? COMMAND_CIRCULAR_FILL_FOREGROUND 
@@ -122,58 +152,6 @@ void print_lines( const uint16_t *points,
     print_end(); 
 }
 
-void print_histogram( uint16_t *y_points, 
-                        const size_t points_number,
-                        const uint16_t x_start,
-                        const size_t width,
-                        const uint16_t y)
-{
-    size_t w = 10;
-
-    uint16_t cur, next, count, x = x_start;
-    cur = y_points[0]*2;
-    next = y_points[1]*2;
-    if(cur > next){
-        count = w/(cur-next)-1;
-    } else {
-        count = w/(next - cur)-1;
-    }
-    
-    for( int ii = 0, i = 0, iii = 0; i-1<points_number; ii++, iii++){
-        if(ii == 0){
-            send_char(0XAA);
-            send_char(0x75);       
-            send_char((x)/256);
-            send_char((x)%256);
-            send_char((y)/256);
-            send_char((y)%256);
-            send_char(0xFF);
-        }
-            x++;
-
-        send_char(0);
-        send_char(cur);
-        if(cur != next){
-           if(iii > count){
-            cur > next ? cur-- : cur++;
-            iii = 0;
-           }
-        }
-        if(ii > w){
-            i++;
-            ii = 0;
-            cur = y_points[i]*2;
-            next = y_points[i+1]*2;
-            if(cur > next){
-                count = w/(cur-next)-1;
-            } else {
-                count = w/(next - cur)-1;
-            }
-            print_end(); 
-        }
-        vTaskDelay(10);
-    }
-}
 
 void print_text_box(const uint16_t x, 
                         const uint16_t y, 
@@ -216,34 +194,37 @@ void print_rect(const uint16_t x, const uint16_t y, const uint16_t x_e, const ui
 
 void dwin_clock_set(const struct tm *tmptr) 
 {
-    uint8_t time_to_send[SIZE_BUF_CLOCK_SET] = {HEADER_SET_CLOCK};
-    time_to_send[INDEX_YEAR]    = DEC_TO_HEX(tmptr->tm_year%100);
-    time_to_send[INDEX_MONTH]   = DEC_TO_HEX(tmptr->tm_mon);
-    time_to_send[INDEX_DAY]     = DEC_TO_HEX(tmptr->tm_mday);
-    time_to_send[INDEX_HOUR]    = DEC_TO_HEX(tmptr->tm_hour);
-    time_to_send[INDEX_MIN]     = DEC_TO_HEX(tmptr->tm_min);
-    time_to_send[INDEX_SEC]     = DEC_TO_HEX(tmptr->tm_sec);
-    uart_write_bytes(UART_DWIN, time_to_send, SIZE_BUF_CLOCK_SET);
-	print_end();
+    uint8_t clock_send[] = {
+        HEADER_SET_CLOCK,
+        DEC_TO_HEX(tmptr->tm_year%100),
+        DEC_TO_HEX(tmptr->tm_mon),
+        DEC_TO_HEX(tmptr->tm_mday),
+        DEC_TO_HEX(tmptr->tm_hour),
+        DEC_TO_HEX(tmptr->tm_min),
+        DEC_TO_HEX(tmptr->tm_sec),
+        FRAME_END
+    };
+    uart_write_bytes(UART_DWIN, clock_send, sizeof(clock_send));
 }
 
-void fill_area(const uint16_t x_s, const uint16_t y_s, const uint16_t color)
+void fill_area(const uint16_t xs, const uint16_t ys, const uint16_t color)
 {
-    send_char(0XAA);
-    send_char(0x73);
-    uint16_t xs= x_s;
-    send_char(xs/256);
-    send_char(xs%256);
-    uint16_t ys= y_s;
-    send_char(ys/256);
-    send_char(ys/256);;
-    send_char(color/256);
-    send_char(color/256);
-    print_end(); 
+    uint8_t fill_area_command[] = {
+        FRAME_HEADER,
+        COMMAND_FILL,
+        xs/256,
+        xs%256,
+        ys/256,
+        ys/256,
+        color/256,
+        color/256,
+        FRAME_END
+    };
+    uart_write_bytes(UART_DWIN, fill_area_command, sizeof(fill_area_command));
 }
 
 
-void dwin_clock_on(uint16_t row, uint16_t column, uint16_t textColor, uint8_t font)
+void dwin_clock_on(const uint16_t row, const  uint16_t column, const  uint16_t textColor, const  uint8_t font)
 {
     char clock_on_command[] = {
         FRAME_HEADER,

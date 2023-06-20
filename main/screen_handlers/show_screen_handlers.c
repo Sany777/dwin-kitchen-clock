@@ -21,18 +21,6 @@ const char* ITEM_COLOR_NAME[] = {
     "Info", 
 };
 
-const char* COLOR_NAME[] = { 
-    "WHITE", 
-    "CAEN",
-    "BLUE", 
-    "GREY",
-    "VIOLET", 
-    "LEMON", 
-    "RED", 
-    "GREEN",
-    "AQUA",
-    "ORANGE"
-};
 
 void show_info_handler(main_data_t * main_data, 
                         int32_t state, 

@@ -5,5 +5,4 @@
 void app_main()
 {
     esp_init();
-
 }

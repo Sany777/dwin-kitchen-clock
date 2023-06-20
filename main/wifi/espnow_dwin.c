@@ -310,16 +310,6 @@ esp_err_t modif_peer(uint8_t *mac_addr, bool encrypt)
     return esp_now_mod_peer(&peer);
 }
 
-
-//esp_register_shutdown_handler()
-
-//base_mac
-// esp_read_mac()
-// esp_iface_mac_addr_set()
-// esp_chip_data()
-// esp_reset_reason()
-
-
 void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
     if(!mac_addr)return;

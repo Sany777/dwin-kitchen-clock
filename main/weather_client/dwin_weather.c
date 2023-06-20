@@ -1,6 +1,6 @@
 #include "dwin_weather.h"
 
-#define FIRST_URL_LEN  (sizeof(FIRST_URL)-1)
+#define FIRST_URL_LEN   (sizeof(FIRST_URL)-1)
 #define SECOND_URL_LEN  (sizeof(SECOND_URL)-1)
 
 esp_err_t _http_event_handler(esp_http_client_event_t *evt)
@@ -63,8 +63,8 @@ void get_weather(main_data_t *main_data, uint8_t key)
     if(xEventGroup&BIT_WEATHER_OK){
         xEventGroupClearBits(dwin_event_group, BIT_WEATHER_OK);
     }                                                            
-    if(xEventGroup&BIT_DENIED_STA) return;
-    DWIN_CHECK_FALSE_AND_GO((strnlen(api_KEY, SIZE_BUF) == MAX_STR_LEN) 
+    DWIN_IF_FALSE_GOTO(!(xEventGroup&BIT_DENIED_STA), st_1);
+    DWIN_IF_FALSE_GOTO((strnlen(api_KEY, SIZE_BUF) == MAX_STR_LEN) 
                                 || (strnlen(name_CITY, SIZE_BUF) == 0),
                                 st_1);
     if(!(xEventGroup&BIT_CON_STA_OK)){
@@ -75,7 +75,7 @@ void get_weather(main_data_t *main_data, uint8_t key)
                                             false, false, 
                                             WAIT_PROCEES); 
     }
-    DWIN_CHECK_FALSE_AND_GO(xEventGroup&BIT_CON_STA_OK, st_1);
+    DWIN_IF_FALSE_GOTO(xEventGroup&BIT_CON_STA_OK, st_1);
     char *url_buf = (char*)calloc(1, SIZE_URL_BUF);
     DWIN_CHECK_NULL_AND_GO(url_buf, "", st_1);
     char *local_response_buffer = (char*)malloc(CLIENT_BUF_LEN);
@@ -96,12 +96,7 @@ void get_weather(main_data_t *main_data, uint8_t key)
     esp_http_client_handle_t client = esp_http_client_init(&config);
     DWIN_CHECK_AND_GO(esp_http_client_perform(client), st_3);
     const size_t data_len = esp_http_client_get_content_length(client);
-    if(data_len == 0){
-        xEventGroupSetBits(dwin_event_group, BIT_RESPONSE_400_SERVER);
-        goto st_3;
-    } else if (xEventGroup&BIT_RESPONSE_400_SERVER){
-       xEventGroupClearBits(dwin_event_group, BIT_RESPONSE_400_SERVER); 
-    }
+    DWIN_IF_FALSE_GOTO(data_len != 0, st_3);
     char **pop = find_str_key(local_response_buffer, data_len, "\"pop\":");
     char **temp = find_str_key(local_response_buffer, data_len, "\"temp\":");
     char **temp_feel = find_str_key(local_response_buffer, data_len, "\"feels_like\":");
@@ -110,7 +105,22 @@ void get_weather(main_data_t *main_data, uint8_t key)
     char **sunrise = find_str_key(local_response_buffer, data_len, "\"sunrise\":");
     char **sunset = find_str_key(local_response_buffer, data_len, "\"sunset\":");
     char **dt_txt = find_str_key(local_response_buffer, data_len, "\"dt_txt\":");
-    DWIN_CHECK_FALSE_AND_GO(pop && temp && temp_feel && description && id && sunrise && sunset && dt_txt, st_4);
+    char **pod = find_str_key(local_response_buffer, data_len, "\"pod\":\"");
+    DWIN_IF_FALSE_GOTO(pop != NULL 
+                        && temp != NULL
+                        && temp_feel != NULL
+                        && description != NULL
+                        && id != NULL
+                        && sunrise != NULL
+                        && sunset != NULL
+                        && dt_txt != NULL
+                        && pod != NULL, st_4);
+    if (xEventGroup&BIT_RESPONSE_400_SERVER){
+       xEventGroupClearBits(dwin_event_group, BIT_RESPONSE_400_SERVER); 
+    }
+    if(!(xEventGroup&BIT_WEATHER_OK)){
+        xEventGroupSetBits(dwin_event_group, BIT_WEATHER_OK);
+    }
     for(int i=0; i<data_len; i++){
         if(local_response_buffer[i] == ',' 
                 || local_response_buffer[i] == '}'
@@ -129,22 +139,13 @@ void get_weather(main_data_t *main_data, uint8_t key)
     sunset_HOUR = timeinfo.tm_hour;
     sunset_MIN = timeinfo.tm_min;
     dt_TX = atoi((dt_txt[0]+SHIFT_DT_TX));
-    weather_PIC = get_pic(atoi(id[0]), (dt_TX>sunset_HOUR-2));
+    weather_PIC = get_pic(atoi(id[0]), pod[0][0] == 'n');
     strncpy(description_WEATHER, description[0], MAX_LEN_DESCRIPTION);
     for(int i=0; temp && temp[i]; i++){
         temp_FEELS_LIKE[i] = atoi(temp_feel[i]);
         PoP[i] = atof(pop[i])*100;
     }
     temp_OUTDOOR = atoi(temp[0]);
-    xEventGroupSetBits(dwin_event_group, BIT_WEATHER_OK);
-    if(xEventGroup&BIT_GET_TIME_AUTO && SNTP_ALLOW){
-            char **timezone = find_str_key(local_response_buffer, data_len, "\"timezone\":");
-            if(timezone){
-                int offset = atoi(timezone);
-                set_timezone((offset/60)/60 -1);
-                free(timezone);
-            }
-    }
 st_4:
     if(dt_txt)free(dt_txt);
     if(pop)free(pop);
@@ -154,12 +155,19 @@ st_4:
     if(temp)free(temp);
     if(description)free(description);
     if(temp_feel)free(temp_feel);
+    if(pod)free(pod);
 st_3:
     esp_http_client_cleanup(client);
     free(local_response_buffer);
 st_2:
     free(url_buf);
 st_1:
+    if (!(xEventGroup&BIT_RESPONSE_400_SERVER)){
+        xEventGroupSetBits(dwin_event_group, BIT_RESPONSE_400_SERVER);
+    }
+    if(xEventGroup&BIT_WEATHER_OK){
+        xEventGroupClearBits(dwin_event_group, BIT_WEATHER_OK);
+    }
     set_new_event(UPDATE_WEATHER_COMPLETE);
 }
 

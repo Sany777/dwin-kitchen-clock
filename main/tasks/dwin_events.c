@@ -1,39 +1,6 @@
 #include "dwin_events.h"
 
-esp_event_loop_handle_t slow_service_loop, fast_service_loop;
 uint8_t cur_screen_id = MAIN_SCREEN;
-ESP_EVENT_DEFINE_BASE(ESPNOW_EVENTS);
-ESP_EVENT_DEFINE_BASE(WIFI_SET_EVENTS);
-ESP_EVENT_DEFINE_BASE(SNTP_EVENTS);
-
-void init_dwin_events(main_data_t *main_data) 
-{
-    for(int i=0; i<SIZE_SERVICE_TASK; i++){
-        xTaskCreate(
-            sevice_tasks[i].pTask, 
-            "service",
-            sevice_tasks[i].stack, 
-            (void * const)main_data, 
-            sevice_tasks[i].priority,
-            NULL
-        );
-    }
-    EventBits_t xEventGroup = xEventGroupSetBits(dwin_event_group, BIT_PROCESS);
-    set_new_event(START_STA);
-    do{
-        send_hello();
-        xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_DWIN_RESPONSE_OK, false, false, 1000);
-    }while(!(xEventGroup&BIT_DWIN_RESPONSE_OK));
-    dwin_set_pic(NO_WEATHER_PIC);
-    welcome();
-    xEventGroupWaitBits(dwin_event_group, BIT_PROCESS, true, true, 2000);
-    set_new_event(INIT_SNTP);
-    set_new_event(MAIN_SCREEN);
-}
-
-
-
-
 
 void check_net_data(main_data_t* main_data)
 {
@@ -46,13 +13,6 @@ void check_net_data(main_data_t* main_data)
         read_memory(main_data, DATA_SSID);
     }
 }
-
-void test_clock_handler(void* main_data, esp_event_base_t base, int32_t new_screen, void* event_data)                                                     
-{
-    send_str_dwin(asctime(get_time_tm()));
-}
-
-
 
 void direction_task(void *pv)
 {
@@ -118,13 +78,24 @@ void service_task(void *main_data)
     }
 }
 
-
-
-void vApplicationIdleHook( void )
+void vApplicationIdleHook(void)
 { 
     TickType_t us_time_sleep = TIMER_WAKEUP_LONG_TIME_US;
     while (1) {
-        
-        sleep_dwin(us_time_sleep);
+        uart_wait_tx_idle_polling(UART_DWIN);  
+        ESP_ERROR_CHECK(gpio_sleep_set_direction(
+                            RXD_PIN, 
+                            GPIO_MODE_INPUT));
+        ESP_ERROR_CHECK(gpio_sleep_set_pull_mode(
+                            RXD_PIN, 
+                            GPIO_PULLUP_ONLY));
+        ESP_ERROR_CHECK(uart_set_wakeup_threshold(
+                            UART_DWIN, 
+                            UART_WAKEUP_THRESHOLD));
+        ESP_ERROR_CHECK(esp_sleep_enable_uart_wakeup(
+                        UART_DWIN));                
+        ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(us_time_sleep)); 
+        ESP_ERROR_CHECK(esp_light_sleep_start());  
+
     }
 }
