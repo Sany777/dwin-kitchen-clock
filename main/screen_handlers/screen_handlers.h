@@ -15,7 +15,6 @@
 
 /*screen handlers*/
 
-void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol);
 void ap_screen_handler(main_data_t* main_data, uint8_t command, char symbol);
 void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol);
 void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol);
@@ -23,4 +22,7 @@ void clock_handler(main_data_t* main_data, uint8_t command, char symbol);
 void state_screen_handler(main_data_t* main_data, uint8_t command, char symbol);
 void notifications_screen_handler(main_data_t* main_data, uint8_t command, char symbol);
 void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol);
-void timer_run_handler(main_data_t* main_data, uint8_t command);
+void info_screen_handler(main_data_t* main_data, uint8_t command, char symbol);
+void device_screen_handler(main_data_t* main_data, uint8_t command, char symbol);
+void search_screen_handler(main_data_t* main_data, uint8_t command, char symbol);
+void set_color_screen_handler(main_data_t* main_data, uint8_t command, char symbol);

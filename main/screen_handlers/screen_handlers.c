@@ -171,12 +171,14 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
 void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
     static bool menu_active, details, is_notify;
+    static size_t atempt;
     static struct tm *cur_time;
     switch(command){
         case KEY_INIT :
         {
             details = false;
             menu_active = false;
+            atempt = 0;
             set_periodic_event(UPDATE_TIME_COMPLETE, 
                                 DELAI_UPDATE_TIME_ON_SCREEN, 
                                 RELOAD_COUNT);
@@ -197,13 +199,22 @@ void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         case UPDATE_WEATHER_COMPLETE :
         {
             if(weather_PIC == NO_WEATHER_PIC){
-                set_periodic_event(GET_WEATHER, 
-                                    DELAI_UPDATE_WEATHER_FAIL, 
-                                    RELOAD_COUNT);
+                if(atempt < ATEMPT_GET_WEATHER){
+                    atempt++;
+                    set_periodic_event(GET_WEATHER, 
+                                        DELAI_FIRST_UPDATE_WEATHER*atempt*atempt, 
+                                        ONLY_ONCE);
+                } else {
+                   atempt = 0; 
+                   set_periodic_event(GET_WEATHER, 
+                                        DELAI_UPDATE_WEATHER_FAIL, 
+                                        ONLY_ONCE);
+                }
             } else {
                 set_periodic_event(GET_WEATHER, 
                                     DELAI_UPDATE_WEATHER, 
                                     RELOAD_COUNT);
+                if(atempt)atempt = 0;
             }
             cur_time = get_time_tm();
             break;

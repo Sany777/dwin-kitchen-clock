@@ -25,16 +25,7 @@ static const uint8_t BRODCAST_MAC[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 
 #define MAX_TIME_GETTING_DATA      (3000/portTICK_PERIOD_MS)
-// #define SIZE_MAC                   6
-
-
-
-
-
-
-
-
-
+#define DELAY_GET_TEMPERATURE       45
 
 #define SIZE_SENSOR_PACKAGE         (sizeof(sensor_package_t))
 #define SIZE_HELLO_PACKAGE          (sizeof(hello_package_t))
@@ -51,7 +42,6 @@ static const uint8_t BRODCAST_MAC[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 #define MAX_ATEMPT_REQUEST 10
 #define MAX_ATEMPT_SEND_DATA 5
-#define NUMBER_RESPONSE_ADD_NEW 5
 #define NUMBER_REQUEST_ADD_NEW 7
 #define TIMEOUT_SEND                (500/portTICK_PERIOD_MS)
 #define WAIT_PUSH_ESPNOW_TO_QUEUE   (1000/portTICK_PERIOD_MS)

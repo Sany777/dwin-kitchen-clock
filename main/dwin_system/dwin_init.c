@@ -3,7 +3,7 @@
 ESP_EVENT_DEFINE_BASE(ESPNOW_EVENTS);
 ESP_EVENT_DEFINE_BASE(WIFI_SET_EVENTS);
 ESP_EVENT_DEFINE_BASE(SNTP_EVENTS);
-
+uint8_t cur_screen_id;
 EventGroupHandle_t dwin_event_group;
 TaskHandle_t rx_espnow = NULL, tx_espnow = NULL;
 QueueHandle_t 
@@ -39,6 +39,7 @@ void esp_init(void)
     set_timezone(offset);
     init_uart();
     wifi_init();
+    cur_screen_id = MAIN_SCREEN;
     for(int i=0; i<SIZE_SERVICE_TASK; i++){
       xTaskCreate(
         sevice_tasks[i].pTask, 

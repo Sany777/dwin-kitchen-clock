@@ -201,6 +201,7 @@ enum buttons_and_events{
     DETAILS_SCREEN,
     NORMAL_SCREEN,
     IS_NOTIFICATION,
+    KEY_NEED_TEMP,
     CHECK_NET_DATA,
     IS_NOTIFY, 
     NOT_NOTIFY,

@@ -20,9 +20,9 @@
 #define clear_screen()				uart_write_bytes(UART_DWIN, CLEAR_SCREEN, sizeof(CLEAR_SCREEN))
 #define dwin_clock_get() 	        uart_write_bytes(UART_DWIN, GET_TIME, sizeof(GET_TIME))
 
-void dwin_buzer(uint8_t loud);
-void dwin_set_brightness(uint8_t brightness);
-void dwin_set_pic(uint8_t picture_id);				
+void dwin_buzer(const uint8_t loud);
+void dwin_set_brightness(const uint8_t brightness);
+void dwin_set_pic(const uint8_t picture_id);				
 									
 
 void print_start(uint16_t row, uint16_t column, 

@@ -43,8 +43,8 @@ for(;;){
         }
         parcel_len = SIZE_HELLO_PACKAGE;
     switch(data_to_send.action){
-        case RESPONSE_ADD_NEW : max_atempt = NUMBER_RESPONSE_ADD_NEW;
-        case REQUEST_ADD_NEW : max_atempt = NUMBER_REQUEST_ADD_NEW;
+        case RESPONSE_ADD_NEW :;
+        case REQUEST_ADD_NEW  : max_atempt = NUMBER_REQUEST_ADD_NEW;
         {
             hello_package_t *hello_package = malloc(SIZE_HELLO_PACKAGE);
             if(hello_package){
@@ -54,6 +54,7 @@ for(;;){
             }
             break;
         }
+        case NEED_TEMP :
         case NEED_TIME :
         case NEED_NETWORK :
         case NEED_DEVICE_INFO :
@@ -183,10 +184,9 @@ if(xQueueReceive(queue_espnow_rx, &data_rx, portMAX_DELAY) == pdTRUE){
             sensor_package->crc = 0;
             if(crc == esp_crc16_le(UINT16_MAX, (uint8_t const *)sensor_package, SIZE_SENSOR_PACKAGE)){
                 set_sensor_data(main_data, 
-                                    data_rx.mac, 
-                                    sensor_package->temperature, 
-                                    sensor_package->humidity, 
-                                    sensor_package->name);
+                                data_rx.mac, 
+                                sensor_package->temperature, 
+                                sensor_package->humidity);
             }
             break;
         }
@@ -213,7 +213,15 @@ if(xQueueReceive(queue_espnow_rx, &data_rx, portMAX_DELAY) == pdTRUE){
                             }
                         }
                         if(new_device->type == SENSOR_TEMP_DEVICE){
+                            EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
+                            if(!(xEventGroup&BIT_SEN_1)){
+                                xEventGroupSetBits(dwin_event_group, BIT_SEN_1);
+                            } else {
+                                xEventGroupSetBits(dwin_event_group, BIT_SEN_2);
+                            }
+                            set_sensor(main_data, data_tx.mac, new_device->name);
                             data_tx.action = NEED_TEMP;
+                            set_periodic_event(KEY_NEED_TEMP, DELAY_GET_TEMPERATURE, RELOAD_COUNT);
                         } else {
                             data_tx.action = 0;
                         }
@@ -296,18 +304,6 @@ esp_err_t add_peer(uint8_t *mac_addr, bool encrypt)
     memcpy(peer.lmk, ESPNOW_LMK, ESP_NOW_KEY_LEN);
     memcpy(peer.peer_addr, mac_addr, SIZE_MAC);
     return esp_now_add_peer(&peer);
-}
-
-esp_err_t modif_peer(uint8_t *mac_addr, bool encrypt)
-{
-    esp_now_peer_info_t peer = {
-        .channel = ESP_WIFI_CHANNEL,
-        .ifidx = WIFI_IF_STA,
-        .encrypt = encrypt,
-    };
-    memcpy(peer.lmk, ESPNOW_LMK, ESP_NOW_KEY_LEN);
-    memcpy(peer.peer_addr, mac_addr, SIZE_MAC);
-    return esp_now_mod_peer(&peer);
 }
 
 void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)

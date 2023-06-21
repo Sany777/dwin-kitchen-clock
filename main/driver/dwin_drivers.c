@@ -7,7 +7,7 @@ void print_start(uint16_t row, uint16_t column, const uint16_t text_color, size_
     print_start_pos(row, column, text_color, font);
 }
 
-void dwin_buzer(uint8_t loud)
+void dwin_buzer(const uint8_t loud)
 {
     uint8_t full_command_buzzer[] = {
         FRAME_HEADER, 
@@ -18,7 +18,7 @@ void dwin_buzer(uint8_t loud)
     uart_write_bytes(UART_DWIN, full_command_buzzer, sizeof(full_command_buzzer));
 }
 
-void dwin_set_pic(uint8_t picture_id)
+void dwin_set_pic(const uint8_t picture_id)
 {
     if(picture_id < END_LIST_PIC){ 	
         uint8_t SET_PIC[] = {
@@ -31,20 +31,17 @@ void dwin_set_pic(uint8_t picture_id)
     }
 } 	
 
-void dwin_set_brightness(uint8_t brightness)
+void dwin_set_brightness(const uint8_t brightness)
 {
-    if(brightness >= 10 && brightness <= 100){ 
-        uint8_t set_bright[] = {
-            FRAME_HEADER, 
-            COMMAND_SET_BRIGHT, 
-            DEC_TO_HEX(brightness),
-            FRAME_END
-        };
-        uart_write_bytes(UART_DWIN, set_bright, sizeof(set_bright));	
+    send_char(FRAME_HEADER);
+    send_char(COMMAND_SET_BRIGHT);
+    if(brightness > 0 && brightness < 100){
+        send_char((brightness*64)/100);
     }
+    print_end();
 }
 
-void print_start_pos(uint16_t row, uint16_t column, const uint16_t text_color, size_t font) 
+void print_start_pos(const uint16_t row, const uint16_t column, const uint16_t text_color, size_t font) 
 {
     uint8_t print_command[] = {
         FRAME_HEADER, 

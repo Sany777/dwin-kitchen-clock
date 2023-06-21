@@ -33,9 +33,12 @@ device_inf_t* create_device_info(const type_device_t type, const uint8_t *mac, c
 {
     device_inf_t *new_device = malloc(sizeof(device_inf_t));
     if(new_device){
-        size_t len_name = strnlen(name, MAX_NAME_DEVICE);
-        new_device->name = malloc(len_name);
-        strcpy(new_device->name, name);
+        const size_t len_name = strnlen(name, MAX_NAME_DEVICE);
+        new_device->name = malloc(len_name+1);
+        if(new_device->name){
+            memcpy(new_device->name, name, len_name);
+            new_device->name[len_name] = 0;
+        }
         memcpy(new_device->mac, mac, SIZE_MAC);
         new_device->type = type;
     }

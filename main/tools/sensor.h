@@ -6,8 +6,10 @@
 #include "dwin_data_types.h"
 #include "dwin_defines.h"
 
-void set_sensor_data(main_data_t *main_data, 
+bool set_sensor_data(main_data_t *main_data, 
                         const uint8_t *mac, 
                         const float temperature,
-                        const int humidity,  
+                        const int humidity);
+bool set_sensor(main_data_t *main_data, 
+                        const uint8_t *mac, 
                         const char *name);

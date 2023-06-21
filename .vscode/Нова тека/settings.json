@@ -119,15 +119,13 @@
     "uart_pins.h": "c",
     "parser.h": "c",
     "dwin_weather.h": "c",
-    "sensor.h": "c",
-    "esp_rom_crc.h": "c"
+    "sensor.h": "c"
   },
-  "idf.port": "/dev/ttyUSB0",
+  "idf.port": "/dev/ttyACM0",
   "idf.flashType": "UART",
-  "idf.adapterTargetName": "esp32",
+  "idf.adapterTargetName": "esp32c3",
   "idf.openOcdConfigs": [
-    "interface/ftdi/esp32_devkitj_v1.cfg",
-    "target/esp32-solo-1.cfg"
+    "board/esp32c3-bridge.cfg"
   ],
   "idf.portWin": "COM9"
 }

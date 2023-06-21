@@ -59,7 +59,7 @@ typedef enum flag_state_device{
     WORK_AP,
     SSID_FOUND,
     ESPNOW_RUN,
-
+    IS_NIGHT
 }flag_state_device_t;
 
 /*events bit*/
@@ -67,11 +67,12 @@ typedef enum flag_state_device{
 #define BIT_SOUNDS_ALLOW        ( 1 << SOUNDS_ALLOW )
 #define BIT_ESPNOW_ALLOW        ( 1 << ESPNOW_ALLOW )
 #define BIT_SNTP_ALLOW          ( 1 << SNTP_ALLOW )
+#define BIT_NIGHT               ( 1 << IS_NIGHT )
 #define BIT_SECURITY            ( 1 << SECURITY )
 #define BIT_CON_STA_OK          ( 1 << CON_STA_OK )
 #define BIT_ESPNOW_RUN          ( 1 << ESPNOW_RUN )
 #define BIT_SSID_FOUND          ( 1 << SSID_FOUND  )
-#define BIT_DENIED_STA             ( 1 << WORK_AP )
+#define BIT_DENIED_STA          ( 1 << WORK_AP )
 #define BIT_SNTP_WORK           ( 1 << SNTP_WORK )
 #define BIT_TIMER_RUN           ( 1 << TIMER_RUN )
 #define BIT_WEATHER_OK          ( 1 << WEATHER_OK )
@@ -106,10 +107,8 @@ typedef enum data_identification{
 /*package espnow*/
 typedef struct sensor_package{
     uint16_t crc;
-    float temperature;
-    int humidity;
-    time_t wakeup;
-    char name[MAX_NAME_DEVICE+1];
+    int8_t temperature;
+    uint8_t humidity;
 }__attribute__((packed))sensor_package_t;
 
 typedef struct{
@@ -196,7 +195,7 @@ typedef struct sensor_data{
     uint8_t mac[SIZE_MAC];
     char *name;
     int8_t tem;
-    int8_t hum;
+    uint8_t hum;
 }sensor_data_t;
 
 typedef struct timer_data{
@@ -221,8 +220,8 @@ typedef struct {
 } main_data_t;
 
 
-typedef void dwin_screen_handler_t (main_data_t*, uint8_t, char);
-typedef void dwin_show_handler_t (main_data_t*, int32_t, void*);
+typedef void (*dwin_screen_handler_t) (main_data_t*, uint8_t, char);
+typedef void (*dwin_show_handler_t) (main_data_t*, int32_t, void*);
 
 typedef struct {
     TaskFunction_t pTask;
@@ -231,6 +230,6 @@ typedef struct {
 } task_dwin_t;
 
 typedef struct {
-    dwin_screen_handler_t *main_handler;
-    dwin_show_handler_t *show_handler;
+    dwin_screen_handler_t main_handler;
+    dwin_show_handler_t show_handler;
 } handlers_dwin_t;

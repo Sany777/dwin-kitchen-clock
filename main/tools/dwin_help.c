@@ -7,35 +7,29 @@ bool notification_alarm(const main_data_t *main_data,
                             const struct tm* cur_time, 
                             const bool alarm)
 {
-    bool res = false, signal = false;
-    int wday = cur_time->tm_wday;
+    bool signal = false;
+    const int wday = cur_time->tm_wday;
     uint8_t notif_hour, notif_min, cur_hour, cur_min;
     cur_hour = cur_time->tm_hour;
     cur_min = cur_time->tm_min;
     if(IS_DAY_ACTIVE(wday)){
-        for(int notif=0; notif<NOTIF_PER_DAY && !res; notif++){
+        for(int notif=0; notif<NOTIF_PER_DAY && !signal; notif++){
             if(IS_NOTIF_ACTIVE(notif, wday)){
                 notif_hour = VALUE_NOTIF_HOUR(notif, wday);
                 notif_min = VALUE_NOTIF_MIN(notif, wday);
                 if(cur_hour == notif_hour){
                     if(cur_min == notif_min){
-                        if(alarm 
-                            && notif_hour >= 6 
-                            && notif_hour <= 23 )
-                        {
-                            signal = true;  
-                        }
-                        res = true;
+                        signal = true;
                     } else if (notif_min <= cur_min + MIN_BEFORE_NOTIFICATION
                                 && notif_min > cur_min)
                     {
-                        res = true;
+                        signal = true;
                     }
                 } else if(cur_hour+1 == notif_hour 
                             && notif_min <= MIN_BEFORE_NOTIFICATION
                             && 60+notif_min < cur_min+MIN_BEFORE_NOTIFICATION)
                 {
-                    res = true;
+                    signal = true;
                 }                             
             }
         }
@@ -53,7 +47,7 @@ bool notification_alarm(const main_data_t *main_data,
                             : NORMAL_BUZZER);
     }
         
-    return res;
+    return signal;
 }
 
 
@@ -126,12 +120,21 @@ struct tm* get_time_tm(void)
 {
     time_t time_now;
     time(&time_now);
+    struct tm* t;
     EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
     if(xEventGroup&BIT_SNTP_ALLOW){
-        return localtime(&time_now);
+        t = localtime(&time_now);
     } else {
-        return gmtime(&time_now);
+        t = gmtime(&time_now);
     }
+    if(t->tm_hour < 6){
+        if(!(xEventGroup&BIT_NIGHT)){
+            xEventGroupSetBits(dwin_event_group, BIT_NIGHT);
+        }
+    } else if(xEventGroup&BIT_NIGHT){
+        xEventGroupClearBits(dwin_event_group, BIT_NIGHT);
+    }
+    return t;
 }
 
 void set_time_tv(struct timeval *tv)
