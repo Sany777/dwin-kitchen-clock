@@ -24,31 +24,6 @@ void check_net_data(main_data_t*);
 #define show_handler(main_data, key, data)    screens_handlers[cur_screen_id-START_SCREEN_TASK].show_handler(main_data, key, data)
 
 
-#define SIZE_SERVICE_TASK 4
-
-static task_dwin_t sevice_tasks[SIZE_SERVICE_TASK] = {
-    {
-        .pTask = show_task,
-        .priority = PRIORITY_SHOW,
-        .stack = 4000
-    },
-    {
-        .pTask = direction_task,
-        .priority = PRIORITY_FAST_SERVICE,
-        .stack = 8000
-    },
-    {
-        .pTask = service_task,
-        .priority = PRIORITY_FAST_SERVICE,
-        .stack = 8000
-    },
-    {
-        .pTask = uart_event_task,
-        .priority = PRIORITY_UART,
-        .stack = 4000
-    },
-};
-
 
 void vApplicationIdleHook(void);
 

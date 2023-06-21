@@ -65,6 +65,7 @@ void direction_task(void *pv)
 {
     uint8_t data_in[2] = {0};
     main_data_t *main_data = (main_data_t*)pv;
+    cur_screen_id = MAIN_SCREEN;
     while(1) {
         if(xQueueReceive(queue_direct, 
                             data_in,
@@ -129,10 +130,10 @@ void service_task(void *main_data)
     }
 }
 
-
+#include "esp_task_wdt.h"
 void vApplicationIdleHook(void)
 { 
-    TickType_t us_time_sleep = TIMER_WAKEUP_SHORT_TIME_US;
+    TickType_t us_time_sleep = 0;
     while (1) {
         EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
         if(xEventGroup&BIT_NIGHT){
@@ -144,19 +145,20 @@ void vApplicationIdleHook(void)
             us_time_sleep = TIMER_WAKEUP_SHORT_TIME_US;
             dwin_set_brightness(100);
         }
-        uart_wait_tx_idle_polling(UART_DWIN);  
-        ESP_ERROR_CHECK(gpio_sleep_set_direction(
-                            RXD_PIN, 
-                            GPIO_MODE_INPUT));
-        ESP_ERROR_CHECK(gpio_sleep_set_pull_mode(
-                            RXD_PIN, 
-                            GPIO_PULLUP_ONLY));
-        ESP_ERROR_CHECK(uart_set_wakeup_threshold(
-                            UART_DWIN, 
-                            UART_WAKEUP_THRESHOLD));
-        ESP_ERROR_CHECK(esp_sleep_enable_uart_wakeup(
-                        UART_DWIN));                
-        ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(us_time_sleep)); 
-        ESP_ERROR_CHECK(esp_light_sleep_start());  
+        esp_task_wdt_reset();
+        // uart_wait_tx_idle_polling(UART_DWIN);  
+        // ESP_ERROR_CHECK(gpio_sleep_set_direction(
+        //                     RXD_PIN, 
+        //                     GPIO_MODE_INPUT));
+        // ESP_ERROR_CHECK(gpio_sleep_set_pull_mode(
+        //                     RXD_PIN, 
+        //                     GPIO_PULLUP_ONLY));
+        // ESP_ERROR_CHECK(uart_set_wakeup_threshold(
+        //                     UART_DWIN, 
+                            // UART_WAKEUP_THRESHOLD));
+        // ESP_ERROR_CHECK(esp_sleep_enable_uart_wakeup(
+        //                 UART_DWIN));                
+        // ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(us_time_sleep)); 
+        // ESP_ERROR_CHECK(esp_light_sleep_start());  
     }
 }

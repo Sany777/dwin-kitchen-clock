@@ -41,7 +41,7 @@ void dwin_set_brightness(const uint8_t brightness)
     print_end();
 }
 
-void print_start_pos(const uint16_t row, const uint16_t column, const uint16_t text_color, size_t font) 
+void print_start_pos(const uint16_t row, const uint16_t column, const uint16_t text_color, uint8_t font) 
 {
     uint8_t print_command[] = {
         FRAME_HEADER, 
@@ -52,9 +52,9 @@ void print_start_pos(const uint16_t row, const uint16_t column, const uint16_t t
         row%256, 
         0x00,
         0x81,
+        font,
         text_color/256,
         text_color%256,
-        font,
         0xFF,
         0XFF
     };
@@ -231,7 +231,8 @@ void dwin_clock_on(const uint16_t row, const  uint16_t column, const  uint16_t t
         textColor % 256,
         column / 256,
         column % 256, 
-        row / 256, row % 256,
+        row / 256,
+        row % 256,
         FRAME_END
     };
     uart_write_bytes(UART_DWIN, clock_on_command, sizeof(clock_on_command));

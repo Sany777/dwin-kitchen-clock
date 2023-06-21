@@ -3,6 +3,32 @@
 ESP_EVENT_DEFINE_BASE(ESPNOW_EVENTS);
 ESP_EVENT_DEFINE_BASE(WIFI_SET_EVENTS);
 ESP_EVENT_DEFINE_BASE(SNTP_EVENTS);
+
+#define SIZE_SERVICE_TASK 4
+
+task_dwin_t sevice_tasks[SIZE_SERVICE_TASK] = {
+    {
+        .pTask = show_task,
+        .priority = PRIORITY_SHOW,
+        .stack = 4000
+    },
+    {
+        .pTask = direction_task,
+        .priority = PRIORITY_FAST_SERVICE,
+        .stack = 8000
+    },
+    {
+        .pTask = service_task,
+        .priority = PRIORITY_FAST_SERVICE,
+        .stack = 8000
+    },
+    {
+        .pTask = uart_event_task,
+        .priority = PRIORITY_UART,
+        .stack = 4000
+    },
+};
+
 uint8_t cur_screen_id;
 EventGroupHandle_t dwin_event_group;
 TaskHandle_t rx_espnow = NULL, tx_espnow = NULL;
@@ -39,7 +65,7 @@ void esp_init(void)
     set_timezone(offset);
     init_uart();
     wifi_init();
-    cur_screen_id = MAIN_SCREEN;
+    set_new_event(START_STA);
     for(int i=0; i<SIZE_SERVICE_TASK; i++){
       xTaskCreate(
         sevice_tasks[i].pTask, 
@@ -51,7 +77,6 @@ void esp_init(void)
       );
     }
     EventBits_t xEventGroup = xEventGroupSetBits(dwin_event_group, BIT_PROCESS);
-    set_new_event(START_STA);
     do{
         send_hello();
         xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_DWIN_RESPONSE_OK, false, false, 1000);
@@ -59,7 +84,6 @@ void esp_init(void)
     dwin_set_pic(NO_WEATHER_PIC);
     welcome();
     xEventGroupWaitBits(dwin_event_group, BIT_PROCESS, true, true, 2000);
-    set_new_event(INIT_SNTP);
     set_new_event(MAIN_SCREEN);
 }
 

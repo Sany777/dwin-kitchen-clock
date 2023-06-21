@@ -49,7 +49,7 @@ void print_rect(const uint16_t x_s,
 				const uint16_t y_e,
 				bool fill);
 
-void print_start_pos(uint16_t row, uint16_t column, const uint16_t text_color, size_t font);
+void print_start_pos(uint16_t row, uint16_t column, const uint16_t text_color, uint8_t font);
 void dwin_clock_set(const struct tm *);
 void fill_area(const uint16_t x_s, 
                 const uint16_t y_s, 

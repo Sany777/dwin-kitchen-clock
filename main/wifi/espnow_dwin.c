@@ -147,7 +147,6 @@ for(;;){
 }
 }
 
-
 void espnow_task_rx(void *pv)
 {
     main_data_t * const main_data = (main_data_t *)pv;

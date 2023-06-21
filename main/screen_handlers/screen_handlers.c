@@ -91,6 +91,8 @@ void ap_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         esp_wifi_stop();
     } else if(command == STATION_JOINE){
         remove_periodic_event(MAIN_SCREEN);
+    } else if(KEY_IS_AREA_TOGGLE(command)){
+        show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
     }
 }
 
