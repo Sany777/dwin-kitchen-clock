@@ -131,34 +131,21 @@ void service_task(void *main_data)
     }
 }
 
+
 void vApplicationIdleHook(void)
 { 
-    TickType_t us_time_sleep = 0;
+    EventBits_t xEventGroup;
+    bool cur_mode = false, now;
     while (1) {
-        EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
-        if(xEventGroup&BIT_NIGHT){
-            if(us_time_sleep != TIMER_WAKEUP_LONG_TIME_US){
-                us_time_sleep = TIMER_WAKEUP_LONG_TIME_US;
+        xEventGroup = xEventGroupGetBits(dwin_event_group);
+        now = xEventGroup&BIT_NIGHT;
+        if(now != cur_mode){
+            if(now){
                 dwin_set_brightness(30);
+            } else {
+                dwin_set_brightness(100);
             }
-        } else if(us_time_sleep != TIMER_WAKEUP_SHORT_TIME_US){
-            us_time_sleep = TIMER_WAKEUP_SHORT_TIME_US;
-            dwin_set_brightness(100);
+            cur_mode = now;
         }
-        esp_task_wdt_reset();
-        // uart_wait_tx_idle_polling(UART_DWIN);  
-        // ESP_ERROR_CHECK(gpio_sleep_set_direction(
-        //                     RXD_PIN, 
-        //                     GPIO_MODE_INPUT));
-        // ESP_ERROR_CHECK(gpio_sleep_set_pull_mode(
-        //                     RXD_PIN, 
-        //                     GPIO_PULLUP_ONLY));
-        // ESP_ERROR_CHECK(uart_set_wakeup_threshold(
-        //                     UART_DWIN, 
-        //                     UART_WAKEUP_THRESHOLD));
-        // ESP_ERROR_CHECK(esp_sleep_enable_uart_wakeup(
-        //                 UART_DWIN));                
-        // ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(us_time_sleep)); 
-        // ESP_ERROR_CHECK(esp_light_sleep_start());  
     }
 }

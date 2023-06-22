@@ -61,7 +61,6 @@ void search_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
             if(next_page)ind += MAX_SSID_PEER_SCREEN;
             strncpy(name_SSID, (const char*)ap_info[ind].ssid, MAX_STR_LEN);
             send_message_dwin("The SSID has been set");
-            vTaskDelay(DELAY_SHOW_MESSAGE);
         } else if(select_area < ap_count){
              area_SCREEN = select_area;
         }
@@ -435,6 +434,9 @@ void state_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
     } else if(command == KEY_SECURITY_TOGGLE){
         if(xEventGroup&BIT_SECURITY){
             xEventGroupClearBits(dwin_event_group, BIT_SECURITY);
+            pwd_WIFI[0] =0;
+            send_message_dwin("Need set passsword WiFi!");
+            dwin_set_pic(INFO_PIC);
         } else {
             xEventGroupSetBits(dwin_event_group, BIT_SECURITY);
         }
@@ -543,7 +545,6 @@ void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
             return;
         } else {
             dwin_set_pic(TIMER_RUN_PIC);
-            vTaskDelay(DELAY_FAST_CHANGE_PIC);
             timer_SEC--;
             if(timer_SEC < 0){
                 timer_SEC = 59;

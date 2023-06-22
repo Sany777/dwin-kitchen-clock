@@ -2,6 +2,14 @@
 
 char *buf_operation;
 
+void print_hide_pwd(const char* pwd)
+{
+    size_t len = strnlen(pwd, MAX_STR_LEN);
+    while(len--){
+        send_char('*');
+    }
+}
+
 void send_str(const char * format, ... )
 {
   va_list args;

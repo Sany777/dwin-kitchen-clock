@@ -77,7 +77,7 @@
 
 /* delays show data */
 #define DELAY_SHOW_ITEM          (40/portTICK_PERIOD_MS)
-#define DELAY_SHOW_MESSAGE       (1000/portTICK_PERIOD_MS)
+#define DELAY_SHOW_MESSAGE       (2000/portTICK_PERIOD_MS)
 #define DELAY_CHANGE_PIC         (200/portTICK_PERIOD_MS)
 
 /* delay process */
@@ -95,14 +95,10 @@
 #define DEALAY_START_ESPNOWTASK  (4000/portTICK_PERIOD_MS)
 #define SIZE_EVENTS_UART          10
 #define TIMEOUT_PUSH_KEY         (100/portTICK_PERIOD_MS)
-#define DELAY_FAST_CHANGE_PIC     50
+#define DELAY_FAST_CHANGE_PIC     40
 #define ESPNOW_MAXDELAY          1000
 
 #define ESPNOW_QUEUE_SIZE         7
-
-
-#define TIMER_WAKEUP_LONG_TIME_US    (10 * 1000UL)
-#define TIMER_WAKEUP_SHORT_TIME_US   (5 * 1000UL)
 
 #define WINDOW_ESPNOW_MS 65000
 #define CLIENT_BUF_LEN 4000

@@ -34,11 +34,17 @@ void show_info_handler(main_data_t * main_data,
     if(esp_read_mac(mac, ESP_MAC_BT) == ESP_OK){
         send_str("\n\r MAC BT : "MACSTR"", MAC2STR(mac));
     }
-    send_str("\n\r Device name: %s,\r\n     Configuration server (WiFi AP)\n\r SSID: %s.\r\n Password: %s.\n\r IP: %s", 
+    send_str("\n\r Device name: %s,\r\n\n    Configuration server (WiFi AP)\n\r SSID: %s.\r\n Password: %s.\n\r IP: %s", 
                         MY_DEVICE_NAME, 
                         AP_WIFI_SSID, 
                         AP_WIFI_PWD, MY_IP);
-
+    esp_pm_config_esp32c3_t pv;
+    esp_pm_get_configuration(&pv);
+    vTaskDelay(DELAY_SHOW_ITEM);
+    send_str("\n\n\r Freq : max %dmhz, min %dmhz.", pv.max_freq_mhz, pv.min_freq_mhz);
+    if(pv.light_sleep_enable){
+        send_str_dwin("\n\r Auto sleep");
+    }
     print_end();
 }
 
@@ -136,7 +142,6 @@ void show_ssid_handler(main_data_t * main_data,
 }
 
 
-
 void show_settings_handler(main_data_t * main_data,
                             int32_t id, 
                             void* event_data) 
@@ -172,10 +177,14 @@ void show_settings_handler(main_data_t * main_data,
                 break;
             case 2:
                 print_start(3, 1, GET_COLOR_AREA(AREA_PASSWORD), NORMAL_FONT);
-                send_str("Password  : %s", 
-                                    xEventGroup&BIT_SECURITY || area_SCREEN != AREA_PASSWORD
-                                        ? "*** WiFi password ***"
-                                        : pwd_WIFI);
+                send_str_dwin("Password  : ");
+                if(area_SCREEN != AREA_PASSWORD){
+                    send_str_dwin("*** WiFi password ***");
+                } else if (xEventGroup&BIT_SECURITY) {
+                    print_hide_pwd(pwd_WIFI);
+                } else {
+                    send_str_dwin(pwd_WIFI);  
+                }                                                             
                 break;
             case 3:
                 print_start(4, 1, GET_COLOR_AREA(AREA_CITY), NORMAL_FONT);
@@ -524,7 +533,6 @@ void show_timer_handler(main_data_t *main_data,
         print_start(0, 5, color_CLOCK, FONT_INFO);
         send_str_dwin(asctime(get_time_tm()));
         print_end();
-        vTaskDelay(DELAY_SHOW_ITEM);
         print_start(2, 2, 
                     timer_MIN > 2
                     ? color_CLOCK 

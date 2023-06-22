@@ -9,7 +9,7 @@
 #define BYTE_WEAK_DAY           3
 #define SIZE_BUF_INT            (MAX_DIGIT_INT_NUMBER)
 #define SIZE_BUF_UINT8          (TWO_DIGIT)
-
+void print_hide_pwd(const char* pwd);
 void send_str(const char * format, ... );
 
 #define send_char(c)                                                        \

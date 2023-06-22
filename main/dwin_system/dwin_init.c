@@ -96,9 +96,20 @@ void esp_init(void)
         vTaskDelay(1000);
         dwin_clock_get();
     }
+    init_pm();
     set_new_event(MAIN_SCREEN);
 }
 
+void init_pm()
+{
+    esp_pm_impl_init();
+    esp_pm_config_esp32c3_t pv = {
+    .max_freq_mhz = 160,
+    .min_freq_mhz = 40,
+    .light_sleep_enable = true
+    };
+    ESP_ERROR_CHECK(esp_pm_configure(&pv));
+}
 
 void wifi_init(void)
 {
