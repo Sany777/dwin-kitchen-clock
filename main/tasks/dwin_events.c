@@ -120,19 +120,41 @@ void service_task(void *main_data)
     uint8_t key;
     while(1) {
         if(xQueueReceive(queue_service, &key, portMAX_DELAY) == pdTRUE){
-            if(key == GET_WEATHER){
-                get_weather(main_data, key);
-            } else if (key == INIT_SNTP || key == STOP_SNTP){
-                set_sntp(main_data, key);
-            } else if(key == CHECK_NET_DATA){
-                check_net_data(main_data);
-            } else if (key == KEY_NEED_TEMP){
-                espnow_send_t espnow_send = {0};
-                espnow_send.action = NEED_TEMP;
-                xQueueSend(queue_espnow_tx, &espnow_send, 200);
-            }else {
-                set_wifi(main_data, key);
-            } 
+            switch(key){
+                case GET_WEATHER :
+                {
+                    get_weather(main_data, key);
+                    break;
+                } 
+                case GET_TEMPERATURE :
+                {
+                    read_sensor_handler(main_data); 
+                    break;
+                } 
+                case INIT_SNTP :
+                case STOP_SNTP :
+                {
+                   set_sntp(main_data, key); 
+                   break; 
+                }
+                case CHECK_NET_DATA :
+                {
+                   check_net_data(main_data); 
+                   break; 
+                } 
+                case GET_REMOTE_SENSOR : 
+                {
+                    espnow_send_t espnow_send = {0};
+                    espnow_send.action = NEED_TEMP;
+                    xQueueSend(queue_espnow_tx, &espnow_send, 200);
+                    break;
+                }
+                default :
+                {
+                    set_wifi(main_data, key);
+                    break;
+                }     
+            }
         }
     }
 }

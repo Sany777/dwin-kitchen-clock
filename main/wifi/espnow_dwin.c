@@ -220,7 +220,7 @@ if(xQueueReceive(queue_espnow_rx, &data_rx, portMAX_DELAY) == pdTRUE){
                             }
                             set_sensor(main_data, data_tx.mac, new_device->name);
                             data_tx.action = NEED_TEMP;
-                            set_periodic_event(KEY_NEED_TEMP, DELAY_GET_TEMPERATURE, RELOAD_COUNT);
+                            set_periodic_event(GET_REMOTE_SENSOR, DELAY_GET_TEMPERATURE, RELOAD_COUNT);
                         } else {
                             data_tx.action = 0;
                         }

@@ -96,7 +96,10 @@ void esp_init(void)
         vTaskDelay(1000);
         dwin_clock_get();
     }
-    set_new_event(MAIN_SCREEN);
+    i2c_master_init();
+    init_bme280();
+    // set_new_event(MAIN_SCREEN);
+    set_new_event(GET_TEMPERATURE);
 }
 
 void set_power_mode_eco(const bool run)
@@ -225,6 +228,6 @@ void read_sensor_handler(main_data_t* main_data)
     bme280_read_uncomp_temperature(&temp_BM280);
     temp_BM280 = bme280_compensate_temperature_int32(temp_BM280);
 
-    ESP_LOGI(TAG_BME280, "%3d degC", (int)temp_BM280);
+    ESP_LOGI(TAG_BME280, "\n\r%3d *C", (int)temp_BM280);
 
 }
