@@ -343,10 +343,8 @@ void clock_handler(main_data_t* main_data, uint8_t command, char symbol)
         dwin_time->tm_mon--;
         set_timezone(offset);
         set_time_tm(dwin_time);
-        dwin_clock_set(dwin_time);
         dwin_time->tm_mon++;
         dwin_time->tm_year -= 100;
-        set_new_event(UPDATE_TIME_COMPLETE);
     } else if(command == KEY_SYNC) {
         EventBits_t xEventGroup = 
                     xEventGroupGetBits(dwin_event_group);                                                                 

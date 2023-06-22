@@ -122,11 +122,7 @@ struct tm* get_time_tm(void)
     time(&time_now);
     struct tm* t;
     EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
-    if(xEventGroup&BIT_SNTP_ALLOW){
-        t = localtime(&time_now);
-    } else {
-        t = gmtime(&time_now);
-    }
+    t = localtime(&time_now);
     if(t->tm_hour < 6){
         if(!(xEventGroup&BIT_NIGHT)){
             xEventGroupSetBits(dwin_event_group, BIT_NIGHT);
@@ -158,6 +154,7 @@ void set_time_tm(struct tm *timeptr)
             .tv_sec = time,
         };
         set_time_tv(&tv);
+        dwin_clock_set(timeptr);
     }
 }
 
