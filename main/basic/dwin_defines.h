@@ -193,8 +193,6 @@
     #define MIN(a, b)((a) > (b)? (b): (a))
 #endif
 
-
-
 #define DWIN_SHOW_ERR(a) \
     do {                                                \
         if (ESP_OK != (a)) {                            \

@@ -18,7 +18,8 @@
 #define hide_rect() 				uart_write_bytes(UART_DWIN, RECTANGLE_OFF, sizeof(RECTANGLE_OFF))
 #define cancel_text_box()			uart_write_bytes(UART_DWIN, HELLO_COMMAND, sizeof(HELLO_COMMAND))
 #define clear_screen()				uart_write_bytes(UART_DWIN, CLEAR_SCREEN, sizeof(CLEAR_SCREEN))
-#define dwin_clock_get() 	        uart_write_bytes(UART_DWIN, GET_TIME, sizeof(GET_TIME))
+void dwin_clock_get() ;
+	        
 
 void dwin_buzer(const uint8_t loud);
 void dwin_set_brightness(const uint8_t brightness);

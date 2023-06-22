@@ -7,6 +7,15 @@ void print_start(uint16_t row, uint16_t column, const uint16_t text_color, size_
     print_start_pos(row, column, text_color, font);
 }
 
+void dwin_clock_get() 
+{
+    EventBits_t state_bits = xEventGroupClearBits(dwin_event_group,BIT_IS_TIME);
+    do{
+        uart_write_bytes(UART_DWIN, GET_TIME, sizeof(GET_TIME));
+        state_bits = xEventGroupWaitBits(dwin_event_group,BIT_IS_TIME, false, false, 1000);
+    }while(!(state_bits&BIT_IS_TIME));
+}
+
 void dwin_buzer(const uint8_t loud)
 {
     uint8_t full_command_buzzer[] = {

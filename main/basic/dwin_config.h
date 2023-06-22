@@ -78,7 +78,7 @@
 /* delays show data */
 #define DELAY_SHOW_ITEM          (40/portTICK_PERIOD_MS)
 #define DELAY_SHOW_MESSAGE       (1000/portTICK_PERIOD_MS)
-#define DELAY_CHANGE_PIC         (50/portTICK_PERIOD_MS)
+#define DELAY_CHANGE_PIC         (200/portTICK_PERIOD_MS)
 
 /* delay process */
 #define DELAY_SCAN_SSID          (1500/portTICK_PERIOD_MS)
@@ -95,14 +95,14 @@
 #define DEALAY_START_ESPNOWTASK  (4000/portTICK_PERIOD_MS)
 #define SIZE_EVENTS_UART          10
 #define TIMEOUT_PUSH_KEY         (100/portTICK_PERIOD_MS)
-
+#define DELAY_FAST_CHANGE_PIC     50
 #define ESPNOW_MAXDELAY          1000
 
 #define ESPNOW_QUEUE_SIZE         7
 
 
-#define TIMER_WAKEUP_LONG_TIME_US    (50 * 1000UL)
-#define TIMER_WAKEUP_SHORT_TIME_US   (10 * 1000UL)
+#define TIMER_WAKEUP_LONG_TIME_US    (10 * 1000UL)
+#define TIMER_WAKEUP_SHORT_TIME_US   (5 * 1000UL)
 
 #define WINDOW_ESPNOW_MS 65000
 #define CLIENT_BUF_LEN 4000
@@ -162,3 +162,5 @@
 #define MAX_AP_PAGE 9
 
 #define SIZE_QUEUE_DIRECT 10
+
+static const uint8_t MONTH_DAY[] = {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};

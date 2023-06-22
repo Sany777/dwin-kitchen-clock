@@ -38,6 +38,7 @@
 #include "dwin_timer.h"
 #include "sensor.h"
 #include "show_screen_handlers.h"
+#include "esp_task_wdt.h"
 
 
 ESP_EVENT_DECLARE_BASE(ESPNOW_EVENTS);

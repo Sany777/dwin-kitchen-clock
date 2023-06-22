@@ -364,7 +364,7 @@ void show_clock_handler(main_data_t * main_data,
                 break;
             case 1:
                 print_start(3, 10, GET_COLOR_AREA(i), NORMAL_FONT);
-                send_str("month %2.2d", cur_time->tm_mon+1);
+                send_str("month %2.2d", cur_time->tm_mon);
                 break;
             case 2:
                 print_start(3, 18, GET_COLOR_AREA(i), NORMAL_FONT);
@@ -573,6 +573,6 @@ void welcome()
         }
     }
     print_start(2, 2, WHITE, 6);
-    send_str("WAIT...");
+    send_str_dwin("WAIT...");
     print_end();
 }

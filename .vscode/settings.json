@@ -120,7 +120,8 @@
     "parser.h": "c",
     "dwin_weather.h": "c",
     "sensor.h": "c",
-    "esp_rom_crc.h": "c"
+    "esp_rom_crc.h": "c",
+    "gpio.h": "c"
   },
   "idf.port": "/dev/ttyACM0",
   "idf.flashType": "UART",

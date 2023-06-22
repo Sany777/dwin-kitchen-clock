@@ -60,7 +60,6 @@ void search_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
             size_t ind = area_SCREEN;
             if(next_page)ind += MAX_SSID_PEER_SCREEN;
             strncpy(name_SSID, (const char*)ap_info[ind].ssid, MAX_STR_LEN);
-            vTaskDelay(DELAY_CHANGE_PIC);
             send_message_dwin("The SSID has been set");
             vTaskDelay(DELAY_SHOW_MESSAGE);
         } else if(select_area < ap_count){
@@ -300,14 +299,22 @@ void clock_handler(main_data_t* main_data, uint8_t command, char symbol)
             }
             case AREA_MONTH :
             {
-                dwin_time->tm_mon = dwin_time->tm_mon > 1 ? val : dwin_time->tm_mon*10 + val;
-                if(!IS_MONTH(dwin_time->tm_mon)) dwin_time->tm_mon = 1;
+                dwin_time->tm_mon = dwin_time->tm_mon == 1 && val < 3
+                                                    ? 10 + val
+                                                    : val > 0
+                                                        ? val
+                                                        : 1;
                 break;
             }
             case AREA_DAY  : 
             {
-                dwin_time->tm_mday = dwin_time->tm_mday > 3 ? val : dwin_time->tm_mday*10 + val;
-                if(!IS_DAY(dwin_time->tm_mday)) dwin_time->tm_mday = 1;
+                dwin_time->tm_mday = dwin_time->tm_mday%10*10 + val;
+                const uint8_t mon = (uint8_t)dwin_time->tm_mon-1;
+                if(mon < 12){
+                    if(MONTH_DAY[mon] < dwin_time->tm_mday){
+                        dwin_time->tm_mday = 1;
+                    }
+                }
                 break;
             }
             case AREA_HOUR : 
@@ -333,10 +340,12 @@ void clock_handler(main_data_t* main_data, uint8_t command, char symbol)
     } else if(command == KEY_ENTER){
         write_offset(offset);
         dwin_time->tm_year += 100;
+        dwin_time->tm_mon--;
         set_timezone(offset);
         set_time_tm(dwin_time);
-        dwin_time->tm_year -= 100;
         dwin_clock_set(dwin_time);
+        dwin_time->tm_mon++;
+        dwin_time->tm_year -= 100;
         set_new_event(UPDATE_TIME_COMPLETE);
     } else if(command == KEY_SYNC) {
         EventBits_t xEventGroup = 
@@ -383,13 +392,14 @@ void clock_handler(main_data_t* main_data, uint8_t command, char symbol)
             if(!dwin_time)return;
             read_offset(&offset);
         }
-
         struct tm* cur_time = get_time_tm();
         memcpy(dwin_time, cur_time, sizeof(struct tm));
         dwin_time->tm_year %= 100;
+        dwin_time->tm_mon++;
     }
     if(command == UPDATE_TIME_COMPLETE){
         dwin_set_pic(CLOCK_PIC);
+        vTaskDelay(DELAY_CHANGE_PIC);
     }
     show_screen(offset, dwin_time, sizeof(struct tm));
 }
@@ -535,7 +545,7 @@ void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
             return;
         } else {
             dwin_set_pic(TIMER_RUN_PIC);
-            vTaskDelay(DELAY_SHOW_ITEM);
+            vTaskDelay(DELAY_FAST_CHANGE_PIC);
             timer_SEC--;
             if(timer_SEC < 0){
                 timer_SEC = 59;

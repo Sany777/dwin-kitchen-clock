@@ -1,5 +1,6 @@
 #include "dwin_events.h"
 
+uint8_t cur_screen_id;
 
 const handlers_dwin_t screens_handlers[SIZE_LIST_TASKS] = {
     {
@@ -130,7 +131,6 @@ void service_task(void *main_data)
     }
 }
 
-#include "esp_task_wdt.h"
 void vApplicationIdleHook(void)
 { 
     TickType_t us_time_sleep = 0;
@@ -155,7 +155,7 @@ void vApplicationIdleHook(void)
         //                     GPIO_PULLUP_ONLY));
         // ESP_ERROR_CHECK(uart_set_wakeup_threshold(
         //                     UART_DWIN, 
-                            // UART_WAKEUP_THRESHOLD));
+        //                     UART_WAKEUP_THRESHOLD));
         // ESP_ERROR_CHECK(esp_sleep_enable_uart_wakeup(
         //                 UART_DWIN));                
         // ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(us_time_sleep)); 

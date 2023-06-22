@@ -4,9 +4,7 @@ ESP_EVENT_DEFINE_BASE(ESPNOW_EVENTS);
 ESP_EVENT_DEFINE_BASE(WIFI_SET_EVENTS);
 ESP_EVENT_DEFINE_BASE(SNTP_EVENTS);
 
-#define SIZE_SERVICE_TASK 4
-
-task_dwin_t sevice_tasks[SIZE_SERVICE_TASK] = {
+static const task_dwin_t sevice_tasks[SIZE_SERVICE_TASK] = {
     {
         .pTask = show_task,
         .priority = PRIORITY_SHOW,
@@ -26,10 +24,9 @@ task_dwin_t sevice_tasks[SIZE_SERVICE_TASK] = {
         .pTask = uart_event_task,
         .priority = PRIORITY_UART,
         .stack = 4000
-    },
+    }
 };
 
-uint8_t cur_screen_id;
 EventGroupHandle_t dwin_event_group;
 TaskHandle_t rx_espnow = NULL, tx_espnow = NULL;
 QueueHandle_t 
@@ -67,23 +64,38 @@ void esp_init(void)
     wifi_init();
     set_new_event(START_STA);
     for(int i=0; i<SIZE_SERVICE_TASK; i++){
-      xTaskCreate(
-        sevice_tasks[i].pTask, 
-        "service",
-        sevice_tasks[i].stack, 
-        (void * const)main_data, 
-        sevice_tasks[i].priority,
-        NULL
-      );
+        if(xTaskCreate(
+            sevice_tasks[i].pTask, 
+            "service",
+            sevice_tasks[i].stack, 
+            (void * const)main_data, 
+            sevice_tasks[i].priority,
+            NULL
+        ) != pdTRUE)
+        {
+            send_message_dwin("No enough memory. Task no create");
+            vTaskDelay(2000);
+            esp_restart();
+        };
     }
-    EventBits_t xEventGroup = xEventGroupSetBits(dwin_event_group, BIT_PROCESS);
+    EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
+    if(xEventGroup&BIT_SNTP_ALLOW){
+        xEventGroupSetBits(dwin_event_group, BIT_PROCESS);
+        set_new_event(START_STA);
+        set_new_event(INIT_SNTP);
+    }
     do{
         send_hello();
         xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_DWIN_RESPONSE_OK, false, false, 1000);
     }while(!(xEventGroup&BIT_DWIN_RESPONSE_OK));
     dwin_set_pic(NO_WEATHER_PIC);
     welcome();
-    xEventGroupWaitBits(dwin_event_group, BIT_PROCESS, true, true, 2000);
+    if(xEventGroup&BIT_SNTP_ALLOW){
+        xEventGroupWaitBits(dwin_event_group, BIT_PROCESS, true, true, 3000);
+    } else {
+        vTaskDelay(1000);
+        dwin_clock_get();
+    }
     set_new_event(MAIN_SCREEN);
 }
 
