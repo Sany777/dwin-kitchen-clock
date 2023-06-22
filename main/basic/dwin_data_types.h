@@ -59,10 +59,12 @@ typedef enum flag_state_device{
     WORK_AP,
     SSID_FOUND,
     ESPNOW_RUN,
-    IS_NIGHT
+    IS_NIGHT,
+    SENSOR_INDOOR
 }flag_state_device_t;
 
 /*events bit*/
+#define BIT_SENSOR_INDOOR       ( 1 << SENSOR_INDOOR )
 #define BIT_RESPONSE_400_SERVER ( 1 << RESPONSE_400_SERVER )
 #define BIT_SOUNDS_ALLOW        ( 1 << SOUNDS_ALLOW )
 #define BIT_ESPNOW_ALLOW        ( 1 << ESPNOW_ALLOW )
@@ -217,6 +219,8 @@ typedef struct {
     sensor_data_t *sensor_data;
     timer_data_t *timers;
     weather_data_t weather_data;
+    int32_t temp;
+    int32_t pres;
 } main_data_t;
 
 

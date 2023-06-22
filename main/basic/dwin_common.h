@@ -40,6 +40,16 @@
 #include "show_screen_handlers.h"
 #include "esp_task_wdt.h"
 
+#include "driver/gpio.h"
+#include "driver/i2c.h"
+#include "bme280.h"
+
+#define SDA_PIN             21
+#define SCL_PIN             22
+#define TAG_BME280 "BME280"
+#define I2C_MASTER_ACK 0
+#define I2C_MASTER_NACK 1
+
 
 ESP_EVENT_DECLARE_BASE(ESPNOW_EVENTS);
 ESP_EVENT_DECLARE_BASE(WIFI_SET_EVENTS);

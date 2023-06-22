@@ -12,8 +12,8 @@
 #define CLEAR_EXIT         (ULONG_MAX)
 
 #define NO_main_data  0
-#define STOP 0
-#define RUN  1
+#define STOP false
+#define RUN  true
 #define ON           true
 #define OFF          false
 #define myEOF               '\r'

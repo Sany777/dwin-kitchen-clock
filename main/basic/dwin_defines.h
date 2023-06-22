@@ -17,7 +17,11 @@
 #define temp_INDOOR_1           (main_data->sensor_data[1].tem)
 #define temp_OUTDOOR            (main_data->weather_data.outdoor)
 #define description_WEATHER     (main_data->weather_data.description)
-#define sensor_DATA            (main_data->sensor_data)
+#define sensor_DATA             (main_data->sensor_data)
+
+#define  temp_BM280             main_data->temp
+#define  presure_BM280          main_data->pres
+#define  humidity_BM280         main_data->hum
 /*for main_data instance*/
 #define area_SCREEN             (main_data->area)
 #define pwd_WIFI                (main_data->pwd_wifi)

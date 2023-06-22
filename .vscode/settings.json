@@ -125,7 +125,11 @@
     "pm.h": "c",
     "pwd.h": "c",
     "esp_sleep.h": "c",
-    "pm_impl.h": "c"
+    "pm_impl.h": "c",
+    "esp_task_wdt.h": "c",
+    "bme280.h": "c",
+    "gpio_types.h": "c",
+    "i2c.h": "c"
   },
   "idf.port": "/dev/ttyACM0",
   "idf.flashType": "UART",

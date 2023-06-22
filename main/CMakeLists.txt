@@ -10,6 +10,7 @@ idf_component_register(
                         "./screen_handlers"
                         "./show"
                         "./wifi"
+                        "./bme280"
                 INCLUDE_DIRS "." 
                         "./basic"
                         "./weather_client"
@@ -21,6 +22,7 @@ idf_component_register(
                         "./screen_handlers"
                         "./show"
                         "./wifi"
+                        "./bme280"
                 EMBED_FILES 
                         "./ap_server/src/aqua.css"
                     "./ap_server/src/aqua.js"
