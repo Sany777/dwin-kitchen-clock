@@ -434,8 +434,9 @@ void state_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
     } else if(command == KEY_SECURITY_TOGGLE){
         if(xEventGroup&BIT_SECURITY){
             xEventGroupClearBits(dwin_event_group, BIT_SECURITY);
-            pwd_WIFI[0] =0;
-            send_message_dwin("Need set passsword WiFi!");
+            pwd_WIFI[0] = 0;
+            write_memory(main_data, DATA_PWD);
+            send_message_dwin("Need set\n passsword WiFi!");
             dwin_set_pic(INFO_PIC);
         } else {
             xEventGroupSetBits(dwin_event_group, BIT_SECURITY);
@@ -518,10 +519,11 @@ void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
     static bool timer_run;
     static int count_buzer = NUMBER_SIG_BUZ;
     if(command == KEY_CLOSE) {
+        remove_periodic_event(KEY_DECREMENT);
         print_end();
+        vTaskDelay(200);
         dwin_clock_off();
         if(timer_run){
-            remove_periodic_event(KEY_DECREMENT);
             timer_run = false;
         }
         return;

@@ -80,15 +80,10 @@ void direction_task(void *pv)
                 set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
             }
             if(KEY_IS_SET_TASK(data_in[0])){
-                cur_screen_id = data_in[0];
                 screen_handler(main_data, KEY_CLOSE, 0);
-                // if(cur_screen_id == MAIN_SCREEN){
-                //     set_power_mode_eco(true);
-                // } else {
-                //     set_power_mode_eco(false);
-                // }
+                vTaskDelay(200);
+                cur_screen_id = data_in[0];
                 area_SCREEN = 0;
-                vTaskDelay(100);
                 screen_handler(main_data, KEY_INIT, 0);
             } else  if(data_in[0] > START_SERVICE_EVENTS && data_in[0] < END_SERVICE_EVENTS){
                 xQueueSend(queue_service, &data_in[0], 200);
@@ -99,7 +94,6 @@ void direction_task(void *pv)
         }
     }
 }
-
 
 void show_task(void *main_data)
 {
@@ -114,7 +108,6 @@ void show_task(void *main_data)
         }
     }
 }
-
 
 void service_task(void *main_data)
 {
@@ -168,15 +161,6 @@ void vApplicationIdleHook(void)
     EventBits_t xEventGroup;
     bool cur_mode = false, now;
     while (1) {
-        // xEventGroup = xEventGroupGetBits(dwin_event_group);
-        // now = xEventGroup&BIT_NIGHT;
-        // if(now != cur_mode){
-        //     if(now){
-        //         dwin_set_brightness(30);
-        //     } else {
-        //         dwin_set_brightness(100);
-        //     }
-        //     cur_mode = now;
-        // }
+
     }
 }

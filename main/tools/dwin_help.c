@@ -118,17 +118,19 @@ uint16_t *get_y_points(  int8_t *points,
 
 struct tm* get_time_tm(void)
 {
+    static bool night;
     time_t time_now;
     time(&time_now);
     struct tm* t;
-    EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
     t = localtime(&time_now);
     if(t->tm_hour < 6){
-        if(!(xEventGroup&BIT_NIGHT)){
-            xEventGroupSetBits(dwin_event_group, BIT_NIGHT);
+        if(!night){
+            dwin_set_brightness(30);
+            night = true;
         }
-    } else if(xEventGroup&BIT_NIGHT){
-        xEventGroupClearBits(dwin_event_group, BIT_NIGHT);
+    } else if(night){
+        dwin_set_brightness(100);
+        night = false;
     }
     return t;
 }

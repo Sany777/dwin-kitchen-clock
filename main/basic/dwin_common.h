@@ -9,11 +9,15 @@
 #include "esp_netif.h"
 #include "esp_err.h"
 #include "nvs.h"
+#include "esp_chip_info.h"
+#include "esp_flash.h"
 
 #include <freertos/FreeRTOS.h>
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "freertos/event_groups.h"
+
+#include "bmx280.h"
 
 #include "dwin_memory.h"
 #include "dwin_config.h"
@@ -38,12 +42,9 @@
 #include "dwin_timer.h"
 #include "sensor.h"
 #include "show_screen_handlers.h"
-// #include "esp_task_wdt.h"
-#include "pm_impl.h"
+#include "bmp280_main.h"
 
-// #include "driver/gpio.h"
-// #include "driver/i2c.h"
-#include "bmx280.h"
+
 
 #define SDA_PIN             4
 #define SCL_PIN             5
@@ -66,8 +67,3 @@ extern TaskHandle_t rx_espnow, tx_espnow;
 extern uint8_t cur_screen_id;
 static char * TAG = "dwin";
 
-typedef struct {
-    int max_freq_mhz;   /*!< Maximum CPU frequency, in MHz */
-    int min_freq_mhz;   /*!< Minimum CPU frequency to use when no locks are taken, in MHz */
-    bool light_sleep_enable;        /*!< Enter light sleep when no locks are taken */
-} esp_pm_config_esp32_t;

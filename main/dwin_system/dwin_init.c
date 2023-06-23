@@ -1,12 +1,10 @@
 #include "dwin_init.h"
 
-bmx280_t* bmx280;
-
 ESP_EVENT_DEFINE_BASE(ESPNOW_EVENTS);
 ESP_EVENT_DEFINE_BASE(WIFI_SET_EVENTS);
 ESP_EVENT_DEFINE_BASE(SNTP_EVENTS);
 
-static const task_dwin_t sevice_tasks[SIZE_SERVICE_TASK] = {
+const task_dwin_t sevice_tasks[SIZE_SERVICE_TASK] = {
     {
         .pTask = show_task,
         .priority = PRIORITY_SHOW,
@@ -64,7 +62,7 @@ void esp_init(void)
     set_timezone(offset);
     init_uart();
     wifi_init();
-    vTaskDelay(100);
+    vTaskDelay(300);
     set_new_event(START_STA);
     for(int i=0; i<SIZE_SERVICE_TASK; i++){
         if(xTaskCreate(
@@ -82,13 +80,9 @@ void esp_init(void)
         };
     }
     vTaskDelay(1000);
-    // esp_pm_impl_init();
+    set_new_event(START_STA);
     EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
-    if(xEventGroup&BIT_SNTP_ALLOW){
-        xEventGroupSetBits(dwin_event_group, BIT_PROCESS);
-        set_new_event(START_STA);
-        set_new_event(INIT_SNTP);
-    }
+    xEventGroupSetBits(dwin_event_group, BIT_PROCESS);
     do{
         send_hello();
         xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_DWIN_RESPONSE_OK, false, false, 1000);
@@ -96,29 +90,23 @@ void esp_init(void)
     dwin_set_pic(NO_WEATHER_PIC);
     welcome();
     if(xEventGroup&BIT_SNTP_ALLOW){
-        xEventGroupWaitBits(dwin_event_group, BIT_PROCESS, true, true, 3000);
+        set_new_event(INIT_SNTP);
+        xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_PROCESS, true, true, 3000);
     }
-    if(!(xEventGroup&BIT_CON_STA_OK)){
+    if(!(xEventGroup&BIT_CON_STA_OK) 
+        || !(xEventGroup&BIT_SNTP_ALLOW))
+    {
         vTaskDelay(1000);
         dwin_clock_get();
     }
     temp_BM280 = NO_TEMP;
     set_new_event(MAIN_SCREEN);
-    vTaskDelay(1000);
+    vTaskDelay(200);
     if(init_bmp280() == ESP_OK){
+        vTaskDelay(200);
         set_new_event(GET_TEMPERATURE);
         set_periodic_event(GET_TEMPERATURE, 35, RELOAD_COUNT);
     }
-}
-
-void set_power_mode_eco(const bool run)
-{
-    esp_pm_config_esp32_t pv = {
-        .max_freq_mhz = 160,
-        .min_freq_mhz = 40,
-        .light_sleep_enable = run
-    };
-    ESP_ERROR_CHECK(esp_pm_configure(&pv));
 }
 
 void wifi_init(void)
@@ -128,37 +116,4 @@ void wifi_init(void)
     const wifi_init_config_t cfg = (const wifi_init_config_t) WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
-}
-
-esp_err_t init_bmp280(void)
-{
-    i2c_config_t i2c_cfg = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = SDA_PIN,
-        .scl_io_num = SCL_PIN,
-        .sda_pullup_en = false,
-        .scl_pullup_en = false,
-        .master = {
-            .clk_speed = 100000
-        }
-    };
-    DWIN_CHECK_AND_RETURN(i2c_param_config(I2C_NUM_0, &i2c_cfg));
-    DWIN_CHECK_AND_RETURN(i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0));
-    bmx280 = bmx280_create(I2C_NUM_0);
-    if (!bmx280) { 
-        return ESP_FAIL;
-    }
-    DWIN_CHECK_AND_RETURN(bmx280_init(bmx280));
-    bmx280_config_t bmx_cfg = BMX280_DEFAULT_CONFIG;
-    DWIN_CHECK_AND_RETURN(bmx280_configure(bmx280, &bmx_cfg));
-    return ESP_OK;
-}
-
-void read_sensor_handler(main_data_t* main_data)
-{
-    bmx280_setMode(bmx280, BMX280_MODE_FORCE);
-    do {
-        vTaskDelay(pdMS_TO_TICKS(10));
-    } while(bmx280_isSampling(bmx280));
-    bmx280_readoutFloat(bmx280, &temp_BM280, &pressure_BM280, 0);
 }

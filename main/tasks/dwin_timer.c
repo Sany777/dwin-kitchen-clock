@@ -12,14 +12,7 @@ size_t size_list = 0;
 void resize_list()
 {
     taskENTER_CRITICAL(&periodic_timers_s);
-    if(number_event == 0){
-        if(list_periodic_events){
-            free(list_periodic_events);
-            list_periodic_events = NULL;
-            size_list = 0;
-            esp_timer_stop(periodic_timer);
-        }
-    } else if(size_list > (number_event + STEP_RESIZE)){
+    if(size_list > (number_event + STEP_RESIZE)){
         const size_t new_size = (number_event/STEP_RESIZE)*STEP_RESIZE + STEP_RESIZE;
         periodic_event_t *new_list_periodic_events = calloc(new_size, sizeof(periodic_event_t));
         if(new_list_periodic_events){
@@ -42,8 +35,9 @@ void remove_periodic_event(uint8_t command)
         for(int i=0; i<size_list; i++){
             if(list_periodic_events[i].command == command){
                 list_periodic_events[i].time = 0;
+                list_periodic_events[i].command = 0;
                 number_event--;
-                if(number_event == 0 || size_list > (number_event + STEP_RESIZE)){
+                if(size_list > (number_event + STEP_RESIZE)){
                     resize_list();
                 }
                 return;
@@ -113,7 +107,7 @@ void periodic_timer_cb(void* arg)
         periodic_event_t *item = NULL;
         for(int i=0; i<size_list; i++){
             item = &list_periodic_events[i];
-            if(item->time){
+            if(item->command && item->time){
                 item->time--;
                 if(item->time == 0){
                     uint8_t send[2] = {item->command, 0};
@@ -123,6 +117,7 @@ void periodic_timer_cb(void* arg)
                         item->time = item->time_init;
                     } else {
                         number_event--;
+                        item->command = 0;
                     }
                 }
             }

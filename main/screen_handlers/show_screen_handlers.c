@@ -26,24 +26,35 @@ void show_info_handler(main_data_t * main_data,
                         int32_t state, 
                         void* event_data)
 {
-    print_start(2, 0, WHITE, FONT_SECOND_INFO);
+    print_start(1, 17, WHITE, FONT_SECOND_INFO);
     uint8_t mac[8];
+    send_str("Device %s",MY_DEVICE_NAME);
     if(esp_read_mac(mac, ESP_MAC_WIFI_STA) == ESP_OK){
-        send_str(" MAC WIFI STA: "MACSTR"", MAC2STR(mac));
+        send_str("\n\r MAC WIFI STA: "MACSTR"", MAC2STR(mac));
     }
     if(esp_read_mac(mac, ESP_MAC_BT) == ESP_OK){
         send_str("\n\r MAC BT : "MACSTR"", MAC2STR(mac));
     }
-    send_str("\n\r Device name: %s,\r\n\n    Configuration server (WiFi AP)\n\r SSID: %s.\r\n Password: %s.\n\r IP: %s", 
-                        MY_DEVICE_NAME, 
+    send_str("\n\r  Configuration server (WiFi AP)\n\r SSID: %s.\r\n Password: %s.\n\r IP: %s", 
                         AP_WIFI_SSID, 
                         AP_WIFI_PWD, MY_IP);
-    esp_pm_config_esp32_t pv;
-    esp_pm_get_configuration(&pv);
-    vTaskDelay(DELAY_SHOW_ITEM);
-    send_str("\n\n\r Freq : max %dmhz, min %dmhz.", pv.max_freq_mhz, pv.min_freq_mhz);
-    if(pv.light_sleep_enable){
-        send_str_dwin("\n\r Auto sleep");
+    print_end();
+    print_start(14, 2, WHITE, FONT_SECOND_INFO);
+    esp_chip_info_t chip_info;
+    uint32_t flash_size;
+    esp_chip_info(&chip_info);
+    send_str("This is %s chip with %d CPU core(s), WiFi%s%s.",
+           CONFIG_IDF_TARGET,
+           chip_info.cores,
+           (chip_info.features & CHIP_FEATURE_BT) ? "/BT" : "",
+           (chip_info.features & CHIP_FEATURE_BLE) ? "/BLE" : "");
+    unsigned major_rev = chip_info.revision / 100;
+    unsigned minor_rev = chip_info.revision % 100;
+    send_str("\n\r Silicon revision v%d.%d.", major_rev, minor_rev);
+    if(esp_flash_get_size(NULL, &flash_size) == ESP_OK) {
+        send_str("\n\r %" PRIu32 "MB %s flash", flash_size / (uint32_t)(1024 * 1024),
+            (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
+        send_str("\n\r Minimum free heap size: %" PRIu32 " bytes", esp_get_minimum_free_heap_size());
     }
     print_end();
 }
@@ -103,7 +114,6 @@ void show_ap_handler(main_data_t * main_data,
     print_end();
 }
 
-/* if negative ssid number need show tail data */
 void show_ssid_handler(main_data_t * main_data,
                                 int32_t ap_count, 
                                 void* event_data) 
@@ -118,13 +128,13 @@ void show_ssid_handler(main_data_t * main_data,
         int ap_num = 0;
         print_start(1, 0, color_DESC, NORMAL_FONT);
         send_str(" N|       SSID          | RSSI| Ch.");
-        print_end();
         if(ap_count < 0){
             ap_count *= -1;
             first_page = false;
             ap_info += MAX_SSID_PEER_SCREEN;
             ap_num = MAX_SSID_PEER_SCREEN;
         } 
+        print_end();
         vTaskDelay(DELAY_SHOW_ITEM/2);
         for (int i=0; ap_num<ap_count && i<MAX_SSID_PEER_SCREEN; i++, ap_num++, ap_info++) {
             print_start(i+1, 0, GET_COLOR_AREA(i), NORMAL_FONT);
@@ -335,7 +345,7 @@ void show_state_handler(main_data_t *main_data,
                     : "denied",
                 xEventGroup&BIT_WEATHER_OK
                     ? "work"
-                    : xEventGroup&BIT_RESPONSE_400_SERVER
+                    : xEventGroup&BIT_RESPONSE_400_SERVER && xEventGroup&BIT_CON_STA_OK
                         ? "not\twork - wrong key api"
                         : "not\twork - no internet",
                 xEventGroup&BIT_SNTP_ALLOW
@@ -403,7 +413,7 @@ void show_clock_handler(main_data_t * main_data,
                 break;
             case 7:
                 print_start(2, 2, color_DESC, 1);
-                send_str("Service SNTP %s work. Offset time :  [+] %+d [-]",
+                send_str("Service SNTP %s work. Offset time: [+] %+d [-]",
                         xEventGroup&BIT_SNTP_WORK
                         ? ""
                         : "not ",
@@ -487,12 +497,14 @@ void show_main_handler(main_data_t * main_data,
             }
             case 2:
             {
-                print_start(1, 0, get_color_temp(temp_FEELS_LIKE[0]), FONT_INFO);
                 if(temp_BM280 != NO_TEMP) {
-                    send_str("\n\r Indoor            t*C %2.0f", temp_BM280);
+                    print_start(0, 1, get_color_temp(temp_BM280-5), FONT_INFO);
+                    send_str("Indoor            t*C %d", temp_BM280);
+                    print_end();
                 }
                 if(weather_PIC != NO_WEATHER_PIC){
-                    send_str(" Outdoor            t*C %d\n\r Feels like         t*C %d\n\r Chance of rain        %d%%", 
+                    print_start(1, 1, get_color_temp(temp_FEELS_LIKE[0]), FONT_INFO);
+                    send_str("Outdoor            t*C %d\n\r Feels like         t*C %d\n\r Chance of rain        %d%%", 
                                     temp_OUTDOOR, 
                                     temp_FEELS_LIKE[0],
                                     PoP[0]);
@@ -501,6 +513,7 @@ void show_main_handler(main_data_t * main_data,
             }
             case 3:
             {
+                if(weather_PIC == NO_WEATHER_PIC) return;
                 print_start(4, 5, LEMON, FONT_BUTTON);
                 send_str("%15.15s", description_WEATHER);
                 break;

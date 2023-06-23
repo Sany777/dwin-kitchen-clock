@@ -1,6 +1,6 @@
 #include "parser.h"
 
-uint16_t get_color_temp(int8_t temp)
+uint16_t get_color_temp(int temp)
 {
     if(temp <= 0){
         return VIOLET;
