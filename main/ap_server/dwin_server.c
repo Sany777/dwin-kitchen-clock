@@ -143,11 +143,7 @@ static esp_err_t handler_update_dwin(httpd_req_t *req)
     server_buf[total_len] = 0;
     size_t len = 0;
     init_update_dwin();
-    xEventGroupClearBits(dwin_event_group, BIT_DWIN_RESPONSE_OK);
-    EventBits_t xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_DWIN_RESPONSE_OK, false, false, 1000);
-    if(!(xEventGroup&BIT_DWIN_RESPONSE_OK)){
-        DWIN_RESP_ERR(req, "Dwin no response", err);
-    }
+    vTaskDelay(3000);
     do{
         len =  MIN(200, total_len);
         total_len -= len;

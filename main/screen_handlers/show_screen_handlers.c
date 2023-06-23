@@ -484,7 +484,6 @@ void show_main_handler(main_data_t * main_data,
     } else {
     struct tm *cur_time = (struct tm *)time_pv;
     for(uint32_t i=0; i<5; i++) {
-        vTaskDelay(DELAY_SHOW_ITEM);
         switch (i) {
             case 0:
             {
@@ -506,13 +505,13 @@ void show_main_handler(main_data_t * main_data,
             case 2:
             {
                 if(temp_BM280 != NO_TEMP) {
-                    print_start(0, 1, get_color_temp(temp_BM280-5), FONT_INFO);
-                    send_str("Indoor            t*C %d", temp_BM280);
+                    print_start(0, 0, get_color_temp(temp_BM280), FONT_INFO);
+                    send_str("   Indoor           t*C %d", temp_BM280);
                     print_end();
                 }
                 if(weather_PIC != NO_WEATHER_PIC){
-                    print_start(1, 1, get_color_temp(temp_FEELS_LIKE[0]), FONT_INFO);
-                    send_str("Outdoor            t*C %d\n\r Feels like         t*C %d\n\r Chance of rain        %d%%", 
+                    print_start(1, 0, get_color_temp(temp_OUTDOOR), FONT_INFO);
+                    send_str("   Outdoor          t*C %d\n\r   Feels like       t*C %d\n\r   Chance of rain       %d%%", 
                                     temp_OUTDOOR, 
                                     temp_FEELS_LIKE[0],
                                     PoP[0]);

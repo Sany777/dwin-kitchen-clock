@@ -253,13 +253,6 @@ static esp_err_t bmx280_reset(bmx280_t *bmx280)
 
 static esp_err_t bmx280_calibrate(bmx280_t *bmx280)
 {
-    // Honestly, the best course of action is to read the high and low banks
-    // into a buffer, then put them in the calibration values. Makes code
-    // endian agnostic, and overcomes struct packing issues.
-    // Also the BME280 high bank is weird.
-    //
-    // Write and pray to optimizations is my new motto.
-
     ESP_LOGI("bmx280", "Reading out calibration values...");
 
     esp_err_t err;
@@ -288,10 +281,9 @@ static esp_err_t bmx280_calibrate(bmx280_t *bmx280)
     #if !(CONFIG_BMX280_EXPECT_BMP280)
 
     #if CONFIG_BMX280_EXPECT_DETECT
-    if (bmx280_isBME(bmx280->chip_id)) // Only conditional for detect scenario.
+    if (bmx280_isBME(bmx280->chip_id))
     #endif
     {
-        // First get H1 out of the way.
         bmx280->cmps.H1 = buf[23];
 
         err = bmx280_read(bmx280, BMX280_REG_CAL_HI, buf, 7);

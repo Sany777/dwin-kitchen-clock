@@ -217,7 +217,6 @@ typedef struct {
     uint8_t notif_data[SIZE_NOTIFICATION];
     int8_t timer_data[SIZE_TIMER];
     int temp;
-    float pres;
     sensor_data_t *sensor_data;
     timer_data_t *timers;
     weather_data_t weather_data;

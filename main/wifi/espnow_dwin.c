@@ -150,7 +150,6 @@ for(;;){
 void espnow_task_rx(void *pv)
 {
     main_data_t * const main_data = (main_data_t *)pv;
-    /*parcel data*/
     uint8_t rssi;
     uint16_t crc;
     espnow_rx_data_t data_rx;

@@ -60,9 +60,9 @@ void get_weather(main_data_t *main_data, uint8_t key)
                                         false, false, 
                                         WAIT_PROCEES);  
     weather_PIC = NO_WEATHER_PIC;
-    if(xEventGroup&BIT_WEATHER_OK){
-        xEventGroupClearBits(dwin_event_group, BIT_WEATHER_OK);
-    }                                                            
+    xEventGroupClearBits(
+        dwin_event_group,BIT_WEATHER_OK
+        |BIT_RESPONSE_400_SERVER);                                                         
     DWIN_IF_FALSE_GOTO(!(xEventGroup&BIT_DENIED_STA), st_1);
     DWIN_IF_FALSE_GOTO((strnlen(api_KEY, SIZE_BUF) == MAX_STR_LEN) 
                                 || (strnlen(name_CITY, SIZE_BUF) == 0),
@@ -106,21 +106,20 @@ void get_weather(main_data_t *main_data, uint8_t key)
     char **sunset = find_str_key(local_response_buffer, data_len, "\"sunset\":");
     char **dt_txt = find_str_key(local_response_buffer, data_len, "\"dt_txt\":");
     char **pod = find_str_key(local_response_buffer, data_len, "\"pod\":\"");
-    DWIN_IF_FALSE_GOTO(pop != NULL 
-                        && temp != NULL
-                        && temp_feel != NULL
-                        && description != NULL
-                        && id != NULL
-                        && sunrise != NULL
-                        && sunset != NULL
-                        && dt_txt != NULL
-                        && pod != NULL, st_4);
-    if (xEventGroup&BIT_RESPONSE_400_SERVER){
-       xEventGroupClearBits(dwin_event_group, BIT_RESPONSE_400_SERVER); 
+    if(pop == NULL 
+            || temp == NULL
+            || temp_feel == NULL
+            || description == NULL
+            || id == NULL
+            || sunrise == NULL
+            || sunset == NULL
+            || dt_txt == NULL
+            || pod == NULL)
+    {
+        xEventGroupSetBits(dwin_event_group, BIT_RESPONSE_400_SERVER); 
+        goto st_4;
     }
-    if(!(xEventGroup&BIT_WEATHER_OK)){
-        xEventGroupSetBits(dwin_event_group, BIT_WEATHER_OK);
-    }
+    xEventGroupSetBits(dwin_event_group, BIT_WEATHER_OK);
     for(int i=0; i<data_len; i++){
         if(local_response_buffer[i] == ',' 
                 || local_response_buffer[i] == '}'
@@ -141,7 +140,7 @@ void get_weather(main_data_t *main_data, uint8_t key)
     dt_TX = atoi((dt_txt[0]+SHIFT_DT_TX));
     weather_PIC = get_pic(atoi(id[0]), pod[0][0] == 'n');
     strncpy(description_WEATHER, description[0], MAX_LEN_DESCRIPTION);
-    for(int i=0; temp && temp[i]; i++){
+    for(int i=0; pop[i] && temp_feel[i]; i++){
         temp_FEELS_LIKE[i] = atoi(temp_feel[i]);
         PoP[i] = atof(pop[i])*100;
     }
@@ -162,12 +161,6 @@ st_3:
 st_2:
     free(url_buf);
 st_1:
-    if (!(xEventGroup&BIT_RESPONSE_400_SERVER)){
-        xEventGroupSetBits(dwin_event_group, BIT_RESPONSE_400_SERVER);
-    }
-    if(xEventGroup&BIT_WEATHER_OK){
-        xEventGroupClearBits(dwin_event_group, BIT_WEATHER_OK);
-    }
     set_new_event(UPDATE_WEATHER_COMPLETE);
 }
 

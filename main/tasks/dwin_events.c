@@ -64,7 +64,7 @@ void check_net_data(main_data_t* main_data)
 
 void direction_task(void *pv)
 {
-    uint8_t data_in[2] = {0};
+    uint8_t data_in[2] = {0}, command, symbol;
     main_data_t *main_data = (main_data_t*)pv;
     cur_screen_id = MAIN_SCREEN;
     while(1) {
@@ -72,12 +72,14 @@ void direction_task(void *pv)
                             data_in,
                             portMAX_DELAY) == pdTRUE)
         {
-            if(KEY_IS_SERVICE_COMMAND(data_in[0])){
-                xQueueSend(queue_service, &data_in[0], 200);
-            } else if(KEY_IS_SET_TASK(data_in[0])){
+            command = data_in[0];
+            symbol = data_in[1];
+            if(KEY_IS_SERVICE_COMMAND(command)){
+                xQueueSend(queue_service, &command, 200);
+            } else if(KEY_IS_SET_TASK(command)){
                 screen_handler(main_data, KEY_CLOSE, 0);
                 vTaskDelay(200);
-                cur_screen_id = data_in[0];
+                cur_screen_id = command;
                 area_SCREEN = 0;
                 screen_handler(main_data, KEY_INIT, 0);
             } else {
@@ -87,7 +89,7 @@ void direction_task(void *pv)
                 {
                     set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
                 }
-                screen_handler(main_data, data_in[0], data_in[1]);
+                screen_handler(main_data, command, symbol);
             }
         }
     }

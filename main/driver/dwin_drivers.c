@@ -236,12 +236,12 @@ void dwin_clock_on(const uint16_t row, const  uint16_t column, const  uint16_t t
         FRAME_HEADER,
         CLOCK_ON_COMMAND,
         font,
-        textColor / 256,
-        textColor % 256,
-        column / 256,
-        column % 256, 
-        row / 256,
-        row % 256,
+        textColor/256,
+        textColor%256,
+        column/256,
+        column%256, 
+        row/256,
+        row%256,
         FRAME_END
     };
     uart_write_bytes(UART_DWIN, clock_on_command, sizeof(clock_on_command));

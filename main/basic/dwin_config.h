@@ -37,7 +37,7 @@
 #define ESP_WIFI_CHANNEL   0
 #define MAX_OTA_SIZE  1500000
 /* Scratch server_buffer size */
-#define SCRATCH_SIZE  5000 // 5 KB
+#define SCRATCH_SIZE  5500 // 5 KB
 #define MAX_URI_LEN 50
 #define MAX_LEN_CHUNC_IMG 1000
 
@@ -76,7 +76,7 @@
 #define NORMAL_BUZZER        50
 
 /* delays show data */
-#define DELAY_SHOW_ITEM          (50/portTICK_PERIOD_MS)
+#define DELAY_SHOW_ITEM          (25/portTICK_PERIOD_MS)
 #define DELAY_SHOW_MESSAGE       (2000/portTICK_PERIOD_MS)
 #define DELAY_CHANGE_PIC         (200/portTICK_PERIOD_MS)
 
