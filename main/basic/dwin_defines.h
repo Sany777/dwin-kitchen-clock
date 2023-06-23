@@ -179,7 +179,7 @@
 
 #define KEY_IS_DAY(key_from_dwin)             ((key_from_dwin) >= KEY_DAY_1 \
                                                     && (key_from_dwin) < KEY_DAY_1+SIZE_WEEK)
-
+#define KEY_IS_SERVICE_COMMAND(key)           ((key) > START_SERVICE_EVENTS && (key) < END_SERVICE_EVENTS)
 #define color_CLOCK                           (USED_COLORS[colors_INTERFACE[AREA_CLOCK_COLOR]])
 
 #define color_DESC                            (USED_COLORS[colors_INTERFACE[AREA_DESC_COLOR]])

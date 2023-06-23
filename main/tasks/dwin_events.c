@@ -72,25 +72,23 @@ void direction_task(void *pv)
                             data_in,
                             portMAX_DELAY) == pdTRUE)
         {
-
-            if(cur_screen_id != MAIN_SCREEN 
-                    && cur_screen_id != TIMER_SCREEN 
-                    && cur_screen_id != SERVER_SCREEN)
-            {
-                set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
-            }
-            if(KEY_IS_SET_TASK(data_in[0])){
+            if(KEY_IS_SERVICE_COMMAND(data_in[0])){
+                xQueueSend(queue_service, &data_in[0], 200);
+            } else if(KEY_IS_SET_TASK(data_in[0])){
                 screen_handler(main_data, KEY_CLOSE, 0);
                 vTaskDelay(200);
                 cur_screen_id = data_in[0];
                 area_SCREEN = 0;
                 screen_handler(main_data, KEY_INIT, 0);
-            } else  if(data_in[0] > START_SERVICE_EVENTS && data_in[0] < END_SERVICE_EVENTS){
-                xQueueSend(queue_service, &data_in[0], 200);
             } else {
+                if(cur_screen_id != MAIN_SCREEN 
+                        && cur_screen_id != TIMER_SCREEN 
+                        && cur_screen_id != SERVER_SCREEN)
+                {
+                    set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
+                }
                 screen_handler(main_data, data_in[0], data_in[1]);
             }
-
         }
     }
 }

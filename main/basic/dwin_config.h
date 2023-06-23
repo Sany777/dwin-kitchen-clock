@@ -151,8 +151,8 @@
 #define SIZE_UART_EVENTS 10
 #define SIZE_SHOW_BUF 250
 #define MAX_DATA_LEN  (SIZE_SHOW_BUF-1)
-/* sec - for events timer */
-#define DELAY_AUTOCLOSE 180
+/* events timer */
+#define DELAY_AUTOCLOSE 120
 #define WAIT_SHOW 100
 #define WAIT_SET_NEW_EVENT 100
 #define MAX_AP_PAGE 9
@@ -160,4 +160,8 @@
 #define SIZE_QUEUE_DIRECT 10
 
 static const uint8_t MONTH_DAY[] = {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+/* Sensor */
 #define NO_TEMP -100
+#define SDA_PIN             4
+#define SCL_PIN             5
