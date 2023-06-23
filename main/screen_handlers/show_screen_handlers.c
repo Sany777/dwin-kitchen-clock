@@ -243,17 +243,25 @@ void show_notify_handler(main_data_t * main_data,
                 6 + area%2*5, 
                 GET_COLOR_AREA(area), 
                 3);      
-        send_str(" %2.2d  %s", 
-                        area_min
-                            ? VALUE_NOTIF_MIN(notif_count, cur_day)
-                            : VALUE_NOTIF_HOUR(notif_count, cur_day),
-                        area_min 
-                            ? IS_NOTIF_ACTIVE(notif_count, cur_day) 
+        send_str(" %2.2d", 
+                    area_min
+                        ? VALUE_NOTIF_MIN(notif_count, cur_day)
+                        : VALUE_NOTIF_HOUR(notif_count, cur_day));
+        if(area_min){
+            print_end();
+            print_start(2+notif_count, 
+                15, 
+                IS_NOTIF_ACTIVE(notif_count, cur_day)
+                    ? YELLOW
+                    : CAEN, 
+                3);      
+            send_str_dwin(IS_NOTIF_ACTIVE(notif_count, cur_day) 
                                 ? MES_ON
-                                : MES_OFF
-                            : ":"
-                    );
-        if(area_min)notif_count++;
+                                : MES_OFF);
+            notif_count++;
+        } else {
+            send_str_dwin("  :");
+        }
         area_min = !area_min;
         print_end();
     }

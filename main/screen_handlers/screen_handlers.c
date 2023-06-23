@@ -507,7 +507,12 @@ void notifications_screen_handler(main_data_t* main_data, uint8_t command, char 
     } else if(command == KEY_ENTER) {
         write_memory(main_data, DATA_NOTIF);
     } else if(KEY_IS_AREA_TOGGLE(command)) {
-        TOOGLE_NOTIF(GET_VALUE_TOGGLE(command), cur_day);
+        uint8_t area = GET_VALUE_TOGGLE(command);
+        if(area < NOTIF_PER_DAY){
+            TOOGLE_NOTIF(area, cur_day);
+        } else {
+            TOOGLE_DAY_NOTIF(cur_day);
+        }
     }
     show_screen(cur_day, &cur_day, sizeof(cur_day));
 }
