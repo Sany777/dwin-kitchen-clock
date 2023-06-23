@@ -219,8 +219,8 @@ typedef struct {
     sensor_data_t *sensor_data;
     timer_data_t *timers;
     weather_data_t weather_data;
-    int32_t temp;
-    int32_t pres;
+    float temp;
+    float pres;
 } main_data_t;
 
 

@@ -1,5 +1,7 @@
 #include "dwin_init.h"
 
+bmx280_t* bmx280;
+
 ESP_EVENT_DEFINE_BASE(ESPNOW_EVENTS);
 ESP_EVENT_DEFINE_BASE(WIFI_SET_EVENTS);
 ESP_EVENT_DEFINE_BASE(SNTP_EVENTS);
@@ -62,6 +64,7 @@ void esp_init(void)
     set_timezone(offset);
     init_uart();
     wifi_init();
+    vTaskDelay(100);
     set_new_event(START_STA);
     for(int i=0; i<SIZE_SERVICE_TASK; i++){
         if(xTaskCreate(
@@ -74,10 +77,12 @@ void esp_init(void)
         ) != pdTRUE)
         {
             send_message_dwin("No enough memory. Task no create");
-            vTaskDelay(2000);
+            vTaskDelay(10000);
             esp_restart();
         };
     }
+    vTaskDelay(1000);
+    // esp_pm_impl_init();
     EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
     if(xEventGroup&BIT_SNTP_ALLOW){
         xEventGroupSetBits(dwin_event_group, BIT_PROCESS);
@@ -92,20 +97,23 @@ void esp_init(void)
     welcome();
     if(xEventGroup&BIT_SNTP_ALLOW){
         xEventGroupWaitBits(dwin_event_group, BIT_PROCESS, true, true, 3000);
-    } else {
+    }
+    if(!(xEventGroup&BIT_CON_STA_OK)){
         vTaskDelay(1000);
         dwin_clock_get();
     }
-    i2c_master_init();
-    init_bme280();
-    // set_new_event(MAIN_SCREEN);
-    set_new_event(GET_TEMPERATURE);
+    temp_BM280 = NO_TEMP;
+    set_new_event(MAIN_SCREEN);
+    vTaskDelay(1000);
+    if(init_bmp280() == ESP_OK){
+        set_new_event(GET_TEMPERATURE);
+        set_periodic_event(GET_TEMPERATURE, 35, RELOAD_COUNT);
+    }
 }
 
 void set_power_mode_eco(const bool run)
 {
-    esp_pm_impl_init();
-    esp_pm_config_esp32c3_t pv = {
+    esp_pm_config_esp32_t pv = {
         .max_freq_mhz = 160,
         .min_freq_mhz = 40,
         .light_sleep_enable = run
@@ -122,112 +130,35 @@ void wifi_init(void)
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
 }
 
-
-
-
-void i2c_master_init()
-{ 
-	i2c_config_t i2c_config = {
-		.mode = I2C_MODE_MASTER,
-		.sda_io_num = SDA_PIN,
-		.scl_io_num = SCL_PIN,
-		.sda_pullup_en = GPIO_PULLUP_ENABLE,
-		.scl_pullup_en = GPIO_PULLUP_ENABLE,
-		.master.clk_speed = 1000000
-	};
-	ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &i2c_config));
-	ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0));
-}
-
-int8_t BME280_I2C_bus_write(uint8_t dev_addr, uint8_t reg_addr, uint8_t *reg_data, uint8_t cnt)
+esp_err_t init_bmp280(void)
 {
-	int32_t iError = BME280_INIT_VALUE;
-
-	esp_err_t espRc;
-	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, (dev_addr << 1) | I2C_MASTER_WRITE, true);
-
-	i2c_master_write_byte(cmd, reg_addr, true);
-	i2c_master_write(cmd, reg_data, cnt, true);
-	i2c_master_stop(cmd);
-
-	espRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
-	if (espRc == ESP_OK) {
-		iError = SUCCESS;
-	} else {
-		iError = ERROR;
-	}
-	i2c_cmd_link_delete(cmd);
-
-	return (int8_t)iError;
-}
-
-int8_t BME280_I2C_bus_read(uint8_t dev_addr, uint8_t reg_addr, uint8_t *reg_data, uint8_t cnt)
-{
-	int32_t iError = BME280_INIT_VALUE;
-	esp_err_t espRc;
-
-	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, (dev_addr << 1) | I2C_MASTER_WRITE, true);
-	i2c_master_write_byte(cmd, reg_addr, true);
-
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, (dev_addr << 1) | I2C_MASTER_READ, true);
-
-	if (cnt > 1) {
-		i2c_master_read(cmd, reg_data, cnt-1, I2C_MASTER_ACK);
-	}
-	i2c_master_read_byte(cmd, reg_data+cnt-1, I2C_MASTER_NACK);
-	i2c_master_stop(cmd);
-
-	espRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
-	if (espRc == ESP_OK) {
-		iError = SUCCESS;
-	} else {
-		iError = ERROR;
-	}
-
-	i2c_cmd_link_delete(cmd);
-
-	return (int8_t)iError;
-}
-
-void BME280_delay_msek(uint32_t msek)
-{
-	vTaskDelay(msek/portTICK_PERIOD_MS);
-}
-
-void init_bme280(void)
-{
-	struct bme280_t bme280 = {
-		.bus_write = BME280_I2C_bus_write,
-		.bus_read = BME280_I2C_bus_read,
-		.dev_addr = BME280_I2C_ADDRESS1,
-		.delay_msec = BME280_delay_msek
-	};
-	int32_t com_rslt;
-    com_rslt = bme280_init(&bme280);
-	com_rslt += bme280_set_oversamp_pressure(BME280_OVERSAMP_16X);
-	com_rslt += bme280_set_oversamp_temperature(BME280_OVERSAMP_2X);
-	com_rslt += bme280_set_oversamp_humidity(BME280_OVERSAMP_1X);
-	com_rslt += bme280_set_standby_durn(BME280_STANDBY_TIME_1_MS);
-	com_rslt += bme280_set_filter(BME280_FILTER_COEFF_16);
-	com_rslt += bme280_set_power_mode(BME280_NORMAL_MODE);
-	if (com_rslt != SUCCESS) {
-		ESP_LOGE(TAG_BME280, "init BM280 or setting error.");
-	}
+    i2c_config_t i2c_cfg = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = SDA_PIN,
+        .scl_io_num = SCL_PIN,
+        .sda_pullup_en = false,
+        .scl_pullup_en = false,
+        .master = {
+            .clk_speed = 100000
+        }
+    };
+    DWIN_CHECK_AND_RETURN(i2c_param_config(I2C_NUM_0, &i2c_cfg));
+    DWIN_CHECK_AND_RETURN(i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0));
+    bmx280 = bmx280_create(I2C_NUM_0);
+    if (!bmx280) { 
+        return ESP_FAIL;
+    }
+    DWIN_CHECK_AND_RETURN(bmx280_init(bmx280));
+    bmx280_config_t bmx_cfg = BMX280_DEFAULT_CONFIG;
+    DWIN_CHECK_AND_RETURN(bmx280_configure(bmx280, &bmx_cfg));
+    return ESP_OK;
 }
 
 void read_sensor_handler(main_data_t* main_data)
 {
-
-    bme280_read_uncomp_temperature(&temp_BM280);
-    temp_BM280 = bme280_compensate_temperature_int32(temp_BM280);
-
-    ESP_LOGI(TAG_BME280, "\n\r%3d *C", (int)temp_BM280);
-
+    bmx280_setMode(bmx280, BMX280_MODE_FORCE);
+    do {
+        vTaskDelay(pdMS_TO_TICKS(10));
+    } while(bmx280_isSampling(bmx280));
+    bmx280_readoutFloat(bmx280, &temp_BM280, &pressure_BM280, 0);
 }

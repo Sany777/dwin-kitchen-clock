@@ -129,7 +129,10 @@
     "esp_task_wdt.h": "c",
     "bme280.h": "c",
     "gpio_types.h": "c",
-    "i2c.h": "c"
+    "i2c.h": "c",
+    "bmp280.h": "c",
+    "i2c_struct.h": "c",
+    "bmx280.h": "c"
   },
   "idf.port": "/dev/ttyACM0",
   "idf.flashType": "UART",

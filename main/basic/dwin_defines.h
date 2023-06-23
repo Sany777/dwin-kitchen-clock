@@ -20,8 +20,7 @@
 #define sensor_DATA             (main_data->sensor_data)
 
 #define  temp_BM280             main_data->temp
-#define  presure_BM280          main_data->pres
-#define  humidity_BM280         main_data->hum
+#define  pressure_BM280          main_data->pres
 /*for main_data instance*/
 #define area_SCREEN             (main_data->area)
 #define pwd_WIFI                (main_data->pwd_wifi)
@@ -224,5 +223,13 @@
         if (ESP_OK != (a)) {                            \
             ESP_LOGI("dwin", "%s", esp_err_to_name(a)); \
             goto goto_tag;                              \
+        }                                               \
+    } while(0)
+
+#define DWIN_CHECK_AND_RETURN(a)                        \
+    do{                                                 \
+        if (ESP_OK != (a)) {                            \
+            ESP_LOGI("dwin", "%s", esp_err_to_name(a)); \
+            return a;                                     \
         }                                               \
     } while(0)

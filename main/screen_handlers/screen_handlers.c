@@ -518,6 +518,7 @@ void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
     static bool timer_run;
     static int count_buzer = NUMBER_SIG_BUZ;
     if(command == KEY_CLOSE) {
+        print_end();
         dwin_clock_off();
         if(timer_run){
             remove_periodic_event(KEY_DECREMENT);

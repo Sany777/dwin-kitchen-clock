@@ -76,7 +76,7 @@
 #define NORMAL_BUZZER        50
 
 /* delays show data */
-#define DELAY_SHOW_ITEM          (40/portTICK_PERIOD_MS)
+#define DELAY_SHOW_ITEM          (50/portTICK_PERIOD_MS)
 #define DELAY_SHOW_MESSAGE       (2000/portTICK_PERIOD_MS)
 #define DELAY_CHANGE_PIC         (200/portTICK_PERIOD_MS)
 
@@ -160,3 +160,4 @@
 #define SIZE_QUEUE_DIRECT 10
 
 static const uint8_t MONTH_DAY[] = {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+#define NO_TEMP -100

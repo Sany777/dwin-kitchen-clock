@@ -38,17 +38,16 @@
 #include "dwin_timer.h"
 #include "sensor.h"
 #include "show_screen_handlers.h"
-#include "esp_task_wdt.h"
+// #include "esp_task_wdt.h"
+#include "pm_impl.h"
 
-#include "driver/gpio.h"
-#include "driver/i2c.h"
-#include "bme280.h"
+// #include "driver/gpio.h"
+// #include "driver/i2c.h"
+#include "bmx280.h"
 
-#define SDA_PIN             21
-#define SCL_PIN             22
-#define TAG_BME280 "BME280"
-#define I2C_MASTER_ACK 0
-#define I2C_MASTER_NACK 1
+#define SDA_PIN             4
+#define SCL_PIN             5
+
 
 
 ESP_EVENT_DECLARE_BASE(ESPNOW_EVENTS);
@@ -66,9 +65,6 @@ extern QueueHandle_t dwin_uart_events_queue,
 extern TaskHandle_t rx_espnow, tx_espnow;
 extern uint8_t cur_screen_id;
 static char * TAG = "dwin";
-
-
-#include "pm_impl.h"
 
 typedef struct {
     int max_freq_mhz;   /*!< Maximum CPU frequency, in MHz */

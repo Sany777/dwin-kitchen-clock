@@ -38,7 +38,7 @@ void show_info_handler(main_data_t * main_data,
                         MY_DEVICE_NAME, 
                         AP_WIFI_SSID, 
                         AP_WIFI_PWD, MY_IP);
-    esp_pm_config_esp32c3_t pv;
+    esp_pm_config_esp32_t pv;
     esp_pm_get_configuration(&pv);
     vTaskDelay(DELAY_SHOW_ITEM);
     send_str("\n\n\r Freq : max %dmhz, min %dmhz.", pv.max_freq_mhz, pv.min_freq_mhz);
@@ -487,18 +487,15 @@ void show_main_handler(main_data_t * main_data,
             }
             case 2:
             {
-                if(weather_PIC == NO_WEATHER_PIC && !temp_INDOOR) return;
                 print_start(1, 0, get_color_temp(temp_FEELS_LIKE[0]), FONT_INFO);
+                if(temp_BM280 != NO_TEMP) {
+                    send_str("\n\r Indoor            t*C %2.0f", temp_BM280);
+                }
                 if(weather_PIC != NO_WEATHER_PIC){
                     send_str(" Outdoor            t*C %d\n\r Feels like         t*C %d\n\r Chance of rain        %d%%", 
                                     temp_OUTDOOR, 
                                     temp_FEELS_LIKE[0],
                                     PoP[0]);
-                }
-                if(temp_INDOOR) {
-                    print_end();
-                    print_start(3, 0, get_color_temp(temp_INDOOR[0].tem), FONT_INFO);
-                    send_str("\n\r Inside        t*C %f2.1", temp_INDOOR[0].tem);
                 }
                 break;
             }
@@ -510,6 +507,7 @@ void show_main_handler(main_data_t * main_data,
             }
             case 4:
             {
+                if(weather_PIC == NO_WEATHER_PIC)return;
                 print_start(23, 17, color_INFO, FONT_SECOND_INFO);
                 send_str("Sunrise  %d:%2.2d  Sunset %d:%2.2d",
                             sunrise_HOUR,

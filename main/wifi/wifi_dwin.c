@@ -198,8 +198,7 @@ void wifi_sta_handler(void* main_data, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
 {
     static int retry_num;
-    static EventBits_t xEventGroup;
-    xEventGroup = xEventGroupGetBits(dwin_event_group);
+    EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
     if(!(xEventGroup&BIT_DENIED_STA)){
         if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
             retry_num = 0;
