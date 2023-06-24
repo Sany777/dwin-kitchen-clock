@@ -158,8 +158,6 @@ void service_task(void *main_data)
 
 void vApplicationIdleHook(void)
 { 
-    EventBits_t xEventGroup;
-    bool cur_mode = false, now;
     while (1) {
 
     }

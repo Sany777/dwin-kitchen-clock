@@ -106,7 +106,7 @@ void show_ap_handler(main_data_t * main_data,
         uint8_t *mac = (uint8_t *)event_data;
         if(state == STATION_JOINE){
            send_str( 
-                "Station "MACSTR" join.\r\n Follow the link \"%s\"", MAC2STR(mac), MY_IP);
+                "Station "MACSTR" join.\r\n Go to \"%s\"", MAC2STR(mac), MY_IP);
         } else {
             send_str("Station "MACSTR" leave.", MAC2STR(mac));
         }
@@ -127,7 +127,7 @@ void show_ssid_handler(main_data_t * main_data,
     } else {
         int ap_num = 0;
         print_start(1, 0, color_DESC, NORMAL_FONT);
-        send_str(" N|       SSID          | RSSI| Ch.");
+        send_str(" N|       SSID     |Signal|Ch.| Auth.");
         if(ap_count < 0){
             ap_count *= -1;
             first_page = false;
@@ -136,9 +136,14 @@ void show_ssid_handler(main_data_t * main_data,
         } 
         print_end();
         vTaskDelay(DELAY_SHOW_ITEM/2);
-        for (int i=0; ap_num<ap_count && i<MAX_SSID_PEER_SCREEN; i++, ap_num++, ap_info++) {
+        for(int i=0; ap_num<ap_count && i<MAX_SSID_PEER_SCREEN; i++, ap_num++, ap_info++) {
             print_start(i+1, 0, GET_COLOR_AREA(i), NORMAL_FONT);
-            send_str("\n\r%2d|%20.20s | %2.2d | %d ", ap_num+1, ap_info->ssid, ap_info->rssi, ap_info->primary);
+            send_str("\n\r%2d|%15.15s |%6.6s| %2.2d| %s",
+                            ap_num+1, 
+                            ap_info->ssid, 
+                            get_rssi_description(ap_info->rssi), 
+                            ap_info->primary, 
+                            get_auth_mode(ap_info->authmode));
             print_end();
         }
         vTaskDelay(DELAY_SHOW_ITEM/2);
@@ -598,7 +603,7 @@ void welcome()
             }
         }
     }
-    print_start(2, 2, WHITE, 6);
+    print_start(2, 2, RED, 6);
     send_str_dwin("WAIT...");
     print_end();
 }

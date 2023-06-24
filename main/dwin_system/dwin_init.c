@@ -57,7 +57,7 @@ void esp_init(void)
       ESP_ERROR_CHECK(nvs_flash_init());
     }
     read_all_memory(main_data);
-    int offset;
+    int32_t offset;
     read_offset(&offset);
     set_timezone(offset);
     init_uart();

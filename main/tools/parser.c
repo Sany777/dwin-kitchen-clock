@@ -99,30 +99,30 @@ picture_t get_pic(const uint weather_id, const bool night)
 const char *get_auth_mode(int authmode) {
     switch (authmode) {
     case WIFI_AUTH_OPEN:
-        return "\tOPEN";
+        return "OPEN";
     case WIFI_AUTH_OWE:
-        return "\t\tOWE";
+        return "OWE";
     case WIFI_AUTH_WEP:
-        return "\t\tWEP";
+        return "WEP";
     case WIFI_AUTH_WPA_PSK:
-        return "\t\tWPA";
+        return "WPA";
     case WIFI_AUTH_WPA2_PSK:
-        return "\t\tWPA2";
+        return "WPA2";
     case WIFI_AUTH_WPA_WPA2_PSK:
-        return "\t\tWPA2";
+        return "WPA2";
     case WIFI_AUTH_WPA2_ENTERPRISE:
-        return "\tWPA2 ENT";
+        return "WPA2 E.";
     case WIFI_AUTH_WPA3_PSK:
-        return "\t\tWPA3";
+        return "WPA3";
     default:
-        return "\tUNKNOWN";
+        return "UNK.";
     }
 }
 
-const char *get_rssi_description(uint8_t rssi) 
+const char *get_rssi_description(int8_t rssi) 
 {
-    if(rssi < 40)return "bad";
-	else if(rssi < 70)return "good";
-	else return "excellent";
+    if(rssi > -65)return "perf.";
+	else if(rssi > -85)return "good";
+	else return "bad";
 }
 

@@ -19,7 +19,7 @@
 
 #include "dwin_common.h"
 
-static const uint8_t BRODCAST_MAC[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+static uint8_t BRODCAST_MAC[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 #define IS_BROADCAST_ADDR(addr)     (memcmp(addr, BRODCAST_MAC, SIZE_MAC) == 0)
 #define IS_ALL_ADDR(addr)           ((addr[0] == 0)&&(addr[1])==0)
 

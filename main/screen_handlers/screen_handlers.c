@@ -42,6 +42,7 @@ void search_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
     }
     if(command == KEY_INIT) {
         if(!init) {
+            esp_wifi_stop();
             xEventGroupSetBits(dwin_event_group, BIT_DENIED_STA);
             ap_info = (wifi_ap_record_t*) malloc(MAX_SCAN_LIST_SIZE*sizeof(wifi_ap_record_t));
             if(!ap_info)return;
@@ -80,10 +81,10 @@ void ap_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 {
     if(command == KEY_INIT) {
         dwin_set_pic(INFO_PIC);
+        set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
         show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
         xEventGroupSetBits(dwin_event_group, BIT_DENIED_STA);
         set_new_event(INIT_AP);
-        set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
     } else if(command == KEY_CLOSE) {
         xEventGroupClearBits(dwin_event_group, BIT_DENIED_STA);
         esp_wifi_stop();
@@ -101,11 +102,10 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
     static char *selected_buf;
     static int pic;
     static bool need_write;
-    bool preparing = false;
     if(command == KEY_INIT) {
         dwin_set_pic(SETTING_LOW_LETTER_PIC);
         vTaskDelay(DELAY_CHANGE_PIC);
-        preparing = true;
+        xEventGroupSetBits(dwin_event_group, BIT_PROCESS);
         set_periodic_event(START_STA, 2, ONLY_ONCE);
         pic = SETTING_LOW_LETTER_PIC;
         area_SCREEN = AREA_SSID;
@@ -132,7 +132,6 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
         pos = strlen(selected_buf);
     } else if(command == KEY_SYNC) {
         set_periodic_event(GET_WEATHER, 1, ONLY_ONCE);
-        preparing = true;
     } else if(command == UPDATE_WEATHER_COMPLETE) {
         dwin_set_pic(pic);
         vTaskDelay(DELAY_CHANGE_PIC);
@@ -164,7 +163,7 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
             }
         }
     }
-    show_screen(preparing ? 1 : 0, NULL, 0);
+    show_screen(0, NULL, 0);
 }
 
 

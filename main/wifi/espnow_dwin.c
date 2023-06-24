@@ -27,7 +27,7 @@ void espnow_task_tx(void *pv)
     queue_espnow_tx = xQueueCreate(ESPNOW_QUEUE_SIZE, sizeof(espnow_send_t));
     assert(queue_espnow_tx);
     vTaskDelay(DEALAY_START_ESPNOWTASK+RANDOM_DELAY);
-    DWIN_SHOW_ERR(add_peer(BRODCAST_MAC, false));
+    DWIN_SHOW_ERR(add_peer((uint8_t*)BRODCAST_MAC, false));
 for(;;){
     send_ok = false;
     send_count = 0;
@@ -111,12 +111,14 @@ for(;;){
         {
             EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
             if(xEventGroup&BIT_IS_TIME){
-                time_package_t *time_package = malloc(SIZE_TIME_PACKAGE);
+                time_package_t *time_package =(time_package_t *)malloc(SIZE_TIME_PACKAGE);
                 if(time_package){
                     max_atempt = MAX_ATEMPT_SEND_DATA;
                     parcel_len = SIZE_TIME_PACKAGE;
                     parcel = (uint8_t *)time_package;
-                    time(&time_package->time);
+                    time_t tmp;
+                    time(&tmp);
+                    time_package->time = tmp;
                     time_package->crc = 0;
                     time_package->crc = esp_crc16_le(UINT16_MAX, parcel, parcel_len);
                 }
@@ -150,7 +152,6 @@ for(;;){
 void espnow_task_rx(void *pv)
 {
     main_data_t * const main_data = (main_data_t *)pv;
-    uint8_t rssi;
     uint16_t crc;
     espnow_rx_data_t data_rx;
     espnow_send_t data_tx;
@@ -177,7 +178,7 @@ if(xQueueReceive(queue_espnow_rx, &data_rx, portMAX_DELAY) == pdTRUE){
     switch(data_rx.parcel_len){
         case SIZE_SENSOR_PACKAGE :
         {
-            sensor_package_t *sensor_package = data_rx.parcel;
+            sensor_package_t *sensor_package = (sensor_package_t *)data_rx.parcel;
             crc = sensor_package->crc;
             sensor_package->crc = 0;
             if(crc == esp_crc16_le(UINT16_MAX, (uint8_t const *)sensor_package, SIZE_SENSOR_PACKAGE)){
@@ -230,7 +231,7 @@ if(xQueueReceive(queue_espnow_rx, &data_rx, portMAX_DELAY) == pdTRUE){
         }
         case SIZE_ACTION_PACKAGE :
         {
-            action_package_t *action_package = data_rx.parcel;
+            action_package_t *action_package = (action_package_t *)data_rx.parcel;
             crc = action_package->crc;
             action_package->crc = 0;
             if(crc == esp_crc16_le(UINT16_MAX, (uint8_t const *)action_package, SIZE_ACTION_PACKAGE) 
@@ -250,7 +251,7 @@ if(xQueueReceive(queue_espnow_rx, &data_rx, portMAX_DELAY) == pdTRUE){
         {
             EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
             if(!(xEventGroup&BIT_IS_TIME)){
-                time_package_t *time_package = data_rx.parcel;
+                time_package_t *time_package = (time_package_t *)data_rx.parcel;
                 crc = time_package->crc;
                 time_package->crc = 0;
                 if(crc == esp_crc16_le(UINT16_MAX, (uint8_t const *)time_package, SIZE_TIME_PACKAGE)){
@@ -267,7 +268,7 @@ if(xQueueReceive(queue_espnow_rx, &data_rx, portMAX_DELAY) == pdTRUE){
         {
             EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
             if(!(xEventGroup&BIT_CON_STA_OK)){
-                network_package_t *network_package = data_rx.parcel;
+                network_package_t *network_package = (network_package_t *)data_rx.parcel;
                 crc = network_package->crc;
                 network_package->crc = 0;
                 if(crc == esp_crc16_le(UINT16_MAX, (uint8_t const *)network_package, SIZE_NETWORK_PACKAGE)){

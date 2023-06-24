@@ -33,7 +33,7 @@ esp_err_t read_sensor_handler(main_data_t* main_data)
 {
     DWIN_CHECK_AND_RETURN(bmx280_setMode(bmx280, BMX280_MODE_FORCE));
     do {
-        vTaskDelay(pdMS_TO_TICKS(20));
+        vTaskDelay(pdMS_TO_TICKS(10));
     } while(bmx280_isSampling(bmx280));
     float tmp = NO_TEMP;
     bmx280_readoutFloat(bmx280, &tmp, 0, 0);

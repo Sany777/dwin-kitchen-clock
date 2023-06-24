@@ -51,23 +51,22 @@ bool notification_alarm(const main_data_t *main_data,
 }
 
 
-esp_err_t show_screen(int32_t key, const void *data_send, const size_t size_data)
+void show_screen(int32_t key, const void *data_send, const size_t size_data)
 {                                     
     show_queue_data_t to_send = {        
         .command = key,  
         .data = NULL             
     };      
-    if(size_data){
+    if(size_data && data_send){
         to_send.data = (void*)malloc(size_data);
-        if(!to_send.data) return ESP_FAIL;
+        if(!to_send.data) return;
         memcpy(to_send.data, data_send, size_data);
     }                              
-    if(xQueueSend(queue_show, &to_send, WAIT_SHOW) == pdTRUE){
-        return ESP_OK;
-    } else if(to_send.data){
-        free(to_send.data);
+    if(xQueueSend(queue_show, &to_send, 200) != pdTRUE){
+       if(to_send.data){
+            free(to_send.data);
+        }
     }
-    return ESP_FAIL;
 }
 
 void set_timezone(int offset)
@@ -144,11 +143,11 @@ void set_time_tv(struct timeval *tv)
 
 void set_dwin_clock()
 {
-    struct tm* cur_tm = get_time_tm();
+    const struct tm* cur_tm = get_time_tm();
     dwin_clock_set(cur_tm);
 }
 
-void set_time_tm(struct tm *timeptr)
+void set_time_tm(const struct tm *timeptr)
 {
     if(timeptr->tm_year >= 123 && timeptr->tm_year < 223){
         time_t time = mktime(timeptr);
