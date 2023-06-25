@@ -75,10 +75,10 @@ void direction_task(void *pv)
             command = data_in[0];
             symbol = data_in[1];
             if(KEY_IS_SERVICE_COMMAND(command)){
-                xQueueSend(queue_service, &command, 200);
+                xQueueSend(queue_service, &command, 500);
             } else if(KEY_IS_SET_TASK(command)){
                 screen_handler(main_data, KEY_CLOSE, 0);
-                vTaskDelay(200);
+                vTaskDelay(300);
                 cur_screen_id = command;
                 area_SCREEN = 0;
                 screen_handler(main_data, KEY_INIT, 0);

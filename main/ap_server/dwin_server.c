@@ -516,8 +516,8 @@ static esp_err_t handler_give_data(httpd_req_t *req)
             if(notif == NOTIF_PER_DAY) break;
             dayi = 0;
         }
-        hour = VALUE_NOTIF_HOUR(notif, (dayi+1)%SIZE_WEEK);
-        min = VALUE_NOTIF_MIN(notif, (dayi+1)%SIZE_WEEK);
+        hour = VALUE_NOTIF_HOUR(notif, dayi);
+        min = VALUE_NOTIF_MIN(notif, dayi);
         notif_send[i_s++] = hour/10 +'0';
         notif_send[i_s++] = hour%10 +'0';
         notif_send[i_s++] = min/10 +'0';
@@ -592,12 +592,12 @@ static esp_err_t set_notif_handler(httpd_req_t *req)
         if(!IS_HOUR(val)){
            DWIN_RESP_ERR(req, "Value hour is wrong", _err); 
         }
-        SET_NOTIF_HOUR(num_notif, (dayi+1)%SIZE_WEEK, val);
+        SET_NOTIF_HOUR(num_notif, dayi, val);
         val = GET_NUMBER(server_buf[i+2])*10 + GET_NUMBER(server_buf[i+3]);
         if(!IS_MIN_OR_SEC(val)){
            DWIN_RESP_ERR(req, "Value minute is wrong", _err); 
         }
-        SET_NOTIF_MIN(num_notif, (dayi+1)%SIZE_WEEK, val);
+        SET_NOTIF_MIN(num_notif, dayi, val);
         i+=4;
     }
     write_memory(main_data, DATA_NOTIF);

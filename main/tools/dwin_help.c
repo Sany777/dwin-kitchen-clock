@@ -1,36 +1,33 @@
 #include "dwin_help.h"
 
-
-
-
 bool notification_alarm(const main_data_t *main_data, 
                             const struct tm* cur_time, 
                             const bool alarm)
 {
-    bool signal = false, notif = false;
+    bool signal = false, is_notif = false;
     const int wday = cur_time->tm_wday;
     uint8_t notif_hour, notif_min, cur_hour, cur_min;
     cur_hour = cur_time->tm_hour;
     cur_min = cur_time->tm_min;
     if(IS_DAY_ACTIVE(wday)){
-        for(int notif=0; notif<NOTIF_PER_DAY && !signal; notif++){
+        for(int notif=0; notif<NOTIF_PER_DAY && !is_notif; notif++){
             if(IS_NOTIF_ACTIVE(notif, wday)){
                 notif_hour = VALUE_NOTIF_HOUR(notif, wday);
                 notif_min = VALUE_NOTIF_MIN(notif, wday);
                 if(cur_hour == notif_hour){
                     if(cur_min == notif_min){
                         signal = true;
-                        notif = true;
-                    } else if (notif_min < (cur_min + MIN_BEFORE_NOTIFICATION)
-                                && notif_min > cur_min)
+                    }
+                    if (notif_min <= (cur_min + MIN_BEFORE_NOTIFICATION)
+                                && notif_min >= cur_min)
                     {
-                        notif = true;
+                        is_notif = true;
                     }
                 } else if((cur_hour+1) == notif_hour 
-                            && notif_min <= MIN_BEFORE_NOTIFICATION
-                            && (60 + notif_min ) < (cur_min+MIN_BEFORE_NOTIFICATION))
+                            && (notif_min+60) < 
+                                (MIN_BEFORE_NOTIFICATION+cur_min))
                 {
-                    notif = true;
+                    is_notif = true;
                 }                             
             }
         }
@@ -40,15 +37,15 @@ bool notification_alarm(const main_data_t *main_data,
         && cur_hour <= 23 
         && (signal || cur_min == 0))
     {
-        dwin_buzer(cur_hour == 6 
-                        || cur_hour == 12 
-                        || cur_hour == 18 
-                        || signal
-                            ? LOUD_BUZZER
-                            : NORMAL_BUZZER);
+        dwin_buzer(cur_hour == 7 
+                    || cur_hour == 12 
+                    || cur_hour == 18 
+                    || signal
+                        ? LOUD_BUZZER
+                        : NORMAL_BUZZER);
     }
         
-    return notif;
+    return is_notif;
 }
 
 
@@ -119,11 +116,13 @@ uint16_t *get_y_points(  int8_t *points,
 struct tm* get_time_tm(void)
 {
     static bool night;
+    static struct tm cur, *t;
     time_t time_now;
     time(&time_now);
-    struct tm* t;
     t = localtime(&time_now);
-    if(t->tm_hour < 6){
+    memcpy(&cur, t, sizeof(struct tm));
+    cur.tm_wday = (cur.tm_wday+6)%SIZE_WEEK;
+    if(cur.tm_hour < 6){
         if(!night){
             dwin_set_brightness(30);
             night = true;
@@ -132,7 +131,7 @@ struct tm* get_time_tm(void)
         dwin_set_brightness(100);
         night = false;
     }
-    return t;
+    return &cur;
 }
 
 void set_time_tv(struct timeval *tv)

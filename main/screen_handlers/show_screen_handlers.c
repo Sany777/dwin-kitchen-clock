@@ -6,13 +6,13 @@ const char *MES_ON = "[ON]";
 const char *MES_OFF = "[OFF]";
 
 const char *WEEK_DAY[SIZE_WEEK] = {
-    "Sunday",
     "Monday",
     "Tuesday", 
     "Wednesday", 
     "Thursday", 
     "Friday", 
-    "Saturday"
+    "Saturday",
+    "Sunday",
 };
 
 const char* ITEM_COLOR_NAME[] = {

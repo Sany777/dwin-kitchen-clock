@@ -105,7 +105,6 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
     if(command == KEY_INIT) {
         dwin_set_pic(SETTING_LOW_LETTER_PIC);
         vTaskDelay(DELAY_CHANGE_PIC);
-        xEventGroupSetBits(dwin_event_group, BIT_PROCESS);
         set_periodic_event(START_STA, 2, ONLY_ONCE);
         pic = SETTING_LOW_LETTER_PIC;
         area_SCREEN = AREA_SSID;
@@ -131,8 +130,10 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
         }
         pos = strlen(selected_buf);
     } else if(command == KEY_SYNC) {
+        xEventGroupSetBits(dwin_event_group, BIT_PROCESS);
         set_periodic_event(GET_WEATHER, 1, ONLY_ONCE);
     } else if(command == UPDATE_WEATHER_COMPLETE) {
+        xEventGroupClearBits(dwin_event_group, BIT_PROCESS);
         dwin_set_pic(pic);
         vTaskDelay(DELAY_CHANGE_PIC);
     } else if(command == KEY_ENTER) {
