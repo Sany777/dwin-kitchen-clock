@@ -510,14 +510,14 @@ static esp_err_t handler_give_data(httpd_req_t *req)
     cJSON_AddStringToObject(root, "Key", api_KEY);
     cJSON_AddStringToObject(root, "City", name_CITY);
     cJSON_AddNumberToObject(root, "Status", uxBits);
-    for(uint8_t day=0, notif=0, i_s=0, hour=0, min=0; ; day++){
-        if(day >= SIZE_WEEK){
+    for(uint8_t dayi=0, notif=0, i_s=0, hour=0, min=0; ; dayi++){
+        if(dayi >= SIZE_WEEK){
             notif++;
             if(notif == NOTIF_PER_DAY) break;
-            day = 0;
+            dayi = 0;
         }
-        hour = VALUE_NOTIF_HOUR(notif, day);
-        min = VALUE_NOTIF_MIN(notif, day);
+        hour = VALUE_NOTIF_HOUR(notif, (dayi+1)%SIZE_WEEK);
+        min = VALUE_NOTIF_MIN(notif, (dayi+1)%SIZE_WEEK);
         notif_send[i_s++] = hour/10 +'0';
         notif_send[i_s++] = hour%10 +'0';
         notif_send[i_s++] = min/10 +'0';
@@ -582,22 +582,22 @@ static esp_err_t set_notif_handler(httpd_req_t *req)
     if (received != total_len) {
         DWIN_RESP_ERR(req, "Data not read", _err);
     }
-    for(size_t  i=0,num_notif = 0,day=0,val=0; i<total_len; day++){
-        if(day >= SIZE_WEEK){
+    for(size_t  i=0,num_notif = 0,dayi=0,val=0; i<total_len; dayi++){
+        if(dayi >= SIZE_WEEK){
             num_notif++;
             if(num_notif == NOTIF_PER_DAY) break;
-            day = 0;
+            dayi = 0;
         }
         val = GET_NUMBER(server_buf[i])*10 + GET_NUMBER(server_buf[i+1]);
         if(!IS_HOUR(val)){
            DWIN_RESP_ERR(req, "Value hour is wrong", _err); 
         }
-        SET_NOTIF_HOUR(num_notif, day, val);
+        SET_NOTIF_HOUR(num_notif, (dayi+1)%SIZE_WEEK, val);
         val = GET_NUMBER(server_buf[i+2])*10 + GET_NUMBER(server_buf[i+3]);
         if(!IS_MIN_OR_SEC(val)){
            DWIN_RESP_ERR(req, "Value minute is wrong", _err); 
         }
-        SET_NOTIF_MIN(num_notif, day, val);
+        SET_NOTIF_MIN(num_notif, (dayi+1)%SIZE_WEEK, val);
         i+=4;
     }
     write_memory(main_data, DATA_NOTIF);

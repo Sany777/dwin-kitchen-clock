@@ -7,7 +7,7 @@ bool notification_alarm(const main_data_t *main_data,
                             const struct tm* cur_time, 
                             const bool alarm)
 {
-    bool signal = false;
+    bool signal = false, notif = false;
     const int wday = cur_time->tm_wday;
     uint8_t notif_hour, notif_min, cur_hour, cur_min;
     cur_hour = cur_time->tm_hour;
@@ -20,16 +20,17 @@ bool notification_alarm(const main_data_t *main_data,
                 if(cur_hour == notif_hour){
                     if(cur_min == notif_min){
                         signal = true;
-                    } else if (notif_min <= cur_min + MIN_BEFORE_NOTIFICATION
+                        notif = true;
+                    } else if (notif_min < (cur_min + MIN_BEFORE_NOTIFICATION)
                                 && notif_min > cur_min)
                     {
-                        signal = true;
+                        notif = true;
                     }
-                } else if(cur_hour+1 == notif_hour 
+                } else if((cur_hour+1) == notif_hour 
                             && notif_min <= MIN_BEFORE_NOTIFICATION
-                            && 60+notif_min < cur_min+MIN_BEFORE_NOTIFICATION)
+                            && (60 + notif_min ) < (cur_min+MIN_BEFORE_NOTIFICATION))
                 {
-                    signal = true;
+                    notif = true;
                 }                             
             }
         }
@@ -47,7 +48,7 @@ bool notification_alarm(const main_data_t *main_data,
                             : NORMAL_BUZZER);
     }
         
-    return signal;
+    return notif;
 }
 
 
