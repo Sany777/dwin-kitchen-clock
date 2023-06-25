@@ -211,7 +211,7 @@ void show_settings_handler(main_data_t * main_data,
                 if(area_SCREEN == AREA_API) {
                     send_str(api_KEY);
                 } else {
-                    send_str("*** Key for opeearchnweather.com ***");
+                    send_str("*** Key for openweather.com ***");
                 }
                 break;
             default : break;
