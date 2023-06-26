@@ -296,11 +296,11 @@ if(xQueueReceive(queue_espnow_rx, &data_rx, portMAX_DELAY) == pdTRUE){
 esp_err_t add_peer(uint8_t *mac_addr, bool encrypt)
 {
     esp_now_peer_info_t peer = {
-        .channel = ESP_WIFI_CHANNEL,
+        .channel = CONFIG_ESPNOW_CHANNEL,
         .ifidx = WIFI_IF_STA,
         .encrypt = encrypt,
     };
-    memcpy(peer.lmk, ESPNOW_LMK, ESP_NOW_KEY_LEN);
+    memcpy(peer.lmk, CONFIG_ESPNOW_LMK, ESP_NOW_KEY_LEN);
     memcpy(peer.peer_addr, mac_addr, SIZE_MAC);
     return esp_now_add_peer(&peer);
 }

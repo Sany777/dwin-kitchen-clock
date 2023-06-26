@@ -133,7 +133,10 @@
     "bmp280.h": "c",
     "i2c_struct.h": "c",
     "bmx280.h": "c",
-    "bmp280_main.h": "c"
+    "bmp280_main.h": "c",
+    "sdkconfig": "c",
+    "esp_flash.h": "c",
+    "sdkconfig.h": "c"
   },
   "idf.port": "/dev/ttyACM0",
   "idf.flashType": "UART",

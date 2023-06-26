@@ -11,14 +11,13 @@
 #include "nvs.h"
 #include "esp_chip_info.h"
 #include "esp_flash.h"
-
+#include "sdkconfig.h"
 #include <freertos/FreeRTOS.h>
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "freertos/event_groups.h"
 
 #include "bmx280.h"
-
 #include "dwin_memory.h"
 #include "dwin_config.h"
 #include "dwin_defines.h"

@@ -34,7 +34,6 @@
 
 /* size buffer */
 
-#define ESP_WIFI_CHANNEL   0
 #define MAX_OTA_SIZE  1500000
 /* Scratch server_buffer size */
 #define SCRATCH_SIZE  5500 // 5 KB
@@ -113,15 +112,10 @@
 #define MAX_NAME_DEVICE 15
 
 #define MY_DEVICE_TYPE  DWIN_SCREEN_DEVICE
-#define MY_DEVICE_NAME "dwinScreen"
+// #define CONFIG_MY_DEVICE_NAME "dwinScreen"
 #define NUMBER_SENSOR 2
 
 #define VARIABLE_VALUE 0
-
-/* AP */
-#define AP_WIFI_SSID      "NASA"
-#define AP_WIFI_PWD       "dwinSecond"
-#define MY_IP             "http://192.168.4.1"
 
 /* weather service*/
 #define NUMBER_DATA_WEATHER 5

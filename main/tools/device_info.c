@@ -8,7 +8,7 @@ device_inf_t *get_my_device()
     if(SLIST_EMPTY(&devices_list)){
         uint8_t mac[8];
         if(esp_read_mac(mac, ESP_MAC_WIFI_STA) == ESP_OK){
-            device_inf_t *my_device = create_device_info(MY_DEVICE_TYPE, mac, MY_DEVICE_NAME);
+            device_inf_t *my_device = create_device_info(MY_DEVICE_TYPE, mac, CONFIG_MY_DEVICE_NAME);
             add_device_inf_to_list(my_device);
             return my_device;
         }

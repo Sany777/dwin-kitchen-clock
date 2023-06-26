@@ -350,11 +350,18 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
-# HTTP file_serving example menu
+# Configuration
 #
-# CONFIG_EXAMPLE_MOUNT_SD_CARD is not set
-CONFIG_EXAMPLE_HTTPD_CONN_CLOSE_HEADER=y
-# end of HTTP file_serving example menu
+CONFIG_MY_IP="http://192.168.4.1"
+CONFIG_MY_DEVICE_NAME="dwinScreen"
+CONFIG_AP_WIFI_SSID="NASA"
+CONFIG_AP_WIFI_PWD="dwin Second"
+CONFIG_ESPNOW_PMK="pmk1234567890123"
+CONFIG_ESPNOW_LMK="lmk1234567890123"
+CONFIG_ESPNOW_CHANNEL=1
+CONFIG_AP_WIFI_CHANNEL=1
+# CONFIG_ESPNOW_ENABLE_LONG_RANGE is not set
+# end of Configuration
 
 #
 # Compiler options

@@ -28,7 +28,7 @@ void show_info_handler(main_data_t * main_data,
 {
     print_start(1, 17, WHITE, FONT_SECOND_INFO);
     uint8_t mac[8];
-    send_str("Device %s",MY_DEVICE_NAME);
+    send_str("Device %s",CONFIG_MY_DEVICE_NAME);
     if(esp_read_mac(mac, ESP_MAC_WIFI_STA) == ESP_OK){
         send_str("\n\r MAC WIFI STA: "MACSTR"", MAC2STR(mac));
     }
@@ -36,8 +36,8 @@ void show_info_handler(main_data_t * main_data,
         send_str("\n\r MAC BT : "MACSTR"", MAC2STR(mac));
     }
     send_str("\n\r  Configuration server (WiFi AP)\n\r SSID: %s.\r\n Password: %s.\n\r IP: %s", 
-                        AP_WIFI_SSID, 
-                        AP_WIFI_PWD, MY_IP);
+                        CONFIG_AP_WIFI_SSID, 
+                        CONFIG_AP_WIFI_PWD, CONFIG_MY_IP);
     print_end();
     print_start(14, 2, WHITE, FONT_SECOND_INFO);
     esp_chip_info_t chip_info;
@@ -100,13 +100,13 @@ void show_ap_handler(main_data_t * main_data,
     if(event_data == NULL){
         send_str(
                 "Connect to the AP \n\r with the name: \"%s\",\r\n and enter the paswword: \"%s\".",
-                AP_WIFI_SSID,
-                AP_WIFI_PWD);
+                CONFIG_AP_WIFI_SSID,
+                CONFIG_AP_WIFI_PWD);
     } else {
         uint8_t *mac = (uint8_t *)event_data;
         if(state == STATION_JOINE){
            send_str( 
-                "Station "MACSTR" join.\r\n Go to \"%s\"", MAC2STR(mac), MY_IP);
+                "Station "MACSTR" join.\r\n Go to \"%s\"", MAC2STR(mac), CONFIG_MY_IP);
         } else {
             send_str("Station "MACSTR" leave.", MAC2STR(mac));
         }
@@ -341,7 +341,7 @@ void show_state_handler(main_data_t *main_data,
     vTaskDelay(DELAY_SHOW_ITEM);
     print_start(1, 7, COLOR_DISABLE, 1);
     send_str("State device %s\n\n\r WiFi: %s.\n\r ESPNOW: %s.\n\r openweather.com: %s.\n\r SNTP: %s.",
-                MY_DEVICE_NAME,
+                CONFIG_MY_DEVICE_NAME,
                 xEventGroup&BIT_CON_STA_OK
                     ? "connect"
                     : xEventGroup&BIT_SSID_FOUND

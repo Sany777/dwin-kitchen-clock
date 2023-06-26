@@ -1,119 +1,43 @@
-| Supported Targets | ESP32 | ESP32-C3 | ESP32-S2 | ESP32-S3 |
-| ----------------- | ----- | -------- | -------- | -------- |
+### About
+This project aims to create multifunction clock that can be part of ESPNOW's network of connected devices. The final device is based on a Dwin based screen and an ESP32. The project includes the firmware for the screen, which is located in the "dwin" folder, and the source code for creating a firmware for an ESP32. The project structure is standard for espressif projects, in this case VS code with an extension from Espressif was used. The screen firmware consists of a binary file and images. For flashing a dwin screen you can use UART interface or over air with esp32. The first flash of the esp32 is done via uart, then it can be flashed over the air (via a configuration server after connecting to the access point).
 
-# Simple HTTP File Server Example
-
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
-
-HTTP file server example demonstrates file serving with both upload and download capability, using the `esp_http_server` component of ESP-IDF. This example can use one of the following options for data storage:
-
-- SPIFFS filesystem in SPI Flash. This option works on any ESP development board without any extra hardware.
-
-- FAT filesystem on an SD card. Both SDSPI and SDMMC drivers are supported. You need a development board with an SD card slot to use this option.
-
-The following URIs are provided by the server:
-
-| URI                  | Method  | Description                                                                               |
-|----------------------|---------|-------------------------------------------------------------------------------------------|
-|`index.html`          | GET     | Redirects to `/`                                                                          |
-|`favicon.ico`         | GET     | Browsers use this path to retrieve page icon which is embedded in flash                   |
-|`/`                   | GET     | Responds with webpage displaying list of files on the filesystem and form for uploading new files |
-|`/<file path>`        | GET     | For downloading files stored on the filesystem                                                    |
-|`/upload/<file path>` | POST    | For uploading files on to the filesystem. Files are sent as body of HTTP post requests            |
-|`/delete/<file path>` | POST    | Command for deleting a file from the filesystem                                                   |
-
-File server implementation can be found under `main/file_server.c`. `main/upload_script.html` has some HTML, JavaScript and Ajax content used for file uploading, which is embedded in the flash image and used as it is when generating the home page of the file server.
-
-Note that the default `/index.html` and `/favicon.ico` files can be overridden by uploading files with same name to the filesystem.
-
-## How to use the example
-
-### Wi-Fi/Ethernet connection
+### ESPNOW and WiFi connection
 ```
 idf.py menuconfig
 ```
-Open the project configuration menu (`idf.py menuconfig`) to configure Wi-Fi or Ethernet. See "Establishing Wi-Fi or Ethernet Connection" section in [examples/protocols/README.md](../../README.md) for more details.
-
-### SD card (optional)
-
-By default the example uses SPIFFS filesystem in SPI flash for file storage.
-
-To use an SD card for file storage instead, open the project configuration menu (`idf.py menuconfig`) and enter "File_serving example menu". Then enable "Use SD card for file storage" (`CONFIG_EXAMPLE_MOUNT_SD_CARD`) option.
-
-SD cards can be used either over SPI interface (on all ESP chips) or over SDMMC interface (on ESP32 and ESP32-S3). To use SDMMC interface, enable "Use SDMMC host" (`CONFIG_EXAMPLE_USE_SDMMC_HOST`) option. To use SPI interface, disable this option.
-
-GPIO pins used to connect the SD card can be configured for the SPI interface (on all chips), or for SDMMC interface on chips where it uses GPIO matrix (ESP32-S3). This can be done in "SD card pin configuration" submenu.
-
-The example will be able to mount only cards formatted using FAT32 filesystem. If the card is formatted as exFAT or some other filesystem, you have an option to format it in the example code — "Format the card if mount failed" (`CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED`).
-
-For more information on pin configuration for SDMMC and SDSPI, check related examples: [sdmmc](../../../storage/sd_card/sdmmc/README.md), [sdspi](../../../storage/sd_card/sdmmc/README.md).
-
-### Build and Flash
-
-Build the project and flash it to the board, then run monitor tool to view serial output:
-
-```
-idf.py -p PORT flash monitor
-```
-
-(Replace PORT with the name of the serial port to use.)
-
-(To exit the serial monitor, type ``Ctrl-]``.)
-
-See the Getting Started Guide for full steps to configure and use ESP-IDF to build projects.
-
-### Working with the example
-
-1. Note down the IP assigned to your ESP module. The IP address is logged by the example as follows:
-
-   ```
-   I (5424) example_connect: - IPv4 address: 192.168.1.100
-   I (5424) example_connect: - IPv6 address:    fe80:0000:0000:0000:86f7:03ff:fec0:1620, type: ESP_IP6_ADDR_IS
-   ```
-
-   The following steps assume that IP address 192.168.1.100 was assigned.
-
-2. Test the example interactively in a web browser. The default port is 80.
-
-    1. Open path http://192.168.1.100/ or http://192.168.1.100/index.html to see an HTML page with list of files on the server. The page will initially be empty.
-    2. Use the file upload form on the webpage to select and upload a file to the server.
-    3. Click a file link to download / open the file on browser (if supported).
-    4. Click the delete link visible next to each file entry to delete them.
-
-3. Test the example using curl:
-
-    1. `myfile.html` can be uploaded to `/path/on/device/myfile_copy.html` using:
-       ```
-       curl -X POST --data-binary @myfile.html 192.168.43.130:80/upload/path/on/device/myfile_copy.html
-       ```
-
-    2. Download the uploaded file back:
-       ```
-       curl 192.168.43.130:80/path/on/device/myfile_copy.html > myfile_copy.html`
-       ```
-
-    3. Compare the copy with the original using `cmp myfile.html myfile_copy.html`
+Open the project configuration menu (`idf.py menuconfig`) to configure Wi-Fi and espnow conection data.
 
 
-## Note
+### Pages (device modes)
+## Main
+# show clock and weather information
+The main purpose of the device is to show the time and weather information. This requires Internet access and a subscription to openweather.com services. Information about the temperature in the room is obtained from the bmp280 sensor. Information about the weather for a day is available by tapping on the upper right corner of the screen. The operation of the weather service requires installation the openweather.com key and the city name. This data can be set via the NETWORK setup item.
 
-Browsers often send large header fields when an HTML form is submit. Therefore, for the purpose of this example, `HTTPD_MAX_REQ_HDR_LEN` has been increased to 1024 in `sdkconfig.defaults`. User can adjust this value as per their requirement, keeping in mind the memory constraint of the hardware in use.
+## Clock
+# set time and change mode clock
+This device is capable of showing the time, which can be set both manually and with the help of the SNTP service. Setting the time is available in the CLOCK menu item. The operating mode is set by tapping on the upper part of the screen, if the manual mode is selected, it is possible to set the time, which will be saved in a RTC module. If the mode of obtaining time from the network is selected, then the relative time offset for the given time zone must be set. In the absence of an Internet connection, the device will receive time from the RTC module of the screen, or from other similar devices included in the ESPNOW network. Setting the time is also possible with the help of the setting server, if you click the relevant button on the website. This device can be used as a timer and give a signal when the account ends. Access to this functionality is available through the main menu or through a tap in the lower right corner of the screen.
 
-## Example Output
+## Notification
+# show and configure notification 
+This device can notify, the setting is available through the NOTIFICATION item in the main menu. You can set up to 4 notifications for each day. A few minutes before the notification, a corresponding icon will be displayed on the main screen, next to the clock, and an alarm will sound at a certain time. Notification settings are also available through the configuration server (when AP is activated). Also, the alarm will sound when there is a new hour. The signal will not sound from 11:00 p.m. to 6:00 a.m. or if the device sounds are turned off (through the DEVICE STATUS item). 
 
-```
-I (5583) example_connect: Got IPv6 event: Interface "example_connect: sta" address: fe80:0000:0000:0000:266f:28ff:fe80:2c74, type: ESP_IP6_ADDR_IS_LINK_LOCAL
-I (5583) example_connect: Connected to example_connect: sta
-I (5593) example_connect: - IPv4 address: 192.168.194.219
-I (5593) example_connect: - IPv6 address: fe80:0000:0000:0000:266f:28ff:fe80:2c74, type: ESP_IP6_ADDR_IS_LINK_LOCAL
-I (5603) example: Initializing SPIFFS
-I (5723) example: Partition size: total: 896321, used: 0
-I (5723) file_server: Starting HTTP Server on port: '80'
-I (28933) file_server: Receiving file : /test.html...
-I (28933) file_server: Remaining size : 574
-I (28943) file_server: File reception complete
-I (28993) file_server: Found file : test.html (574 bytes)
-I (35943) file_server: Sending file : /test.html (574 bytes)...
-I (35953) file_server: File sending complete
-I (45363) file_server: Deleting file : /test.html
-```
+## Network (settings)
+# configure WiFi and api data
+To set the network settings, select the NETWORK item in the main menu. The upper part of the screen shows the connection status. If you click on [SEARH SSID], the search screen for available networks will open and some information about them will be displayed. The list of networks scrolls. To select a network, double-click on it.
+The SET COLOR menu item opens the text color setting screen. To save the color in memory, you must press [SET COLOR], otherwise the information will not be saved when restarting.
+
+## Device status
+# show and change some settings
+The DEVICE STATUS menu item shows the status of the device and contains buttons on the left side that change the behavior of the device. The ESPNOW button is responsible for activating the ESPNOW service. The SECURITY button is used to hide the password from WIFI. If the SECURITY function is turn off old password will be clean. The SOUND button turns on sounds on the device. The SNTP button is used for change mode the time service. 
+
+## Info
+# show information about the device
+The INFO menu item shows some information about the device, for example how a data for accessing the settings server.
+
+## AP
+# remote mode to configure the device
+The AP menu item activates AP and shows the login data. The ESP32 page provides OTAs, notification settings, device operating modes, network data, and the function of establishing time. On the DWIN page you can send commands and flash dwin screen device. The FUN page speaks for itself.
+
+## Devices
+# show espnow devices
+The DEVICES menu item opens a page that displays information about devices connected using ESPNOW technology. The ESPNOW allows devices based on modules from espressif to communicate, exchanging information (in this case about network settings, time and sensor data). This connection is established automatically, if espnow is activated. Data exchange is encrypted with a 16-byte key specified via menuconfig.

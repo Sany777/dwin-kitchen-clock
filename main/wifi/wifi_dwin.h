@@ -27,8 +27,6 @@
 #define RETRY_CONNECT_APSTA 5
 
 #define MAX_STA_CONN       2
-#define ESPNOW_PMK "rasmk096519qrfac"
-#define ESPNOW_LMK "kfns9420147fhsae"
 #define TIMEOUT_SNTP 5
 
 
@@ -52,19 +50,3 @@ void ap_handler(void* arg, esp_event_base_t event_base,
                             int32_t event_id, void* event_data);
 void set_sntp(main_data_t* main_data, uint8_t action);
 void set_time_tv(struct timeval *tv);
-
-/*
-#define BREAK_IF_NO_WIFI_CON()                                                      \
-    do{                                                                             \
-        EventBits_t xEventGroup = xEventGroupWaitBits(dwin_event_group,             \
-                        BIT_CON_STA_OK,                                             \
-                        false, false,                                               \
-                        FIRST_WAIT_WIFI_BIT);                                       \                               
-        if(!(xEventGroup&BIT_CON_STA_OK)){                                          \                                                                  
-            start_sta();                                                            \                                                      
-            xEventGroup =                                                           \
-                        xEventGroupWaitBits(dwin_event_group, BIT_CON_STA_OK,       \
-                                            false, false, WAIT_PROCEES*2);          \                                                      
-            if(!(xEventGroup&BIT_CON_STA_OK))return;                                \                      
-        }                                                                           \
-    }while(0)*/

@@ -20,7 +20,7 @@ switch(action){
             if(!tx_espnow)xTaskCreate(espnow_task_tx, "espnow_task_tx", 5000, main_data, 5, &tx_espnow);
             if(!rx_espnow || !tx_espnow)return;
             ESP_ERROR_CHECK(esp_now_init());
-            ESP_ERROR_CHECK( esp_now_set_pmk((uint8_t *)ESPNOW_PMK) );
+            ESP_ERROR_CHECK( esp_now_set_pmk((uint8_t *)CONFIG_ESPNOW_PMK) );
             ESP_ERROR_CHECK( esp_now_register_send_cb(espnow_send_cb) );
             ESP_ERROR_CHECK(esp_now_register_recv_cb(espnow_rx_cb));
             #if CONFIG_ESP_WIFI_STA_DISCONNECTED_PM_ENABLE
@@ -102,10 +102,10 @@ switch(action){
             memset(&wifi_config, 0, sizeof(wifi_config));
             wifi_config.ap.max_connection = MAX_STA_CONN;
             wifi_config.ap.authmode = WIFI_AUTH_WPA_WPA2_PSK;
-            wifi_config.ap.channel = ESP_WIFI_CHANNEL;
+            wifi_config.ap.channel = CONFIG_AP_WIFI_CHANNEL;
             wifi_config.ap.pmf_cfg.required = false;
-            strcpy((char *)wifi_config.ap.ssid, AP_WIFI_SSID);
-            strcpy((char *)wifi_config.ap.password, AP_WIFI_PWD);
+            strcpy((char *)wifi_config.ap.ssid, CONFIG_AP_WIFI_SSID);
+            strcpy((char *)wifi_config.ap.password, CONFIG_AP_WIFI_PWD);
             esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &ap_handler, main_data);
             esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &ap_handler, main_data);       
             esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_START, &ap_handler, main_data);
