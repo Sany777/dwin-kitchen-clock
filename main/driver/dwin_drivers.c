@@ -18,7 +18,7 @@ void dwin_clock_get()
 
 void dwin_buzer(const uint8_t loud)
 {
-    uint8_t full_command_buzzer[] = {
+    const uint8_t full_command_buzzer[] = {
         FRAME_HEADER, 
         COMMAND_BUZZER, 
         loud, 
@@ -30,7 +30,7 @@ void dwin_buzer(const uint8_t loud)
 void dwin_set_pic(const uint8_t picture_id)
 {
     if(picture_id < END_LIST_PIC){ 	
-        uint8_t SET_PIC[] = {
+       const uint8_t SET_PIC[] = {
             FRAME_HEADER, 
             COMMAND_SET_PIC, 
             picture_id,
@@ -50,9 +50,12 @@ void dwin_set_brightness(const uint8_t brightness)
     print_end();
 }
 
-void print_start_pos(const uint16_t row, const uint16_t column, const uint16_t text_color, uint8_t font) 
+void print_start_pos(const uint16_t row, 
+                        const uint16_t column, 
+                        const uint16_t text_color, 
+                        const uint8_t font) 
 {
-    uint8_t print_command[] = {
+    const uint8_t print_command[] = {
         FRAME_HEADER, 
         COMMAND_PRINT, 
         column/256, 
@@ -72,7 +75,7 @@ void print_start_pos(const uint16_t row, const uint16_t column, const uint16_t t
 
 void save_pic(const uint8_t pic)
 {
-    uint8_t save_command[] = {
+    const uint8_t save_command[] = {
         FRAME_HEADER, 
         COMMAND_PIC_SAVE, 
         pic,
@@ -81,12 +84,12 @@ void save_pic(const uint8_t pic)
     uart_write_bytes(UART_DWIN, save_command, sizeof(save_command));
 }
 
-void set_text_box(  const uint16_t x_s, 
+void set_text_box(const uint16_t x_s, 
                     const uint16_t y_s, 
                     const uint16_t x_e, 
-                    const uint16_t y_e  )
+                    const uint16_t y_e)
 {
-    uint8_t SET_TEXT_BOX[] = {
+    const uint8_t SET_TEXT_BOX[] = {
         FRAME_HEADER, 
         COMMAND_SET_BOX,
         x_s/256,
@@ -104,7 +107,7 @@ void set_text_box(  const uint16_t x_s,
 
 void set_color(const uint16_t foreground, const uint16_t background)
 {
-    uint8_t SET_COLOR[] = {
+    const uint8_t SET_COLOR[] = {
         FRAME_HEADER,
         COMMAND_SET_COLOR,
         foreground/256,
@@ -121,7 +124,7 @@ void print_circle(  const uint16_t x,
                     const uint16_t radius, 
                     const bool fill  )
 {
-    uint8_t CIRCULAR[] = {
+    const uint8_t CIRCULAR[] = {
         FRAME_HEADER,
         fill 
             ? COMMAND_CIRCULAR_FILL_FOREGROUND 
@@ -178,9 +181,13 @@ void print_text_box(const uint16_t x,
     print_end();
 }
 
-void print_rect(const uint16_t x, const uint16_t y, const uint16_t x_e, const uint16_t y_e, bool fill )
+void print_rect(const uint16_t x, 
+                const uint16_t y, 
+                const uint16_t x_e, 
+                const uint16_t y_e, 
+                const bool fill)
 {
-    char RECTANGLE_ON[] = {
+    const uint8_t RECTANGLE_ON[] = {
         FRAME_HEADER, 
         fill
             ? COMMAND_FILL_RECTANGLE
@@ -200,7 +207,7 @@ void print_rect(const uint16_t x, const uint16_t y, const uint16_t x_e, const ui
 
 void dwin_clock_set(const struct tm *tmptr) 
 {
-    uint8_t clock_send[] = {
+    const uint8_t clock_send[] = {
         HEADER_SET_CLOCK,
         DEC_TO_HEX(tmptr->tm_year%100),
         DEC_TO_HEX(tmptr->tm_mon),
@@ -213,9 +220,11 @@ void dwin_clock_set(const struct tm *tmptr)
     uart_write_bytes(UART_DWIN, clock_send, sizeof(clock_send));
 }
 
-void fill_area(const uint16_t xs, const uint16_t ys, const uint16_t color)
+void fill_area(const uint16_t xs, 
+                    const uint16_t ys, 
+                    const uint16_t color)
 {
-    uint8_t fill_area_command[] = {
+    const uint8_t fill_area_command[] = {
         FRAME_HEADER,
         COMMAND_FILL,
         xs/256,
@@ -230,9 +239,12 @@ void fill_area(const uint16_t xs, const uint16_t ys, const uint16_t color)
 }
 
 
-void dwin_clock_on(const uint16_t row, const  uint16_t column, const  uint16_t textColor, const  uint8_t font)
+void dwin_clock_on(const uint16_t row, 
+                    const  uint16_t column, 
+                    const  uint16_t textColor, 
+                    const  uint8_t font)
 {
-    char clock_on_command[] = {
+    const uint8_t clock_on_command[] = {
         FRAME_HEADER,
         CLOCK_ON_COMMAND,
         font,
@@ -249,7 +261,7 @@ void dwin_clock_on(const uint16_t row, const  uint16_t column, const  uint16_t t
 
 void dwin_clock_off(void)
 {
-    char clock_off_command[] = {
+    const uint8_t clock_off_command[] = {
         FRAME_HEADER,
         CLOCK_OFF_COMMAND,
         FRAME_END

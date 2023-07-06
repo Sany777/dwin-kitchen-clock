@@ -10,7 +10,7 @@
 #define PRIORITY_SHOW           (PRIORITY_DIRECTION-2)
 
 /* events structure */
-#define SIZE_LIST_TASKS       (END_KEY_SCREEN_TASK-START_SCREEN_TASK)
+#define SIZE_LIST_TASKS         (END_KEY_SCREEN_TASK-START_SCREEN_TASK)
 
 void init_dwin_events(main_data_t*);
 void show_task(void*);
@@ -19,11 +19,13 @@ void direction_task(void *);
 void uart_event_task(void *);
 void check_net_data(main_data_t*);
 
+/* main screen func*/
+#define screen_handler(main_data, command, char_in) \
+    screens_handlers[cur_screen_id-START_SCREEN_TASK].main_handler(main_data, command, char_in)
 
-#define screen_handler(main_data, command, char_in)  screens_handlers[cur_screen_id-START_SCREEN_TASK].main_handler(main_data, command, char_in)
-#define show_handler(main_data, key, data)    screens_handlers[cur_screen_id-START_SCREEN_TASK].show_handler(main_data, key, data)
-
-
+/* show func */
+#define show_handler(main_data, key, data) \
+    screens_handlers[cur_screen_id-START_SCREEN_TASK].show_handler(main_data, key, data)
 
 void vApplicationIdleHook(void);
 

@@ -1,17 +1,14 @@
 #include "dwin_weather.h"
 
-#define FIRST_URL_LEN   (sizeof(FIRST_URL)-1)
-#define SECOND_URL_LEN  (sizeof(SECOND_URL)-1)
-
-esp_err_t _http_event_handler(esp_http_client_event_t *evt)
+esp_err_t http_event_handler(esp_http_client_event_t *evt)
 {
     static char *output_buffer; 
     static int output_len;      
     switch(evt->event_id) {
     case HTTP_EVENT_ON_DATA:
-        if (!esp_http_client_is_chunked_response(evt->client)) {
+        if(!esp_http_client_is_chunked_response(evt->client)){
             int copy_len = 0;
-            if (evt->user_data) {
+            if(evt->user_data){
                 copy_len = MIN(evt->data_len, (CLIENT_BUF_LEN - output_len));
                 if (copy_len) {
                     memcpy(evt->user_data + output_len, evt->data, copy_len);
@@ -34,14 +31,14 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
         }
         break;
     case HTTP_EVENT_ON_FINISH:
-        if (output_buffer != NULL) {
+        if(output_buffer != NULL){
             free(output_buffer);
             output_buffer = NULL;
         }
         output_len = 0;
         break;
     case HTTP_EVENT_DISCONNECTED:
-        if (output_buffer != NULL) {
+        if (output_buffer != NULL){
             free(output_buffer);
             output_buffer = NULL;
         }
@@ -68,7 +65,7 @@ void get_weather(main_data_t *main_data, uint8_t key)
                                 || (strnlen(name_CITY, SIZE_BUF) == 0),
                                 st_1);
     if(!(xEventGroup&BIT_CON_STA_OK)){
-        set_new_event(START_STA);
+        set_new_command(START_STA);
         vTaskDelay(100);
         xEventGroup = xEventGroupWaitBits(dwin_event_group, 
                                             BIT_PROCESS,   
@@ -87,7 +84,7 @@ void get_weather(main_data_t *main_data, uint8_t key)
     memcpy(url_buf+FIRST_URL_LEN+sity_len+SECOND_URL_LEN, api_KEY, SIZE_API);
     esp_http_client_config_t config = {
         .url = url_buf,
-        .event_handler = _http_event_handler,
+        .event_handler = http_event_handler,
         .user_data = (void*)local_response_buffer,    
         .method = HTTP_METHOD_GET,
         .buffer_size = CLIENT_BUF_LEN,
@@ -97,15 +94,15 @@ void get_weather(main_data_t *main_data, uint8_t key)
     DWIN_CHECK_AND_GO(esp_http_client_perform(client), st_3);
     const size_t data_len = esp_http_client_get_content_length(client);
     DWIN_IF_FALSE_GOTO(data_len != 0, st_3);
-    char **pop = find_str_key(local_response_buffer, data_len, "\"pop\":");
-    char **temp = find_str_key(local_response_buffer, data_len, "\"temp\":");
-    char **temp_feel = find_str_key(local_response_buffer, data_len, "\"feels_like\":");
-    char **description = find_str_key(local_response_buffer, data_len, "\"description\":\"");
-    char **id = find_str_key(local_response_buffer, data_len, "\"id\":");
-    char **sunrise = find_str_key(local_response_buffer, data_len, "\"sunrise\":");
-    char **sunset = find_str_key(local_response_buffer, data_len, "\"sunset\":");
-    char **dt_txt = find_str_key(local_response_buffer, data_len, "\"dt_txt\":");
-    char **pod = find_str_key(local_response_buffer, data_len, "\"pod\":\"");
+    const char **pop = find_str_key(local_response_buffer, data_len, "\"pop\":");
+    const char **temp = find_str_key(local_response_buffer, data_len, "\"temp\":");
+    const char **temp_feel = find_str_key(local_response_buffer, data_len, "\"feels_like\":");
+    const char **description = find_str_key(local_response_buffer, data_len, "\"description\":\"");
+    const char **id = find_str_key(local_response_buffer, data_len, "\"id\":");
+    const char **sunrise = find_str_key(local_response_buffer, data_len, "\"sunrise\":");
+    const char **sunset = find_str_key(local_response_buffer, data_len, "\"sunset\":");
+    const char **dt_txt = find_str_key(local_response_buffer, data_len, "\"dt_txt\":");
+    const char **pod = find_str_key(local_response_buffer, data_len, "\"pod\":\"");
     if(pop == NULL 
             || temp == NULL
             || temp_feel == NULL
@@ -161,7 +158,7 @@ st_3:
 st_2:
     free(url_buf);
 st_1:
-    set_new_event(UPDATE_WEATHER_COMPLETE);
+    set_new_command(UPDATE_WEATHER_COMPLETE);
 }
 
 char ** find_str_key(char *buf, const size_t buf_len, const char *key)

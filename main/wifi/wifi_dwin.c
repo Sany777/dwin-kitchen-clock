@@ -84,7 +84,7 @@ switch(action){
         if(mode != WIFI_MODE_AP){
             if(mode != WIFI_MODE_NULL){
                 if(xEventGroup&BIT_ESPNOW_RUN){
-                    set_new_event(STOP_ESPNOW);
+                    set_new_command(STOP_ESPNOW);
                 }
                 esp_wifi_stop();
                 vTaskDelay(400);
@@ -95,7 +95,7 @@ switch(action){
             }
             netif = esp_netif_create_default_wifi_ap();
             if(!netif){
-                set_new_event(MAIN_SCREEN);
+                set_new_command(MAIN_SCREEN);
                 return;
             }
             mode = WIFI_MODE_AP;
@@ -186,10 +186,10 @@ void ap_handler(void* main_data, esp_event_base_t event_base,
     } else if(event_id == WIFI_EVENT_AP_STACONNECTED){
         wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
         show_screen(STATION_JOINE, event->mac, SIZE_MAC);
-        set_new_event(STATION_JOINE);
+        set_new_command(STATION_JOINE);
     } else if(event_id == WIFI_EVENT_AP_STADISCONNECTED){
         set_run_webserver(NULL);
-        set_new_event(MAIN_SCREEN);
+        set_new_command(MAIN_SCREEN);
     }
 }
 
@@ -230,10 +230,10 @@ void wifi_sta_handler(void* main_data, esp_event_base_t event_base,
             xEventGroupSetBits(dwin_event_group, BIT_CON_STA_OK|BIT_SSID_FOUND);
             xEventGroupClearBits(dwin_event_group, BIT_PROCESS);
             if(!(xEventGroup&BIT_WEATHER_OK)){
-                set_new_event(GET_WEATHER);
+                set_new_command(GET_WEATHER);
             }
             if(xEventGroup&BIT_SNTP_ALLOW && !(xEventGroup&BIT_IS_TIME)){
-                set_new_event(INIT_SNTP);
+                set_new_command(INIT_SNTP);
             }
         }
     } else {

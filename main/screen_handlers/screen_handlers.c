@@ -37,7 +37,7 @@ void search_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
             init = false;
             xEventGroupClearBits(dwin_event_group, BIT_DENIED_STA);
         }
-        set_new_event(START_STA);
+        set_new_command(START_STA);
         return;
     }
     if(command == KEY_INIT) {
@@ -84,7 +84,7 @@ void ap_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
         show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
         xEventGroupSetBits(dwin_event_group, BIT_DENIED_STA);
-        set_new_event(INIT_AP);
+        set_new_command(INIT_AP);
     } else if(command == KEY_CLOSE) {
         xEventGroupClearBits(dwin_event_group, BIT_DENIED_STA);
         esp_wifi_stop();
@@ -235,7 +235,7 @@ void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
                                     30,
                                     ONLY_ONCE);
             } else {
-                set_new_event(GET_WEATHER);
+                set_new_command(GET_WEATHER);
             }
             break;
         }
@@ -265,7 +265,7 @@ void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         }
             default : break;
     }
-    if(details ){
+    if(details){
         dwin_set_pic(NO_WEATHER_PIC);
         show_screen(DETAILS_SCREEN, NULL, 0);
     } else if(menu_active){
@@ -348,7 +348,7 @@ void clock_handler(main_data_t* main_data, uint8_t command, char symbol)
         EventBits_t xEventGroup = 
                     xEventGroupGetBits(dwin_event_group);                                                                 
         if(xEventGroup&BIT_SNTP_ALLOW){
-            set_new_event(INIT_SNTP);
+            set_new_command(INIT_SNTP);
         } else {
             dwin_clock_get();
         }
@@ -443,7 +443,7 @@ void state_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
         }
     } else if(command == KEY_ENTER){
         write_memory(main_data, DATA_FLAGS);
-        set_new_event(GET_WEATHER);
+        set_new_command(GET_WEATHER);
     }
     show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
 }
@@ -547,7 +547,7 @@ void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
                 count_buzer--;
             } else {
                 remove_periodic_event(KEY_DECREMENT);
-                set_new_event(KEY_INIT);
+                set_new_command(KEY_INIT);
                 count_buzer = NUMBER_SIG_BUZ;
             }
             return;

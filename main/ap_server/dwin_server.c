@@ -157,7 +157,6 @@ err:
 }
 
 
-
 static esp_err_t handler_set_raw_data(httpd_req_t *req)
 {
     const int total_len = req->content_len;

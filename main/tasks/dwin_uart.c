@@ -54,7 +54,7 @@ for(;;) {
                                 .tm_sec  = HEX_TO_DEC(buf_RX[9]),
                             };
                             set_time_tm(&tm_time);
-                            set_new_event(UPDATE_TIME_COMPLETE);
+                            set_new_command(UPDATE_TIME_COMPLETE);
                         } else {
                             xEventGroupSetBits(dwin_event_group, BIT_DWIN_RESPONSE_OK);
                         }

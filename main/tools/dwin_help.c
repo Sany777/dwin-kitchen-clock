@@ -102,7 +102,7 @@ uint16_t *get_y_points(  int8_t *points,
         }
     }
     if(is_number){
-        buf_out = (uint16_t *)(buf_operation + MAX_DATA_LEN - number*sizeof(uint16_t));
+        buf_out = (uint16_t *)(send_buf + MAX_DATA_LEN - number*sizeof(uint16_t));
         min_val *= -1;
         max += min_val;
         const float k_h = (float)height/max;
@@ -138,7 +138,7 @@ void set_time_tv(struct timeval *tv)
 {
     settimeofday(tv, NULL);
     xEventGroupSetBits(dwin_event_group, BIT_IS_TIME);
-    set_new_event(UPDATE_TIME_COMPLETE);
+    set_new_command(UPDATE_TIME_COMPLETE);
 }
 
 void set_dwin_clock()

@@ -41,8 +41,8 @@ void esp_init(void)
 {
     main_data_t *main_data = (main_data_t *) calloc(1, sizeof(main_data_t));
     assert(main_data);
-    buf_operation = malloc(SIZE_SHOW_BUF);
-    assert(buf_operation);
+    send_buf = malloc(SIZE_SHOW_BUF);
+    assert(send_buf);
     dwin_event_group = xEventGroupCreate();
     queue_direct = xQueueCreate(SIZE_QUEUE_DIRECT, sizeof(uint16_t));
     queue_show = xQueueCreate(3, sizeof(show_queue_data_t));
@@ -63,7 +63,7 @@ void esp_init(void)
     init_uart();
     wifi_init();
     vTaskDelay(300);
-    set_new_event(START_STA);
+    set_new_command(START_STA);
     for(int i=0; i<SIZE_SERVICE_TASK; i++){
         if(xTaskCreate(
             sevice_tasks[i].pTask, 
@@ -80,7 +80,7 @@ void esp_init(void)
         };
     }
     vTaskDelay(1000);
-    set_new_event(START_STA);
+    set_new_command(START_STA);
     EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
     xEventGroupSetBits(dwin_event_group, BIT_PROCESS);
     do{
@@ -90,7 +90,7 @@ void esp_init(void)
     dwin_set_pic(NO_WEATHER_PIC);
     welcome();
     if(xEventGroup&BIT_SNTP_ALLOW){
-        set_new_event(INIT_SNTP);
+        set_new_command(INIT_SNTP);
         xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_PROCESS, true, true, 3000);
     }
     if(!(xEventGroup&BIT_CON_STA_OK) 
@@ -100,11 +100,11 @@ void esp_init(void)
         dwin_clock_get();
     }
     temp_BM280 = NO_TEMP;
-    set_new_event(MAIN_SCREEN);
+    set_new_command(MAIN_SCREEN);
     vTaskDelay(200);
     if(init_bmp280() == ESP_OK){
         vTaskDelay(200);
-        set_new_event(GET_TEMPERATURE);
+        set_new_command(GET_TEMPERATURE);
         set_periodic_event(GET_TEMPERATURE, 35, RELOAD_COUNT);
     }
 }

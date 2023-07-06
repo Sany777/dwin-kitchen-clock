@@ -49,7 +49,7 @@ ESP_EVENT_DECLARE_BASE(ESPNOW_EVENTS);
 ESP_EVENT_DECLARE_BASE(WIFI_SET_EVENTS);
 ESP_EVENT_DECLARE_BASE(SNTP_EVENTS);
 
-extern char *buf_operation;
+extern char *send_buf;
 extern EventGroupHandle_t dwin_event_group;
 extern QueueHandle_t dwin_uart_events_queue, 
                         queue_espnow_tx, 

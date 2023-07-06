@@ -1,6 +1,6 @@
 #include "show_data.h"
 
-char *buf_operation;
+char *send_buf;
 
 void print_hide_pwd(const char* pwd)
 {
@@ -14,9 +14,9 @@ void send_str(const char * format, ... )
 {
   va_list args;
   va_start (args, format);
-  vsnprintf (buf_operation, MAX_DATA_LEN, format, args);
+  vsnprintf (send_buf, MAX_DATA_LEN, format, args);
   va_end (args);
-  uart_write_bytes(UART_DWIN, buf_operation, strlen(buf_operation));
+  uart_write_bytes(UART_DWIN, send_buf, strlen(send_buf));
 }
 
 

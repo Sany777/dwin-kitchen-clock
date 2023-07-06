@@ -39,36 +39,36 @@
 
 /****************************** FULL DWIN COMMANDS **********************************/
 
-static const char CLEAR_SCREEN[] = {
+static const uint8_t CLEAR_SCREEN[] = {
     FRAME_HEADER,
     COMMAND_CLEAR_SCREEN,
     FRAME_END
 };
 
-static char INIT_UPDATE[] = {
+static uint8_t INIT_UPDATE[] = {
     FRAME_HEADER,
     COMMAND_INIT_UPDATE,
     FRAME_END,
 };
 
-static const char GET_TIME[] = {
+static const uint8_t GET_TIME[] = {
     FRAME_HEADER, 
     COMMAND_GET_TIME, 
     FRAME_END
 };
 
-static const char HELLO_COMMAND[] = {
+static const uint8_t HELLO_COMMAND[] = {
     FRAME_HEADER,
     0x00,
     FRAME_END
 };         
 
 
-static const char RECTANGLE_OFF[] = {
+static const uint8_t RECTANGLE_OFF[] = {
     FRAME_HEADER, 
     COMMAND_OFF_RECTANGLE, 
     FRAME_END,
 };
 
-static const char END[] = { FRAME_END };
+static const uint8_t END[] = { FRAME_END };
 
