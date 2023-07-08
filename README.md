@@ -56,7 +56,7 @@ The DEVICE STATUS menu item shows the status of the device and contains buttons 
 
 ### Info
 
-![Image alt](https://github.com/Sany777/dwin-kitchen-clock/raw/main/src_help/device_info_screenstate_screen.jpg)
+![Image alt](https://github.com/Sany777/dwin-kitchen-clock/raw/main/src_help/device_info_screen.jpg)
 ######  device info screen
 
 ##### show information about the device
