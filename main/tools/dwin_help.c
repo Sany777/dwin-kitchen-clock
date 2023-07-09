@@ -89,7 +89,6 @@ uint16_t *get_y_points(  int8_t *points,
 {
     int max = 0, min_val = 0;
     uint16_t *buf_out  = NULL;
-    
     bool is_number = false;
     for(int i=0; i<number; i++){
         if(points[i] > max){
@@ -105,9 +104,9 @@ uint16_t *get_y_points(  int8_t *points,
         buf_out = (uint16_t *)(send_buf + MAX_DATA_LEN - number*sizeof(uint16_t));
         min_val *= -1;
         max += min_val;
-        const float k_h = (float)height/max;
+        const float k_h = height/(float)max;
         for(int i=0; i<number; i++){
-            buf_out[i] = (uint16_t)((points[i]+min_val) * k_h);
+            buf_out[i] = (uint16_t)((points[i]) * k_h);
         }
     }
     return buf_out;

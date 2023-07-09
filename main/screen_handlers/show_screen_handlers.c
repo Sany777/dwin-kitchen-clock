@@ -485,6 +485,7 @@ void show_main_handler(main_data_t * main_data,
                         temp_FEELS_LIKE[4]);
         print_end();
         vTaskDelay(DELAY_SHOW_ITEM*2);
+        set_color(get_color_temp(temp_FEELS_LIKE[0]), WHITE);
         print_lines(get_y_points(temp_FEELS_LIKE, NUMBER_ITEM_WEATHER, 80), NUMBER_ITEM_WEATHER, 70, 470, 260);
     } else {
     struct tm *cur_time = (struct tm *)time_pv;
