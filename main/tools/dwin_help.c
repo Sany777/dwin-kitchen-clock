@@ -1,6 +1,6 @@
 #include "dwin_help.h"
 
-bool notification_alarm(const main_data_t *main_data, 
+bool notification_alarm(const dwin_data_t *main_data, 
                             const struct tm* cur_time, 
                             const bool alarm)
 {
@@ -83,9 +83,9 @@ void set_timezone(int offset)
 }
 
 
-uint16_t *get_y_points(  int8_t *points, 
-                            const int number,
-                            const uint16_t height )
+const uint16_t *get_y_points(const int8_t *points, 
+                                const int number,
+                                const uint16_t height)
 {
     int max = 0, min_val = 0;
     uint16_t *buf_out  = NULL;
@@ -146,7 +146,7 @@ void set_dwin_clock()
     dwin_clock_set(cur_tm);
 }
 
-void set_time_tm(const struct tm *timeptr)
+void set_time_tm(struct tm *timeptr)
 {
     if(timeptr->tm_year >= 123 && timeptr->tm_year < 223){
         time_t time = mktime(timeptr);
@@ -158,7 +158,7 @@ void set_time_tm(const struct tm *timeptr)
     }
 }
 
-char *get_data_from_uri(const char *uri_str, 
+const char *get_data_from_uri(const char *uri_str, 
                                 const char *base_path)
 {
     const size_t base_pathlen = strlen(base_path);
@@ -171,7 +171,7 @@ char *get_data_from_uri(const char *uri_str,
     return uri_str+base_pathlen+1;
 }
 
-char *get_chip(int model_id)
+const char *get_chip(int model_id)
 {
     switch(model_id){
         case 1: return "ESP32";

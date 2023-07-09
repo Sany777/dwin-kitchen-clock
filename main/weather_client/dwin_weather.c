@@ -1,6 +1,32 @@
 #include "dwin_weather.h"
 
-esp_err_t http_event_handler(esp_http_client_event_t *evt)
+static char ** find_str_key(char *buf, const size_t buf_len, const char *key)
+{
+    size_t keys_len = 0;
+    int key_numb = 0;
+    char *ptr = buf;
+    char **list = NULL;
+    const size_t size_key = strlen(key);
+    while(ptr = strstr(ptr, key), ptr) {
+        if(key_numb+2 >= keys_len){
+            const size_t new_keys_len = keys_len + INITIAL_SIZE_LIST_KEYS;
+            char **new_list = calloc(sizeof(char *), new_keys_len);
+            assert(new_list);
+            if(keys_len){
+                memcpy(new_list, list, keys_len);
+                free(list);
+            }
+            list = new_list;
+            keys_len = new_keys_len;
+        }
+        ptr += size_key;
+        list[key_numb++] = ptr; 
+        if(buf_len+buf <= ptr) break;
+    }
+    return list;
+}
+
+static esp_err_t http_event_handler(esp_http_client_event_t *evt)
 {
     static char *output_buffer; 
     static int output_len;      
@@ -50,7 +76,7 @@ esp_err_t http_event_handler(esp_http_client_event_t *evt)
 }
 
 
-void get_weather(main_data_t *main_data, uint8_t key)
+void get_weather(dwin_data_t *main_data, uint8_t key)
 {
     EventBits_t xEventGroup = xEventGroupWaitBits( dwin_event_group, 
                                         BIT_PROCESS,   
@@ -94,15 +120,15 @@ void get_weather(main_data_t *main_data, uint8_t key)
     DWIN_CHECK_AND_GO(esp_http_client_perform(client), st_3);
     const size_t data_len = esp_http_client_get_content_length(client);
     DWIN_IF_FALSE_GOTO(data_len != 0, st_3);
-    const char **pop = find_str_key(local_response_buffer, data_len, "\"pop\":");
-    const char **temp = find_str_key(local_response_buffer, data_len, "\"temp\":");
-    const char **temp_feel = find_str_key(local_response_buffer, data_len, "\"feels_like\":");
-    const char **description = find_str_key(local_response_buffer, data_len, "\"description\":\"");
-    const char **id = find_str_key(local_response_buffer, data_len, "\"id\":");
-    const char **sunrise = find_str_key(local_response_buffer, data_len, "\"sunrise\":");
-    const char **sunset = find_str_key(local_response_buffer, data_len, "\"sunset\":");
-    const char **dt_txt = find_str_key(local_response_buffer, data_len, "\"dt_txt\":");
-    const char **pod = find_str_key(local_response_buffer, data_len, "\"pod\":\"");
+    char **pop = find_str_key(local_response_buffer, data_len, "\"pop\":");
+    char **temp = find_str_key(local_response_buffer, data_len, "\"temp\":");
+    char **temp_feel = find_str_key(local_response_buffer, data_len, "\"feels_like\":");
+    char **description = find_str_key(local_response_buffer, data_len, "\"description\":\"");
+    char **id = find_str_key(local_response_buffer, data_len, "\"id\":");
+    char **sunrise = find_str_key(local_response_buffer, data_len, "\"sunrise\":");
+    char **sunset = find_str_key(local_response_buffer, data_len, "\"sunset\":");
+    char **dt_txt = find_str_key(local_response_buffer, data_len, "\"dt_txt\":");
+    char **pod = find_str_key(local_response_buffer, data_len, "\"pod\":\"");
     if(pop == NULL 
             || temp == NULL
             || temp_feel == NULL
@@ -161,28 +187,3 @@ st_1:
     set_new_command(UPDATE_WEATHER_COMPLETE);
 }
 
-char ** find_str_key(char *buf, const size_t buf_len, const char *key)
-{
-    size_t keys_len = 0;
-    int key_numb = 0;
-    char *ptr = buf;
-    char **list = NULL;
-    const size_t size_key = strlen(key);
-    while(ptr = strstr(ptr, key), ptr) {
-        if(key_numb+2 >= keys_len){
-            const size_t new_keys_len = keys_len + INITIAL_SIZE_LIST_KEYS;
-            char **new_list = calloc(sizeof(char *), new_keys_len);
-            assert(new_list);
-            if(keys_len){
-                memcpy(new_list, list, keys_len);
-                free(list);
-            }
-            list = new_list;
-            keys_len = new_keys_len;
-        }
-        ptr += size_key;
-        list[key_numb++] = ptr; 
-        if(buf_len+buf <= ptr) break;
-    }
-    return list;
-}

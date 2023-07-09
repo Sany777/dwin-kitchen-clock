@@ -6,13 +6,12 @@
 #include "screen_keys.h"
 #include "dwin_config.h"
 
-
 typedef struct {
     int32_t command;
     void* data;
 } show_queue_data_t;
 
-typedef enum espnow_action{
+typedef enum {
     TRY_AGAIN,
     GIVE_NOT,
     GIVE_TIME,
@@ -27,20 +26,19 @@ typedef enum espnow_action{
     NEED_DEVICE_INFO,
 } espnow_action_t;
 
-typedef enum type_devic{
+typedef enum {
     SENSOR_TEMP_DEVICE,
     TIMER_DEVICE,
     DWIN_SCREEN_DEVICE,
-}type_device_t;
+} type_device_t;
 
 /* time function */
-typedef enum mode_time_fun{
+enum mode_time_func{
     ONLY_ONCE,
     RELOAD_COUNT,
-} mode_time_func_t;
+};
 
-
-typedef enum flag_state_device{
+enum {
     SOUNDS_ALLOW,
     ESPNOW_ALLOW,
     SNTP_ALLOW,
@@ -61,7 +59,7 @@ typedef enum flag_state_device{
     ESPNOW_RUN,
     IS_NIGHT,
     SENSOR_INDOOR
-}flag_state_device_t;
+};
 
 /*events bit*/
 #define BIT_SENSOR_INDOOR       ( 1 << SENSOR_INDOOR )
@@ -89,13 +87,13 @@ typedef enum flag_state_device{
 
 #define NUMBER_STORED_FLAGS 4
 
-typedef enum index_timer {
+typedef enum {
     INDEX_HOUR_T,
     INDEX_MIN_T,
     INDEX_SEC_T, 
 }index_timer_t;
 
-typedef enum data_identification{
+typedef enum {
 	DATA_PWD,
 	DATA_API,
 	DATA_COLOR,
@@ -163,7 +161,7 @@ typedef struct periodic_event {
     size_t time;
     size_t time_init;
     uint16_t command;
-    mode_time_func_t mode;
+    int mode;
 }periodic_event_t;
 
 typedef struct {
@@ -220,11 +218,11 @@ typedef struct {
     sensor_data_t *sensor_data;
     timer_data_t *timers;
     weather_data_t weather_data;
-} main_data_t;
+} dwin_data_t;
 
 
-typedef void (*dwin_screen_handler_t) (main_data_t*, uint8_t, char);
-typedef void (*dwin_show_handler_t) (main_data_t*, int32_t, void*);
+typedef void (*dwin_screen_handler_t) (dwin_data_t*, uint8_t, char);
+typedef void (*dwin_show_handler_t) (const dwin_data_t*, int32_t, void*);
 
 typedef struct {
     TaskFunction_t pTask;

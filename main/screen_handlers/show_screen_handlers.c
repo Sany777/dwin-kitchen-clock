@@ -5,7 +5,34 @@ const int NORMAL_FONT = 2, FONT_INFO = 2, FONT_SECOND_INFO = 1, FONT_BUTTON = 3;
 const char *MES_ON = "[ON]";
 const char *MES_OFF = "[OFF]";
 
-const char *WEEK_DAY[SIZE_WEEK] = {
+#define SIZE_USED_COLORS 10
+const uint16_t USED_COLORS[SIZE_USED_COLORS] = {
+    WHITE, 
+    CAEN, 
+    BLUE, 
+    GREY, 
+    VIOLET, 
+    LEMON, 
+    RED, 
+    GREEN, 
+    AQUA, 
+    ORANGE
+};
+
+static const char* COLOR_NAME[] = { 
+    "WHITE", 
+    "CAEN",
+    "BLUE", 
+    "GREY",
+    "VIOLET", 
+    "LEMON", 
+    "RED", 
+    "GREEN",
+    "AQUA",
+    "ORANGE"
+};
+
+static const char *WEEK_DAY[SIZE_WEEK] = {
     "Monday",
     "Tuesday", 
     "Wednesday", 
@@ -15,14 +42,14 @@ const char *WEEK_DAY[SIZE_WEEK] = {
     "Sunday",
 };
 
-const char* ITEM_COLOR_NAME[] = {
+static const char* ITEM_COLOR_NAME[] = {
     "Clock", 
     "Desc", 
     "Info", 
 };
 
 
-void show_info_handler(main_data_t * main_data, 
+void show_info_handler(const dwin_data_t * main_data, 
                         int32_t state, 
                         void* event_data)
 {
@@ -59,7 +86,7 @@ void show_info_handler(main_data_t * main_data,
     print_end();
 }
 
-void show_device_handler(main_data_t * main_data, 
+void show_device_handler(const dwin_data_t * main_data, 
                         int32_t state, 
                         void* event_data)
 {
@@ -90,7 +117,7 @@ void show_device_handler(main_data_t * main_data,
     print_end();
 }
 
-void show_ap_handler(main_data_t * main_data, 
+void show_ap_handler(const dwin_data_t * main_data, 
                         int32_t state, 
                         void* event_data)
 {
@@ -114,7 +141,7 @@ void show_ap_handler(main_data_t * main_data,
     print_end();
 }
 
-void show_ssid_handler(main_data_t * main_data,
+void show_ssid_handler(const dwin_data_t * main_data,
                                 int32_t ap_count, 
                                 void* event_data) 
 {
@@ -157,7 +184,7 @@ void show_ssid_handler(main_data_t * main_data,
 }
 
 
-void show_settings_handler(main_data_t * main_data,
+void show_settings_handler(const dwin_data_t * main_data,
                             int32_t id, 
                             void* event_data) 
 {
@@ -220,7 +247,7 @@ void show_settings_handler(main_data_t * main_data,
     }
 }
 
-void show_notify_handler(main_data_t * main_data,
+void show_notify_handler(const dwin_data_t * main_data,
                             int32_t cur_day, 
                             void* event_data)
 {
@@ -272,7 +299,7 @@ void show_notify_handler(main_data_t * main_data,
     }
 }
 
-void show_color_screen_handler(main_data_t * main_data,
+void show_color_screen_handler(const dwin_data_t * main_data,
                                     int32_t id, 
                                     void* event_data) 
 {
@@ -306,7 +333,7 @@ void show_color_screen_handler(main_data_t * main_data,
     print_text_box(290, 220, 120, 35, BLACK, YELLOW, 2, "Set color");
 }
 
-void show_state_handler(main_data_t *main_data,
+void show_state_handler(const dwin_data_t *main_data,
                             int32_t id, 
                             void* event_data) 
 {
@@ -381,7 +408,7 @@ void show_state_handler(main_data_t *main_data,
 
 
 
-void show_clock_handler(main_data_t * main_data,
+void show_clock_handler(const dwin_data_t * main_data,
                                     int32_t offset_time, 
                                     void* event_data)
 {
@@ -441,7 +468,7 @@ void show_clock_handler(main_data_t * main_data,
 
 
 
-void show_main_handler(main_data_t * main_data,
+void show_main_handler(const dwin_data_t * main_data,
                                 int32_t id, 
                                 void* time_pv) 
 {
@@ -549,7 +576,7 @@ void show_main_handler(main_data_t * main_data,
     }
 }
 
-void show_timer_handler(main_data_t *main_data, 
+void show_timer_handler(const dwin_data_t *main_data, 
                                 int32_t key, 
                                 void* event_data) 
 {

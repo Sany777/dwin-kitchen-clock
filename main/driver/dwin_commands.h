@@ -1,6 +1,5 @@
 #pragma once
 
-#include "dwin_config.h"
 #define INDEX_VARIABLE_VALUE    2
 #define TOUCH_CODE              0x78
 
@@ -36,39 +35,3 @@
 #define COMMAND_GET_TIME                      0x9B,0x5A
 #define CLOCK_ON_COMMAND                      0x9B,0xFF,0x00
 #define CLOCK_OFF_COMMAND                     0x9B,0x00
-
-/****************************** FULL DWIN COMMANDS **********************************/
-
-static const uint8_t CLEAR_SCREEN[] = {
-    FRAME_HEADER,
-    COMMAND_CLEAR_SCREEN,
-    FRAME_END
-};
-
-static uint8_t INIT_UPDATE[] = {
-    FRAME_HEADER,
-    COMMAND_INIT_UPDATE,
-    FRAME_END,
-};
-
-static const uint8_t GET_TIME[] = {
-    FRAME_HEADER, 
-    COMMAND_GET_TIME, 
-    FRAME_END
-};
-
-static const uint8_t HELLO_COMMAND[] = {
-    FRAME_HEADER,
-    0x00,
-    FRAME_END
-};         
-
-
-static const uint8_t RECTANGLE_OFF[] = {
-    FRAME_HEADER, 
-    COMMAND_OFF_RECTANGLE, 
-    FRAME_END,
-};
-
-static const uint8_t END[] = { FRAME_END };
-

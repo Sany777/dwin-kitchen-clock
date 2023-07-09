@@ -199,7 +199,7 @@
 #define DWIN_SHOW_ERR(a) \
     do {                                                \
         if (ESP_OK != (a)) {                            \
-            ESP_LOGE(TAG,"%s", esp_err_to_name(a));     \ 
+            ESP_LOGE("DWIN SHOW ERR","%s", esp_err_to_name(a));     \ 
         }                                               \
     } while (0)
 
@@ -221,7 +221,7 @@
 #define DWIN_CHECK_AND_GO(a, goto_tag)                  \
     do{                                                 \
         if (ESP_OK != (a)) {                            \
-            ESP_LOGI("dwin", "%s", esp_err_to_name(a)); \
+            ESP_LOGI("DWIN_CHECK_AND_GO", "%s", esp_err_to_name(a)); \
             goto goto_tag;                              \
         }                                               \
     } while(0)

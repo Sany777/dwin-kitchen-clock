@@ -56,7 +56,7 @@ void set_new_command(uint8_t command)
 
 esp_err_t set_periodic_event(uint8_t command,
                                 size_t sec, 
-                                mode_time_func_t mode)
+                                int mode)
 {
     taskENTER_CRITICAL(&periodic_timers_s);
     if(size_list < number_event+1){

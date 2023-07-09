@@ -50,7 +50,7 @@ const handlers_dwin_t screens_handlers[SIZE_LIST_TASKS] = {
 };
 
 
-void check_net_data(main_data_t* main_data)
+void check_net_data(dwin_data_t* main_data)
 {
     EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
     if(xEventGroup&BIT_CON_STA_OK){
@@ -65,7 +65,7 @@ void check_net_data(main_data_t* main_data)
 void direction_task(void *pv)
 {
     uint8_t data_in[2] = {0}, command, symbol;
-    main_data_t *main_data = (main_data_t*)pv;
+    dwin_data_t *main_data = (dwin_data_t*)pv;
     cur_screen_id = MAIN_SCREEN;
     while(1) {
         if(xQueueReceive(queue_direct, 

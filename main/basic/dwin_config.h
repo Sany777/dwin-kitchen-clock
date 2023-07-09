@@ -23,7 +23,7 @@
 #define MAX_YEAR            99
 #define MONTH_NUMBER        12
 
-#define MAX_DWIN_DATA       249
+#define MAX_dwin_data_t       249
 
 #define BACKGROUND_COLOR    WHITE
 

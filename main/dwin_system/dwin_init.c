@@ -40,7 +40,7 @@ QueueHandle_t
 
 void esp_init(void)
 {
-    main_data_t *main_data = (main_data_t *) calloc(1, sizeof(main_data_t));
+    dwin_data_t *main_data = (dwin_data_t *) calloc(1, sizeof(dwin_data_t));
     assert(main_data);
     send_buf = malloc(SIZE_SHOW_BUF);
     assert(send_buf);

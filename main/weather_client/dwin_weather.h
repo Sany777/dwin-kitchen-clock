@@ -16,7 +16,4 @@
 #include "esp_http_client.h"
 #include "dwin_common.h"
 
-
-
-void get_weather(main_data_t *main_data, uint8_t key);
-char** find_str_key(char *buf, const size_t buf_len, const char *key);
+void get_weather(dwin_data_t *main_data, uint8_t key);

@@ -1,6 +1,6 @@
 #include "wifi_dwin.h"
  
-void set_wifi(main_data_t* main_data, uint8_t action)
+void set_wifi(dwin_data_t* main_data, uint8_t action)
 {
     static bool init_espnow;
     static bool run_espnow;
@@ -252,7 +252,7 @@ void set_time_cb(struct timeval *tv)
     }
 }
 
-void set_sntp(main_data_t* main_data, uint8_t action)
+void set_sntp(dwin_data_t* main_data, uint8_t action)
 {
     if(action == INIT_SNTP){
         if(!esp_sntp_enabled()){

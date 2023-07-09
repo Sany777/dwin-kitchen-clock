@@ -233,7 +233,7 @@ static esp_err_t handler_set_img(httpd_req_t *req)
         cur_len += received;
     }
     if(total_len < MAX_LEN_CHUNC_IMG){
-        char *pos_pic_str = get_data_from_uri(req->uri, BASE_PATH_SAVE_PIC);
+        const char *pos_pic_str = get_data_from_uri(req->uri, BASE_PATH_SAVE_PIC);
         if(!pos_pic_str){
             DWIN_RESP_ERR(req, "Format data position pic is wrong", err);
         }
@@ -340,7 +340,7 @@ static esp_err_t handler_close(httpd_req_t *req)
 static esp_err_t handler_set_network(httpd_req_t *req)
 {
     const size_t total_len = req->content_len;
-    main_data_t *main_data = (main_data_t *)req->user_ctx;
+    dwin_data_t *main_data = (dwin_data_t *)req->user_ctx;
     if(total_len > SCRATCH_SIZE){
          DWIN_RESP_ERR(req, "content too long", err);
     }
@@ -395,7 +395,7 @@ err:
 static esp_err_t handler_set_api(httpd_req_t *req)
 {
     const int total_len = req->content_len;
-    main_data_t *main_data = (main_data_t *)req->user_ctx;
+    dwin_data_t *main_data = (dwin_data_t *)req->user_ctx;
     if(total_len > SCRATCH_SIZE){
         DWIN_RESP_ERR(req, "content too long", err);
     }
@@ -496,7 +496,7 @@ err:
 
 static esp_err_t handler_give_data(httpd_req_t *req)
 {
-    main_data_t * main_data = (main_data_t *)req->user_ctx;
+    dwin_data_t * main_data = (dwin_data_t *)req->user_ctx;
     char *notif_send = malloc(LEN_DATA_SEND_NOTIF);
     if(notif_send == NULL){
         DWIN_RESP_ERR(req, "Not enough storage", err);
@@ -576,7 +576,7 @@ static esp_err_t set_notif_handler(httpd_req_t *req)
     if(server_buf == NULL){
         DWIN_RESP_ERR(req, "Not enough storage", err);
     }
-    main_data_t * main_data = (main_data_t *)req->user_ctx;
+    dwin_data_t * main_data = (dwin_data_t *)req->user_ctx;
     const int received = httpd_req_recv(req, server_buf, total_len);
     if (received != total_len) {
         DWIN_RESP_ERR(req, "Data not read", _err);
@@ -610,7 +610,7 @@ err:
 }
 
 
-esp_err_t set_run_webserver(main_data_t *main_data)
+esp_err_t set_run_webserver(dwin_data_t *main_data)
 { 
     static char *server_buf;
     static httpd_handle_t server;

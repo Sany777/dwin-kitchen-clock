@@ -1,5 +1,54 @@
 #include "dwin_drivers.h"
 
+
+int init_update_dwin()
+{
+    const uint8_t INIT_UPDATE[] = {
+        FRAME_HEADER,
+        COMMAND_INIT_UPDATE,
+        FRAME_END,
+    };
+	return uart_write_bytes(UART_DWIN, INIT_UPDATE, sizeof(INIT_UPDATE));
+}
+
+int send_hello()
+{
+    const uint8_t HELLO_COMMAND[] = {
+        FRAME_HEADER,
+        0x00,
+        FRAME_END
+    };   
+    return uart_write_bytes(UART_DWIN, HELLO_COMMAND, sizeof(HELLO_COMMAND));
+}
+
+  				
+int print_end()
+{
+    const uint8_t END[] = { FRAME_END };
+	return uart_write_bytes(UART_DWIN, END, sizeof(END));
+}
+
+
+int hide_rect()
+{
+    const uint8_t RECTANGLE_OFF[] = {
+        FRAME_HEADER, 
+        COMMAND_OFF_RECTANGLE, 
+        FRAME_END,
+    };
+    return uart_write_bytes(UART_DWIN, RECTANGLE_OFF, sizeof(RECTANGLE_OFF));
+}		
+
+int clear_screen()
+{
+    const uint8_t CLEAR_SCREEN[] = {
+        FRAME_HEADER,
+        COMMAND_CLEAR_SCREEN,
+        FRAME_END
+    };
+    return uart_write_bytes(UART_DWIN, CLEAR_SCREEN, sizeof(CLEAR_SCREEN));
+}				
+
 void print_start(uint16_t row, uint16_t column, const uint16_t text_color, size_t font) 
 {
 	column = column * font * 8;
@@ -9,6 +58,11 @@ void print_start(uint16_t row, uint16_t column, const uint16_t text_color, size_
 
 void dwin_clock_get() 
 {
+    const uint8_t GET_TIME[] = {
+        FRAME_HEADER, 
+        COMMAND_GET_TIME, 
+        FRAME_END
+    };
     EventBits_t state_bits = xEventGroupClearBits(dwin_event_group,BIT_IS_TIME);
     do{
         uart_write_bytes(UART_DWIN, GET_TIME, sizeof(GET_TIME));

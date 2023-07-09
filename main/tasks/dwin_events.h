@@ -12,12 +12,12 @@
 /* events structure */
 #define SIZE_LIST_TASKS         (END_KEY_SCREEN_TASK-START_SCREEN_TASK)
 
-void init_dwin_events(main_data_t*);
+void init_dwin_events(dwin_data_t*);
 void show_task(void*);
 void service_task(void *);
 void direction_task(void *);
 void uart_event_task(void *);
-void check_net_data(main_data_t*);
+void check_net_data(dwin_data_t*);
 
 /* main screen func*/
 #define screen_handler(main_data, command, char_in) \

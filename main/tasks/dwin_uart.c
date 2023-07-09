@@ -15,7 +15,7 @@ void init_uart()
     assert(dwin_uart_events_queue);
     ESP_ERROR_CHECK(uart_param_config(UART_DWIN, &uart_config));
     uart_set_pin(UART_DWIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-    esp_log_level_set(TAG, ESP_LOG_INFO);
+    esp_log_level_set("Uart", ESP_LOG_INFO);
 }
 
 void uart_event_task(void *pv)
@@ -26,7 +26,7 @@ void uart_event_task(void *pv)
     assert(buf_RX);
     uart_event_t event;
 for(;;) {
-    if(xQueueReceive(dwin_uart_events_queue, (void * )&event, (TickType_t)portMAX_DELAY)) {
+    if(xQueueReceive(dwin_uart_events_queue, (void *)&event, (TickType_t)portMAX_DELAY)) {
         switch(event.type) {
         case UART_DATA:
         {

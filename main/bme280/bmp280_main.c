@@ -29,7 +29,7 @@ err:
     return ESP_FAIL;
 }
 
-esp_err_t read_sensor_handler(main_data_t* main_data)
+esp_err_t read_sensor_handler(dwin_data_t* main_data)
 {
     DWIN_CHECK_AND_RETURN(bmx280_setMode(bmx280, BMX280_MODE_FORCE));
     do {

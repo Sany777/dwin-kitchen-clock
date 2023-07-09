@@ -1,8 +1,9 @@
 #include "espnow_dwin.h"
 
+uint8_t BRODCAST_MAC[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+#define IS_BROADCAST_ADDR(addr)     (memcmp(addr, BRODCAST_MAC, SIZE_MAC) == 0)
 
-
-void remove_espnow_device(const uint8_t *mac_addr)
+static void remove_espnow_device(const uint8_t *mac_addr)
 {
     if(mac_addr != NULL){
         esp_now_del_peer(mac_addr);
@@ -10,10 +11,21 @@ void remove_espnow_device(const uint8_t *mac_addr)
     }
 }
 
+static esp_err_t add_peer(uint8_t *mac_addr, bool encrypt)
+{
+    esp_now_peer_info_t peer = {
+        .channel = CONFIG_ESPNOW_CHANNEL,
+        .ifidx = WIFI_IF_STA,
+        .encrypt = encrypt,
+    };
+    memcpy(peer.lmk, CONFIG_ESPNOW_LMK, ESP_NOW_KEY_LEN);
+    memcpy(peer.peer_addr, mac_addr, SIZE_MAC);
+    return esp_now_add_peer(&peer);
+}
 
 void espnow_task_tx(void *pv)
 {
-    main_data_t * const main_data = (main_data_t *)pv;
+    dwin_data_t * const main_data = (dwin_data_t *)pv;
     uint8_t *parcel = NULL;
     const uint8_t *mac = NULL;
     uint8_t max_atempt = 0;
@@ -151,7 +163,7 @@ for(;;){
 
 void espnow_task_rx(void *pv)
 {
-    main_data_t * const main_data = (main_data_t *)pv;
+    dwin_data_t * const main_data = (dwin_data_t *)pv;
     uint16_t crc;
     espnow_rx_data_t data_rx;
     espnow_send_t data_tx;
@@ -218,7 +230,7 @@ if(xQueueReceive(queue_espnow_rx, &data_rx, portMAX_DELAY) == pdTRUE){
                             } else {
                                 xEventGroupSetBits(dwin_event_group, BIT_SEN_2);
                             }
-                            set_sensor(main_data, data_tx.mac, new_device->name);
+                            set_sensor_device(main_data, data_tx.mac, new_device->name);
                             data_tx.action = NEED_TEMP;
                             set_periodic_event(GET_REMOTE_SENSOR, DELAY_GET_TEMPERATURE, RELOAD_COUNT);
                         } else {
@@ -291,18 +303,6 @@ if(xQueueReceive(queue_espnow_rx, &data_rx, portMAX_DELAY) == pdTRUE){
     }
     }
 }
-}
-
-esp_err_t add_peer(uint8_t *mac_addr, bool encrypt)
-{
-    esp_now_peer_info_t peer = {
-        .channel = CONFIG_ESPNOW_CHANNEL,
-        .ifidx = WIFI_IF_STA,
-        .encrypt = encrypt,
-    };
-    memcpy(peer.lmk, CONFIG_ESPNOW_LMK, ESP_NOW_KEY_LEN);
-    memcpy(peer.peer_addr, mac_addr, SIZE_MAC);
-    return esp_now_add_peer(&peer);
 }
 
 void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)

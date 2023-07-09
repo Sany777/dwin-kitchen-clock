@@ -148,7 +148,8 @@
     "_timespec.h": "c",
     "_types.h": "c",
     "stdbool.h": "c",
-    "inttypes.h": "c"
+    "inttypes.h": "c",
+    "dwin_data_types.h": "c"
   },
   "idf.port": "/dev/ttyACM0",
   "idf.flashType": "UART",

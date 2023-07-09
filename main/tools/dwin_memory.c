@@ -1,9 +1,6 @@
 #include "dwin_memory.h"
 
-
-
-
-void write_memory(main_data_t *main_data, const int data_identificator) 
+void write_memory(const dwin_data_t *main_data, const int data_identificator) 
 {
 	nvs_handle_t nvs_handle_dwin;
     DWIN_SHOW_ERR(nvs_open("nvs", NVS_READWRITE, &nvs_handle_dwin));
@@ -51,7 +48,7 @@ void write_memory(main_data_t *main_data, const int data_identificator)
 }
 
 
-void read_memory(main_data_t *main_data, const int data_identificator) 
+void read_memory(dwin_data_t *main_data, const int data_identificator) 
 {
 	nvs_handle_t nvs_handle_dwin;
 	DWIN_SHOW_ERR(nvs_open("nvs", NVS_READWRITE, &nvs_handle_dwin));
@@ -105,7 +102,7 @@ void read_memory(main_data_t *main_data, const int data_identificator)
 	nvs_close(nvs_handle_dwin);
 }
 
-void read_all_memory(main_data_t *main_data) 
+void read_all_memory(dwin_data_t *main_data) 
 {
 	for(uint8_t i=0; i<END_DATA_IDENTEFIER_FOR_CICLE; i++) {
 		read_memory(main_data, i);
@@ -120,7 +117,7 @@ void read_offset(int32_t *offset)
 	nvs_close(nvs_handle_dwin);
 }
 
-void write_offset(int32_t offset)
+void write_offset(const int32_t offset)
 {
 	nvs_handle_t nvs_handle_dwin;
 	DWIN_SHOW_ERR(nvs_open("nvs", NVS_READWRITE, &nvs_handle_dwin));

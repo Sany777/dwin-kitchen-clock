@@ -3,7 +3,7 @@
 
 
 
-void info_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
+void info_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
 {
     if(command == KEY_INIT) {
         dwin_set_pic(INFO_PIC);
@@ -13,7 +13,7 @@ void info_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 
 }
 
-void device_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
+void device_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
 {
 
     if(command == KEY_INIT) {
@@ -24,7 +24,7 @@ void device_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 }
 
 
-void search_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
+void search_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
 {
     static wifi_ap_record_t* ap_info; 
     static uint16_t ap_count;
@@ -77,7 +77,7 @@ void search_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
                 sizeof(ap_info));
 }
 
-void ap_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
+void ap_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
 {
     if(command == KEY_INIT) {
         dwin_set_pic(INFO_PIC);
@@ -96,7 +96,7 @@ void ap_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
 }
 
 
-void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
+void setting_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
 {
     static uint8_t pos;
     static char *selected_buf;
@@ -168,7 +168,7 @@ void setting_screen_handler(main_data_t* main_data, uint8_t command, char symbol
 }
 
 
-void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
+void main_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
 {
     static bool menu_active, details, is_notify;
     static size_t atempt;
@@ -281,7 +281,7 @@ void main_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
     }
 }
 
-void clock_handler(main_data_t* main_data, uint8_t command, char symbol)
+void clock_handler(dwin_data_t* main_data, uint8_t command, char symbol)
 {
     static int32_t offset;
     static struct tm *dwin_time;
@@ -401,7 +401,7 @@ void clock_handler(main_data_t* main_data, uint8_t command, char symbol)
     show_screen(offset, dwin_time, sizeof(struct tm));
 }
 
-void state_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
+void state_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
 {
     if(command == KEY_CLOSE){
         return;
@@ -448,7 +448,7 @@ void state_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
     show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
 }
 
-void set_color_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
+void set_color_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
 {
     if(command == KEY_CLOSE){
         return;
@@ -464,7 +464,7 @@ void set_color_screen_handler(main_data_t* main_data, uint8_t command, char symb
 }
 
 
-void notifications_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
+void notifications_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
 {
     static uint8_t cur_day, cur_notif, cur_type_data;
     if(command == KEY_CLOSE) {
@@ -518,7 +518,7 @@ void notifications_screen_handler(main_data_t* main_data, uint8_t command, char 
 }
 
 
-void timer_screen_handler(main_data_t* main_data, uint8_t command, char symbol)
+void timer_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
 {
     static uint8_t new_area;
     static bool timer_run;
