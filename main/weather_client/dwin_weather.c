@@ -87,9 +87,17 @@ void get_weather(dwin_data_t *main_data, uint8_t key)
         dwin_event_group,BIT_WEATHER_OK
         |BIT_RESPONSE_400_SERVER);                                                         
     DWIN_IF_FALSE_GOTO(!(xEventGroup&BIT_DENIED_STA), st_1);
-    DWIN_IF_FALSE_GOTO((strnlen(api_KEY, SIZE_BUF) == MAX_STR_LEN) 
-                                || (strnlen(name_CITY, SIZE_BUF) == 0),
-                                st_1);
+    if(strnlen(api_KEY, SIZE_BUF) != SIZE_API){
+        if(!(xEventGroup&BIT_WRONG_API_KEY)){
+            xEventGroupSetBits(xEventGroup, BIT_WRONG_API_KEY);
+        }
+        goto st_1;
+    } else if(xEventGroup&BIT_WRONG_API_KEY){
+        xEventGroupClearBits(xEventGroup, BIT_WRONG_API_KEY);
+    }
+    if(strnlen(name_CITY, SIZE_BUF) == 0){
+        goto st_1;
+    }
     if(!(xEventGroup&BIT_CON_STA_OK)){
         set_new_command(START_STA);
         vTaskDelay(100);

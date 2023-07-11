@@ -218,7 +218,10 @@ void show_settings_handler(const dwin_data_t * main_data,
                 send_str("SSID      : %s", name_SSID);
                 break;
             case 2:
-                print_start(3, 1, GET_COLOR_AREA(AREA_PASSWORD), NORMAL_FONT);
+                uint16_t color = xEventGroup&BIT_WRONG_API_KEY
+                                    ? RED
+                                    : GET_COLOR_AREA(AREA_PASSWORD);
+                print_start(3, 1, color, NORMAL_FONT);
                 send_str_dwin("Password  : ");
                 if(area_SCREEN != AREA_PASSWORD){
                     send_str_dwin("*** WiFi password ***");

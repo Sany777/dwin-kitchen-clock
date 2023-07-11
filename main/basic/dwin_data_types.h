@@ -58,10 +58,12 @@ enum {
     SSID_FOUND,
     ESPNOW_RUN,
     IS_NIGHT,
-    SENSOR_INDOOR
+    SENSOR_INDOOR,
+    WRONG_API_KEY
 };
 
 /*events bit*/
+#define BIT_WRONG_API_KEY       ( 1 << WRONG_API_KEY )
 #define BIT_SENSOR_INDOOR       ( 1 << SENSOR_INDOOR )
 #define BIT_RESPONSE_400_SERVER ( 1 << RESPONSE_400_SERVER )
 #define BIT_SOUNDS_ALLOW        ( 1 << SOUNDS_ALLOW )
