@@ -114,12 +114,10 @@
 #define NUMBER_DATA_WEATHER     5
 #define MAX_LEN_DESCRIPTION     20
 #define LEN_BUF_DESCRIPTION     (MAX_LEN_DESCRIPTION+1)
-#define SIZE_URL_BUF            250
 #define NUMBER_ITEM_WEATHER     5
 #define FIRST_URL               "https://api.openweathermap.org/data/2.5/forecast?q="
 #define SECOND_URL              "&units=metric&cnt=5&appid="
-#define FIRST_URL_LEN           (sizeof(FIRST_URL)-1)
-#define SECOND_URL_LEN          (sizeof(SECOND_URL)-1)
+#define SIZE_URL_BUF            (sizeof(FIRST_URL)+sizeof(SECOND_URL)+MAX_STR_LEN+MAX_STR_LEN+1)
 
 #define INITIAL_SIZE_LIST_KEYS  10
 #define SHIFT_DT_TX             12

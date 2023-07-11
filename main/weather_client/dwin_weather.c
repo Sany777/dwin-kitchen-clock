@@ -103,11 +103,10 @@ void get_weather(dwin_data_t *main_data, uint8_t key)
     DWIN_CHECK_NULL_AND_GO(url_buf, "", st_1);
     char *local_response_buffer = (char*)malloc(CLIENT_BUF_LEN);
     DWIN_CHECK_NULL_AND_GO(local_response_buffer, "", st_2);
-    const size_t sity_len = strnlen(name_CITY, MAX_STR_LEN);
-    memcpy(url_buf, FIRST_URL, FIRST_URL_LEN);
-    memcpy(url_buf+FIRST_URL_LEN, name_CITY, sity_len);
-    memcpy(url_buf+FIRST_URL_LEN+sity_len, SECOND_URL, SECOND_URL_LEN);
-    memcpy(url_buf+FIRST_URL_LEN+sity_len+SECOND_URL_LEN, api_KEY, SIZE_API);
+    strcat(url_buf, FIRST_URL);
+    strncat(url_buf, name_CITY, MAX_STR_LEN);
+    strcat(url_buf, SECOND_URL);
+    strncat(url_buf, api_KEY, MAX_STR_LEN);
     esp_http_client_config_t config = {
         .url = url_buf,
         .event_handler = http_event_handler,
