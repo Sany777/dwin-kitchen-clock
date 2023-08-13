@@ -23,6 +23,8 @@ esp_err_t init_bmp280(void)
     DWIN_CHECK_AND_GO(bmx280_init(bmx280), err);
     bmx280_config_t bmx_cfg = BMX280_DEFAULT_CONFIG;
     DWIN_CHECK_AND_GO(bmx280_configure(bmx280, &bmx_cfg), err);
+    bmx280_setMode(bmx280, BMX280_MODE_CYCLE);
+
     return ESP_OK;
 err:
     i2c_driver_delete(I2C_NUM_0);
@@ -31,12 +33,14 @@ err:
 
 esp_err_t read_sensor_handler(dwin_data_t* main_data)
 {
-    DWIN_CHECK_AND_RETURN(bmx280_setMode(bmx280, BMX280_MODE_FORCE));
     do {
         vTaskDelay(pdMS_TO_TICKS(10));
     } while(bmx280_isSampling(bmx280));
-    float tmp = NO_TEMP;
-    bmx280_readoutFloat(bmx280, &tmp, 0, 0);
-    temp_BM280 = (int)tmp;
+    int tmp = NO_TEMP;
+    if(bmx280_readout(bmx280, &tmp, 0, 0) == ESP_OK){
+        temp_BM280 = (int)tmp/100;
+    } else {
+        temp_BM280 = NO_TEMP;
+    }
     return ESP_OK;
 }

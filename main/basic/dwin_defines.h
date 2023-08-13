@@ -133,9 +133,9 @@
 /*CHECK VALUE*/
 #define IS_DAY_WEEK(day_week)       ((day_week) >= 0 && (day_week) < SIZE_WEEK)
 
-#define IS_MIN_OR_SEC(val)          ((val) >= 0 && (val) <= MAX_MIN_SEC)
+#define IS_MIN_OR_SEC(val)          ((val) >=0 && (val) <= MAX_MIN_SEC)
 
-#define IS_MONTH(val)               ((val) > 0 && (val) <= MAX_MONTH)
+#define IS_MONTH(val)               ((val)>0 && (val) <= MAX_MONTH)
 
 #define IS_HOUR(val)                ((val) >= 0 && (val) <= MAX_HOUR)
 

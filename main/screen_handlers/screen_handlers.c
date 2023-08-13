@@ -15,7 +15,6 @@ void info_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
 
 void device_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
 {
-
     if(command == KEY_INIT) {
         dwin_set_pic(INFO_PIC);
         vTaskDelay(DELAY_CHANGE_PIC);

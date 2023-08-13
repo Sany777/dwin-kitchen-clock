@@ -268,6 +268,7 @@ void set_sntp(dwin_data_t* main_data, uint8_t action)
             sntp_restart();
         }
     } else if(action == STOP_SNTP && esp_sntp_enabled()){
-        sntp_stop();
+        esp_sntp_stop();
+        xEventGroupClearBits(dwin_event_group, BIT_SNTP_WORK);
     }
 }

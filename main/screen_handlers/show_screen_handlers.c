@@ -1,9 +1,9 @@
 #include "show_screen_handlers.h"
 
-const int NORMAL_FONT = 2, FONT_INFO = 2, FONT_SECOND_INFO = 1, FONT_BUTTON = 3;
+static const int NORMAL_FONT = 2, FONT_INFO = 2, FONT_SECOND_INFO = 1, FONT_BUTTON = 3;
 
-const char *MES_ON = "[ON]";
-const char *MES_OFF = "[OFF]";
+static const char *MES_ON = "[ON]";
+static const char *MES_OFF = "[OFF]";
 
 #define SIZE_USED_COLORS 10
 const uint16_t USED_COLORS[SIZE_USED_COLORS] = {
@@ -47,6 +47,7 @@ static const char* ITEM_COLOR_NAME[] = {
     "Desc", 
     "Info", 
 };
+
 
 
 void show_info_handler(const dwin_data_t * main_data, 
@@ -126,9 +127,11 @@ void show_ap_handler(const dwin_data_t * main_data,
     print_start(2, 2, WHITE, FONT_INFO);
     if(event_data == NULL){
         send_str(
-                "Connect to the AP \n\r with the name: \"%s\",\r\n and enter the paswword: \"%s\".",
-                CONFIG_AP_WIFI_SSID,
-                CONFIG_AP_WIFI_PWD);
+                "Connect to the AP \n\r with the name \"%s\"\r\n and paswword: \"%s\".\r\n and go to the address %s",
+                    CONFIG_AP_WIFI_SSID,
+                    CONFIG_AP_WIFI_PWD,
+                    CONFIG_MY_IP
+                );
     } else {
         uint8_t *mac = (uint8_t *)event_data;
         if(state == STATION_JOINE){
