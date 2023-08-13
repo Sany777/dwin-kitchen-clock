@@ -99,6 +99,8 @@ static inline void bmx280_readout2float(int32_t* tin, uint32_t *pin, uint32_t *h
         *hout = (*hin == UINT32_MAX) ? -1.0f : (float)*hin * (1.0f/1024.0f);
 }
 
+esp_err_t bmx280_reset(bmx280_t *bmx280);
+
 /**
  * Read sensor values as floating point numbers.
  * @param bmx280 Driver structure.

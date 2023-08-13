@@ -103,10 +103,10 @@ void esp_init(void)
     temp_BM280 = NO_TEMP;
     set_new_command(MAIN_SCREEN);
     vTaskDelay(200);
-    if(init_bmp280() == ESP_OK){
+    if(initI2C() == ESP_OK && init_bmp280() == ESP_OK){
         vTaskDelay(200);
         set_new_command(GET_TEMPERATURE);
-        set_periodic_event(GET_TEMPERATURE, 35, RELOAD_COUNT);
+        set_periodic_event(GET_TEMPERATURE, 5, RELOAD_COUNT);
     }
 }
 

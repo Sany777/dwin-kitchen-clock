@@ -561,7 +561,7 @@ void show_main_handler(const dwin_data_t * main_data,
             {
                 if(weather_PIC == NO_WEATHER_PIC) return;
                 print_start(4, 5, LEMON, FONT_BUTTON);
-                send_str("%15.15s", description_WEATHER);
+                send_str("%12.18s", description_WEATHER);
                 break;
             }
             case 4:

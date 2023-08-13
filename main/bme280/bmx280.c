@@ -245,7 +245,7 @@ static esp_err_t bmx280_probe(bmx280_t *bmx280)
     #endif
 }
 
-static esp_err_t bmx280_reset(bmx280_t *bmx280)
+esp_err_t bmx280_reset(bmx280_t *bmx280)
 {
     const static uint8_t din[] = { BMX280_RESET_VEC };
     return bmx280_write(bmx280, BMX280_REG_RESET, din, sizeof din);

@@ -149,6 +149,6 @@
 static const uint8_t MONTH_DAY[] = {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 /* Sensor */
-#define NO_TEMP -100
+#define NO_TEMP -10000
 #define SDA_PIN             4
 #define SCL_PIN             5

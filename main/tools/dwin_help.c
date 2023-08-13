@@ -33,7 +33,7 @@ bool notification_alarm(const dwin_data_t *main_data,
         }
     }
     if(alarm 
-        && cur_hour >= 6 
+        && cur_hour > 6 
         && cur_hour <= 23 
         && (signal || cur_min == 0))
     {
