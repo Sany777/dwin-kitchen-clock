@@ -83,3 +83,10 @@ The AP menu item activates AP and shows the login data and IP this device. When 
 
 ##### show espnow devices
 ESPNOW allows devices based on modules from espressif to exchange information (for example network settings, time and sensor data). This connection is established automatically if espnow is activated. Communication data is encrypted using a 16-byte key specified via menuconfig.
+
+
+####service model
+![Image alt](https://github.com/Sany777/dwin-kitchen-clock/raw/main/src_help/Model.png)
+
+####Demonstration
+![Image alt](https://github.com/Sany777/dwin-kitchen-clock/raw/main/demonstration.mp4)
