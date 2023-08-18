@@ -89,5 +89,4 @@ ESPNOW allows devices based on modules from espressif to exchange information (f
 ![Image alt](https://github.com/Sany777/dwin-kitchen-clock/raw/main/src_help/Model.png)
 
 #### Demonstration
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/c-kLCFXso-g.jpg)](https://www.youtube.com/watch?v=c-kLCFXso-g)
-![Image alt](https://youtu.be/W9x7wbMUIsA)
+[![Clock demonstration](https://img.youtube.com/vi/c-kLCFXso-g/0.jpg)](https://www.youtube.com/watch?v=c-kLCFXso-g)
