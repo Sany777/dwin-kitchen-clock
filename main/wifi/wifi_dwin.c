@@ -233,7 +233,7 @@ void wifi_sta_handler(void* data, esp_event_base_t event_base,
             if(!(xEventGroup&BIT_WEATHER_OK)){
                 set_new_command(GET_WEATHER);
             }
-            if(usd_Sale == DWIN_NO_DATA)set_periodic_event(UPDATE_CURRENCY, 60, ONLY_ONCE);
+            if(usd_Sale == DWIN_NO_DATA)set_periodic_event(UPDATE_CURRENCY, 10, RELOAD_COUNT);
             if(xEventGroup&BIT_SNTP_ALLOW && !(xEventGroup&BIT_IS_TIME)){
                 set_new_command(INIT_SNTP);
             }

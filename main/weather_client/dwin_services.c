@@ -1,14 +1,17 @@
 #include "dwin_services.h"
 
+static const char *buy_key = "\"buy\":\"";
+static  const char *sale_key = "\"sale\":\"";
+
 
 static char ** get_pos_values(char *buf, const size_t buf_len, const char *key)
 {
     if(buf == NULL) return NULL;
     size_t keys_list_len = 0, key_numb = 0;
-    char *ptr = buf, **pos_list = NULL;
-    const size_t KEY_SIZE = strlen(key);
+    char **pos_list = NULL;
+    const size_t key_size = strlen(key);
     const char *END = buf+buf_len;
-    while(ptr = strstr(ptr, key), ptr && END>ptr) {
+    while(buf = strstr(buf, key), buf && END > buf) {
         if(key_numb >= keys_list_len){
             size_t new_keys_list_len = key_numb+RESIZE_KEYS_STEP;
             char **new_list = (char**) realloc(pos_list, new_keys_list_len *sizeof(char*));
@@ -22,8 +25,8 @@ static char ** get_pos_values(char *buf, const size_t buf_len, const char *key)
             keys_list_len = new_keys_list_len;
         }
         /*step ahead*/
-        ptr += KEY_SIZE;
-        pos_list[key_numb++] = ptr; 
+        buf += key_size;
+        pos_list[key_numb++] = buf; 
     }
     return pos_list;
 }
@@ -79,11 +82,12 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
 
 static void split_words(char *buf, size_t data_len)
 {
-        for(int i=0; i<data_len; i++){
+        for(size_t i=0; i<data_len; i++){
         if( buf[i] == '}'
+        ||buf[i] == ','
             || buf[i] == '"')
         {
-            buf[i] = 0;
+            buf[i] = '\0';
         }
     }
 }
@@ -172,7 +176,7 @@ void get_weather(dwin_data_t *main_data, uint8_t key)
     dt_TX = atoi((dt_txt[0]+SHIFT_DT_TX));
     weather_PIC = get_pic(atoi(id[0]), pod[0][0] == 'n');
     strncpy(description_WEATHER, description[0], MAX_LEN_DESCRIPTION);
-    for(int i=0; pop[i] && temp_feel[i]; i++){
+    for(int i=0; pop[i] && temp_feel[i] && i < NUMBER_DATA_WEATHER; i++){
         temp_FEELS_LIKE[i] = atof(temp_feel[i]);
         PoP[i] = atof(pop[i])*100;
     }
@@ -229,46 +233,56 @@ void get_currency(dwin_data_t *main_data)
                                                        
     DWIN_IF_FALSE_GOTO(xEventGroup&BIT_CON_STA_OK, _end);
     char url_buf[] = SIMPLE_PRIVAT_API;
-    char *local_response_buffer = (char*)malloc(CLIENT_BUF_LEN);
+    char *local_response_buffer = (char*)calloc(1, CLIENT_BUF_LEN);
     DWIN_CHECK_NULL_AND_GO(local_response_buffer, "", _end);
     esp_http_client_config_t config = {
-        .url = url_buf,
+        .url = SIMPLE_PRIVAT_API,
         .event_handler = http_event_handler,
         .user_data = (void*)local_response_buffer,    
         .method = HTTP_METHOD_GET,
         .buffer_size = CLIENT_BUF_LEN,
         .auth_type = HTTP_AUTH_TYPE_NONE
     };
+
     esp_http_client_handle_t client = esp_http_client_init(&config);
-    if(client && esp_http_client_perform(client) == ESP_OK){
+
+    if(esp_http_client_perform(client) == ESP_OK){
+       
         const size_t data_len = esp_http_client_get_content_length(client);
         if(data_len){
-            char *usd_pos, *eur_pos, *usd_bay, *usd_sale, *eur_bay, *eur_sale;
+            char *usd_pos, *eur_pos, **usd_bay, **usd_sale, **eur_bay, **eur_sale;
             usd_pos = strstr(local_response_buffer, "\"USD\"");
             eur_pos = strstr(local_response_buffer, "\"EUR\"");
             if(usd_pos && eur_pos){
 
-                usd_bay = strstr(usd_pos, "\"buy\":\"");
-                usd_sale = strstr(usd_pos, "\"sale\":\"");
-                eur_bay = strstr(eur_pos, "\"buy\":\"");
-                eur_sale = strstr(eur_pos, "\"sale\":\"");
-
-                float new_usd_bay = atof(usd_bay);
-                float new_usd_sale = atof(usd_sale);
-                float new_eur_bay = atof(eur_bay);
-                float new_eur_sale = atof(eur_sale);
-
-                set_currency_state(main_data, new_usd_sale, new_eur_sale);
-                usd_Bay = new_usd_bay;
-                usd_Sale = new_usd_sale;
-                eur_Bay = new_eur_bay;
-                eur_Sale = new_eur_sale;
+                usd_bay = get_pos_values(usd_pos, data_len, buy_key);
+                usd_sale = get_pos_values(usd_pos, data_len, sale_key);
+                eur_bay = get_pos_values(eur_pos, data_len, buy_key);
+                eur_sale = get_pos_values(eur_pos, data_len, sale_key);
+                split_words(local_response_buffer, data_len);
+                
+                if(usd_bay && usd_sale && eur_bay && eur_sale){
+                    float new_usd_bay  = atof(usd_bay[0]);
+                    float new_usd_sale = atof(usd_sale[0]);
+                    float new_eur_bay  = atof(eur_bay[0]);
+                    float new_eur_sale = atof(eur_sale[0]);
+                    set_currency_state(main_data, new_usd_sale, new_eur_sale);
+                    usd_Bay = new_usd_bay;
+                    usd_Sale = new_usd_sale;
+                    eur_Bay = new_eur_bay;
+                    eur_Sale = new_eur_sale;
+                }
+                if(usd_bay)free(usd_bay);
+                if(usd_sale)free(usd_sale);
+                if(eur_bay)free(eur_bay);
+                if(eur_sale)free(eur_sale);
             }
         }
     }
 
     esp_http_client_cleanup(client);
     free(local_response_buffer);
+    set_new_command(UPDATE_DATA_COMPLETE);
     return;
 _end:
     init_currency_val(main_data);

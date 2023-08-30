@@ -474,8 +474,8 @@ void show_clock_handler(const dwin_data_t * main_data,
 
 static char get_currency_wave(currency_state_t state)
 {
-    if(GO_DOWN) return '-';
-    if(GO_UP) return '+';
+    if(state == GO_DOWN) return '-';
+    if(state == GO_UP) return '+';
     return ' ';
 }
 
@@ -505,7 +505,7 @@ void show_main_handler(const dwin_data_t * main_data,
                             ? VIOLET 
                             : color_INFO, 
                         FONT_INFO);
-        send_str("Rain      %2d%%   %2d%%   %2d%%   %2d%%   %2d%%", 
+        send_str("Rain    %2d%%   %2d%%   %2d%%    %2d%%    %2d%%", 
                             PoP[0],
                             PoP[1],
                             PoP[2],
@@ -525,7 +525,21 @@ void show_main_handler(const dwin_data_t * main_data,
         print_end();
         vTaskDelay(DELAY_SHOW_ITEM*2);
         set_color(get_color_temp(temp_FEELS_LIKE[0]), WHITE);
-        print_lines(get_y_points(temp_FEELS_LIKE, NUMBER_ITEM_WEATHER, 80), NUMBER_ITEM_WEATHER, 70, 470, 260);
+        print_lines(get_y_points(temp_FEELS_LIKE, NUMBER_ITEM_WEATHER, 80), NUMBER_ITEM_WEATHER, 70, 470, 250);
+        if(usd_Bay && usd_Sale){
+                    print_start(10, 0, CAEN, FONT_INFO);
+                    send_str(
+                    " USD: %c %3.2f   %3.2f\n\r"
+                    " EUR: %c %3.2f   %3.2f", 
+                     get_currency_wave(usd_State),
+                     usd_Sale, 
+                     usd_Bay,
+                     get_currency_wave(eur_State),
+                     eur_Sale,
+                     eur_Bay );
+            print_end();
+        }
+                    
     } else {
     struct tm *cur_time = (struct tm *)time_pv;
     for(uint32_t i=0; i<5; i++) {
@@ -551,7 +565,7 @@ void show_main_handler(const dwin_data_t * main_data,
             {
                 if(temp_BM280 != NO_TEMP) {
                     print_start(0, 0, get_color_temp(temp_BM280), FONT_INFO);
-                    send_str("   Indoor           t*C %d", temp_BM280);
+                    send_str("   Indoor           t*C %+2.1f", temp_BM280);
                     print_end();
                 }
                 if(weather_PIC != NO_WEATHER_PIC){
@@ -566,27 +580,11 @@ void show_main_handler(const dwin_data_t * main_data,
             case 3:
             {
                 if(weather_PIC == NO_WEATHER_PIC) return;
-                print_start(4, 5, LEMON, FONT_BUTTON);
+                print_start(4, 2, LEMON, FONT_BUTTON);
                 send_str("%15.15s", description_WEATHER);
                 break;
             }
             case 4:
-            {
-                if(usd_Bay != DWIN_NO_DATA){
-                    print_start(19, 0, color_INFO, FONT_SECOND_INFO);
-                    send_str(
-                    "  USD: %c %3.2f  %3.2f\n\r"
-                    "  EUR: %c %3.2f  %3.2f", 
-                     get_currency_wave(usd_State),
-                     usd_Sale, 
-                     usd_Bay,
-                     get_currency_wave(eur_State),
-                     eur_Sale,
-                     eur_Bay );
-                }
-                break;
-            }
-            case 5:
             {
                 if(weather_PIC == NO_WEATHER_PIC)return;
                 print_start(23, 17, color_INFO, FONT_SECOND_INFO);
@@ -600,7 +598,8 @@ void show_main_handler(const dwin_data_t * main_data,
             default   : break;
             }
             print_end();
-        }
+    }
+        
     }
 }
 

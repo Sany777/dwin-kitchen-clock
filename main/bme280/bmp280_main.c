@@ -35,7 +35,7 @@ esp_err_t init_bmp280(void)
     bmx280_config_t bmx_cfg = BMX280_DEFAULT_CONFIG;
     DWIN_CHECK_AND_GO(bmx280_configure(bmx280, &bmx_cfg), err);
     bmx280_setMode(bmx280, BMX280_MODE_CYCLE);
-
+    initBMX = true;
     return ESP_OK;
 err:
     deinit_bmp280();

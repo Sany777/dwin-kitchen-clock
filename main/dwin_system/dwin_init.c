@@ -111,7 +111,6 @@ void esp_init(void)
     if(init_bmp280() == ESP_OK){
         vTaskDelay(200);
         set_new_command(GET_TEMPERATURE);
-        set_periodic_event(GET_TEMPERATURE, 35, RELOAD_COUNT);
     }
     set_new_command(UPDATE_CURRENCY);
 }
