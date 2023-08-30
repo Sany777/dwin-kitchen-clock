@@ -181,6 +181,7 @@ enum buttons_and_events{
     CHECK_NET_DATA,
     IS_NOTIFY, 
     NOT_NOTIFY,
+    UPDATE_CURRENCY,
     END_SERVICE_EVENTS
 };
 

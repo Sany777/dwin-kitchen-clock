@@ -37,8 +37,8 @@ extern "C" {
         } while(0)
 
 /* if !main_data : stop server */
-esp_err_t set_run_webserver(dwin_data_t *main_data);
-
+esp_err_t start_server(dwin_data_t *main_data);
+esp_err_t stop_server();
 
 #ifdef __cplusplus
 }

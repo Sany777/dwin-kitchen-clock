@@ -118,7 +118,7 @@
     "initializer_list": "c",
     "uart_pins.h": "c",
     "parser.h": "c",
-    "dwin_weather.h": "c",
+    "dwin_services.h": "c",
     "sensor.h": "c"
   },
   "idf.port": "/dev/ttyACM0",

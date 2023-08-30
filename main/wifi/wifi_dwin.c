@@ -180,21 +180,21 @@ void ap_handler(void* main_data, esp_event_base_t event_base,
                             int32_t event_id, void* event_data)
 {      
     if(event_id == WIFI_EVENT_AP_START){
-        set_run_webserver(main_data);
+        start_server(main_data);
     } else if (event_id == WIFI_EVENT_AP_STOP){
-        set_run_webserver(NULL);
+        stop_server();
     } else if(event_id == WIFI_EVENT_AP_STACONNECTED){
         wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
         show_screen(STATION_JOINE, event->mac, SIZE_MAC);
         set_new_command(STATION_JOINE);
     } else if(event_id == WIFI_EVENT_AP_STADISCONNECTED){
-        set_run_webserver(NULL);
+        stop_server();
         set_new_command(MAIN_SCREEN);
     }
 }
 
 
-void wifi_sta_handler(void* main_data, esp_event_base_t event_base,
+void wifi_sta_handler(void* data, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
 {
     static int retry_num;
@@ -226,12 +226,14 @@ void wifi_sta_handler(void* main_data, esp_event_base_t event_base,
                 }
             }
         } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+            dwin_data_t*main_data = (dwin_data_t*) data;
             retry_num = 0;
             xEventGroupSetBits(dwin_event_group, BIT_CON_STA_OK|BIT_SSID_FOUND);
             xEventGroupClearBits(dwin_event_group, BIT_PROCESS);
             if(!(xEventGroup&BIT_WEATHER_OK)){
                 set_new_command(GET_WEATHER);
             }
+            if(usd_Sale == DWIN_NO_DATA)set_periodic_event(UPDATE_CURRENCY, 60, ONLY_ONCE);
             if(xEventGroup&BIT_SNTP_ALLOW && !(xEventGroup&BIT_IS_TIME)){
                 set_new_command(INIT_SNTP);
             }
@@ -246,8 +248,8 @@ void set_time_cb(struct timeval *tv)
 {
     set_time_tv(tv);
     set_dwin_clock();
-    if(sntp_get_sync_interval() < SYNCH_10_HOUR){
-        sntp_set_sync_interval(SYNCH_10_HOUR);
+    if(esp_sntp_get_sync_interval() < SYNCH_10_HOUR){
+        esp_sntp_set_sync_interval(SYNCH_10_HOUR);
         xEventGroupSetBits(dwin_event_group, BIT_SNTP_WORK);
     }
 }
@@ -256,16 +258,16 @@ void set_sntp(dwin_data_t* main_data, uint8_t action)
 {
     if(action == INIT_SNTP){
         if(!esp_sntp_enabled()){
-            sntp_set_time_sync_notification_cb(set_time_cb);
-            sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
-            sntp_setoperatingmode(ESP_SNTP_OPMODE_POLL);
-            sntp_setservername(0, "pool.ntp.org");
-            sntp_setservername(1, "time.windows.com");
+            esp_sntp_set_time_sync_notification_cb(set_time_cb);
+            esp_sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
+            esp_sntp_setoperatingmode(ESP_SNTP_OPMODE_POLL);
+            esp_sntp_setservername(0, "pool.ntp.org");
+            esp_sntp_setservername(1, "time.windows.com");
             sntp_servermode_dhcp(0);
-            sntp_set_sync_interval(SYNC_15_MIN);
-            sntp_init();
+            esp_sntp_set_sync_interval(SYNC_15_MIN);
+            esp_sntp_init();
         } else {
-            sntp_restart();
+            esp_sntp_restart();
         }
     } else if(action == STOP_SNTP && esp_sntp_enabled()){
         esp_sntp_stop();

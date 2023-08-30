@@ -12,6 +12,12 @@ typedef struct {
 } show_queue_data_t;
 
 typedef enum {
+    NO_CHANGE,
+    GO_UP,
+    GO_DOWN
+}currency_state_t;
+
+typedef enum {
     TRY_AGAIN,
     GIVE_NOT,
     GIVE_TIME,
@@ -151,11 +157,12 @@ typedef struct {
     uint8_t sunrise_min;
     uint8_t sunset_hour;
     uint8_t sunset_min;
+    /*receive time*/
     uint8_t dt_tx;
-    int8_t outdoor;
+    float outdoor;
     char description[LEN_BUF_DESCRIPTION];
     uint8_t pop[NUMBER_DATA_WEATHER];
-    int8_t feels_like[NUMBER_DATA_WEATHER];
+    float feels_like[NUMBER_DATA_WEATHER];
 } weather_data_t;
 
 /* data struct timer func*/
@@ -207,6 +214,15 @@ typedef struct timer_data{
     uint8_t num_week;
 }timer_data_t;
 
+typedef struct{
+    float usd_bay;
+    float usd_sale;
+    float eur_bay;
+    float eur_sale;
+    currency_state_t usd_state;
+    currency_state_t eur_state;
+}currency_t;
+
 typedef struct {
     uint8_t area;
     char pwd_wifi[SIZE_BUF];
@@ -216,10 +232,11 @@ typedef struct {
     uint8_t colors_interface[COLOR_INTERFACE_NUMBER];
     uint8_t notif_data[SIZE_NOTIFICATION];
     int8_t timer_data[SIZE_TIMER];
-    int temp;
+    float temp;
     sensor_data_t *sensor_data;
     timer_data_t *timers;
     weather_data_t weather_data;
+    currency_t cur_value;
 } dwin_data_t;
 
 

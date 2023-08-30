@@ -35,12 +35,13 @@
 #include "dwin_timer.h"
 #include "dwin_help.h"
 #include "dwin_drivers.h"
-#include "dwin_weather.h"
+#include "dwin_services.h"
 #include "parser.h"
 #include "dwin_timer.h"
 #include "sensor.h"
 #include "show_screen_handlers.h"
 #include "bmp280_main.h"
+#include "dwin_data_types.h"
 
 ESP_EVENT_DECLARE_BASE(ESPNOW_EVENTS);
 ESP_EVENT_DECLARE_BASE(WIFI_SET_EVENTS);

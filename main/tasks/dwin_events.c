@@ -116,6 +116,11 @@ void service_task(void *main_data)
     while(1) {
         if(xQueueReceive(queue_service, &key, portMAX_DELAY) == pdTRUE){
             switch(key){
+                case UPDATE_CURRENCY :
+                {
+                    get_currency(main_data);
+                    break;
+                }
                 case GET_WEATHER :
                 {
                     get_weather(main_data, key);
@@ -123,7 +128,6 @@ void service_task(void *main_data)
                 } 
                 case GET_TEMPERATURE :
                 {
-                    send_str("\n\rStart read %d", count++);
                     read_sensor_handler(main_data); 
                     break;
                 } 

@@ -44,7 +44,7 @@
 
 
 void set_wifi(dwin_data_t* main_data, uint8_t action);
-void wifi_sta_handler(void* arg, esp_event_base_t event_base,
+void wifi_sta_handler(void* data, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data);
 void ap_handler(void* arg, esp_event_base_t event_base,
                             int32_t event_id, void* event_data);

@@ -1,12 +1,12 @@
 #include "parser.h"
 
-uint16_t get_color_temp(int temp)
+uint16_t get_color_temp(float temp)
 {
-    if(temp <= 0){
+    if(temp <= 0.0){
         return VIOLET;
-    } else if(temp > 24 ){
+    } else if(temp > 24.0 ){
         return ORANGE;
-    } else if(temp > 18){
+    } else if(temp > 18.0){
         return YELLOW;
     } else {
         return WHITE;

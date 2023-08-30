@@ -7,6 +7,8 @@
 #define BASE_PATH_SAVE_PIC "/sevepic"
 #define BASE_PATH_IMG "/img"
 
+static char *server_buf;
+static httpd_handle_t server;
 
 static esp_err_t index_redirect_handler(httpd_req_t *req)
 {
@@ -610,31 +612,34 @@ err:
 }
 
 
-esp_err_t set_run_webserver(dwin_data_t *main_data)
-{ 
-    static char *server_buf;
-    static httpd_handle_t server;
-    if(main_data){
-        if(server_buf)return ESP_OK;
-        server_buf = malloc(SCRATCH_SIZE);
-        if(!server_buf) return ESP_ERR_NO_MEM;
-        httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-        config.max_uri_handlers = 29;
-        config.uri_match_fn = httpd_uri_match_wildcard;
-        esp_err_t e = httpd_start(&server, &config);
-        if (e != ESP_OK){
-            return e;
-        }
-    } else{
-        esp_err_t err = ESP_OK;
-        if(server_buf){
-            err = httpd_stop(server);
-            free(server_buf); 
-            server_buf = NULL;
-        }
-        return err;
-    } 
-    httpd_uri_t send_flags= {
+esp_err_t stop_server()
+{
+    esp_err_t err = ESP_FAIL;
+    if(server_buf){
+        free(server_buf); 
+        server_buf = NULL;
+    }
+    if(server){
+        err = httpd_stop(server);
+    }
+    return err;
+}
+
+
+esp_err_t start_server(dwin_data_t *main_data)
+{
+    if(main_data == NULL || server || server_buf != NULL) return ESP_FAIL;
+    server_buf = malloc(SCRATCH_SIZE);
+    if(!server_buf) return ESP_ERR_NO_MEM;
+    httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+    config.max_uri_handlers = 29;
+    config.uri_match_fn = httpd_uri_match_wildcard;
+    esp_err_t e = httpd_start(&server, &config);
+    if (e != ESP_OK){
+        return e;
+    }
+
+    httpd_uri_t send_flags = {
         .uri      = "/Status",
         .method   = HTTP_POST,
         .handler  = handler_set_flag,
@@ -657,6 +662,7 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = server_buf
     };
     httpd_register_uri_handler(server, &get_info);
+
     httpd_uri_t savepic = {
         .uri      = "/savepic/*",
         .method   = HTTP_POST,
@@ -664,6 +670,7 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = NULL
     };
     httpd_register_uri_handler(server, &savepic);
+
     httpd_uri_t clear = {
         .uri      = "/clear",
         .method   = HTTP_POST,
@@ -671,6 +678,7 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = NULL
     };
     httpd_register_uri_handler(server, &clear);
+
     httpd_uri_t get_setting = {
         .uri      = "/data?",
         .method   = HTTP_GET,
@@ -678,6 +686,7 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = main_data
     };
     httpd_register_uri_handler(server, &get_setting);
+
      httpd_uri_t dwin_uri = {
         .uri      = "/updatedwin",
         .method   = HTTP_POST,
@@ -685,6 +694,8 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = server_buf
     };
     httpd_register_uri_handler(server, &dwin_uri);
+
+    
      httpd_uri_t img_uri = {
         .uri      = "/img/*",
         .method   = HTTP_POST,
@@ -692,6 +703,8 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = server_buf
     };
     httpd_register_uri_handler(server, &img_uri);
+
+
      httpd_uri_t set_color_uri = {
         .uri      = "/color",
         .method   = HTTP_POST,
@@ -699,6 +712,8 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = server_buf
     };
     httpd_register_uri_handler(server, &set_color_uri);
+
+
      httpd_uri_t hello_uri = {
         .uri      = "/hello",
         .method   = HTTP_POST,
@@ -706,6 +721,8 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = NULL
     };
     httpd_register_uri_handler(server, &hello_uri);
+
+    
      httpd_uri_t close_uri = {
         .uri      = "/close",
         .method   = HTTP_POST,
@@ -713,6 +730,7 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = NULL
     };
     httpd_register_uri_handler(server, &close_uri);
+
      httpd_uri_t net_uri = {
         .uri      = "/Network",
         .method   = HTTP_POST,
@@ -720,6 +738,7 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = main_data
     };
     httpd_register_uri_handler(server, &net_uri);
+
      httpd_uri_t api_uri = {
         .uri      = "/API",
         .method   = HTTP_POST,
@@ -727,6 +746,7 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = main_data
     };
     httpd_register_uri_handler(server, &api_uri);
+
      httpd_uri_t time_uri = {
         .uri      = "/time",
         .method   = HTTP_POST,
@@ -734,6 +754,7 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = server_buf
     };
     httpd_register_uri_handler(server, &time_uri);
+
      httpd_uri_t update_uri = {
         .uri      = "/Update",
         .method   = HTTP_POST,
@@ -741,6 +762,7 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = server_buf
     };
     httpd_register_uri_handler(server, &update_uri);
+
 
      httpd_uri_t index_uri = {
         .uri      = "/index.html",
@@ -751,6 +773,7 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
     httpd_register_uri_handler(server, &index_uri);
 
 
+
      httpd_uri_t aqua_uri = {
         .uri      = "/aqua.html",
         .method   = HTTP_GET,
@@ -758,6 +781,7 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = NULL
     };
     httpd_register_uri_handler(server, &aqua_uri);
+
      httpd_uri_t get_ico = {
         .uri      = "/favicon.ico",
         .method   = HTTP_GET,
@@ -781,6 +805,7 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = NULL
     };
     httpd_register_uri_handler(server, &get_script);
+
     httpd_uri_t get_aqua_css = {
         .uri      = "/aqua.css",
         .method   = HTTP_GET,
@@ -803,6 +828,7 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = NULL
     };
     httpd_register_uri_handler(server, &get_aqua_js);
+
      httpd_uri_t get_setting_style = {
         .uri      = "/setting.css",
         .method   = HTTP_GET,
@@ -810,6 +836,7 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = NULL
     };
     httpd_register_uri_handler(server, &get_setting_style);
+
      httpd_uri_t get_setting_script = {
         .uri      = "/setting.js",
         .method   = HTTP_GET,
@@ -817,6 +844,7 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = NULL
     };
     httpd_register_uri_handler(server, &get_setting_script);
+
      httpd_uri_t get_dwin_js = {
         .uri      = "/dwin.js",
         .method   = HTTP_GET,
@@ -824,6 +852,7 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = NULL
     };
     httpd_register_uri_handler(server, &get_dwin_js);
+
      httpd_uri_t get_portal_style = {
             .uri      = "/dwin.html",
             .method   = HTTP_GET,
@@ -839,6 +868,7 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = main_data
     };
     httpd_register_uri_handler(server, &notif_uri);
+
      httpd_uri_t redir_uri = {
         .uri      = "/*",
         .method   = HTTP_GET,
@@ -846,5 +876,6 @@ esp_err_t set_run_webserver(dwin_data_t *main_data)
         .user_ctx = NULL
     };
     httpd_register_uri_handler(server, &redir_uri);
+
     return ESP_OK;
 }

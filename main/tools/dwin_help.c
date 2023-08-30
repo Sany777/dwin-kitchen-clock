@@ -33,7 +33,7 @@ bool notification_alarm(const dwin_data_t *main_data,
         }
     }
     if(alarm 
-        && cur_hour >= 6 
+        && cur_hour > 6 
         && cur_hour <= 23 
         && (signal || cur_min == 0))
     {
@@ -83,45 +83,33 @@ void set_timezone(int offset)
 }
 
 
-const uint16_t *get_y_points(const int8_t *points, 
-                                const int number,
+const uint16_t *get_y_points(const float *points, 
+                                const uint16_t number,
                                 const uint16_t height)
 {
-    int max = 0, min_val = 0;
+    float max = 0, min_val = 0;
     uint16_t *buf_out  = NULL;
-    bool is_number = false;
-    for(int i=0; i<number; i++){
-        if(points[i] > max){
-            max = points[i];
-            if(!is_number){
-                is_number = true;
+    if(number){
+        for(uint16_t i=0; i<number; i++){
+            if(points[i] > max){
+                max = points[i];
+            } else if(points[i] < min_val){
+                min_val = points[i];
             }
-        } else if(points[i] < min_val){
-            min_val = points[i];
         }
-    }
-    if(is_number){
         buf_out = (uint16_t *)(send_buf + MAX_DATA_LEN - number*sizeof(uint16_t));
-        min_val *= -1;
-        max += min_val;
-        const float k_h = height/(float)max;
-        for(int i=0; i<number; i++){
-            buf_out[i] = (uint16_t)((points[i]) * k_h);
+        const float k_h = height/(max-min_val);
+        for(uint16_t i=0; i<number; i++){
+            buf_out[i] = points[i] * k_h;
         }
     }
     return buf_out;
 }
 
-struct tm* get_time_tm(void)
+static void performTimeAction(struct tm* cur)
 {
     static bool night;
-    static struct tm cur, *t;
-    time_t time_now;
-    time(&time_now);
-    t = localtime(&time_now);
-    memcpy(&cur, t, sizeof(struct tm));
-    cur.tm_wday = (cur.tm_wday+6)%SIZE_WEEK;
-    if(cur.tm_hour < 6){
+    if(cur->tm_hour < 6){
         if(!night){
             dwin_set_brightness(30);
             night = true;
@@ -130,6 +118,25 @@ struct tm* get_time_tm(void)
         dwin_set_brightness(100);
         night = false;
     }
+    if(cur->tm_hour == GET_CURRENCY_HOUR && cur->tm_min == 0){
+        set_periodic_event(UPDATE_CURRENCY, 40, ONLY_ONCE);
+    }
+}
+
+static void fixDay(struct tm* cur)
+{
+    cur->tm_wday = (cur->tm_wday+6)%SIZE_WEEK;
+}
+
+struct tm* get_time_tm(void)
+{
+    static struct tm cur, *t;
+    time_t time_now;
+    time(&time_now);
+    t = localtime(&time_now);
+    memcpy(&cur, t, sizeof(struct tm));
+    fixDay(&cur);
+    performTimeAction(&cur);
     return &cur;
 }
 
@@ -183,4 +190,13 @@ const char *get_chip(int model_id)
         default: break;
     }
     return "uknown";
+}
+
+
+void init_currency_val(dwin_data_t *main_data)
+{
+    usd_Sale = DWIN_NO_DATA;
+    eur_Sale = DWIN_NO_DATA;
+    usd_Bay = DWIN_NO_DATA;
+    eur_Bay = DWIN_NO_DATA;
 }

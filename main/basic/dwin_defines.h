@@ -2,6 +2,14 @@
 
 #include "dwin_common.h"
 
+/* currency*/
+#define usd_Bay                 (main_data->cur_value.usd_bay)
+#define usd_Sale                (main_data->cur_value.usd_sale)
+#define eur_Bay                 (main_data->cur_value.eur_bay)
+#define eur_Sale                (main_data->cur_value.eur_sale)
+#define usd_State               (main_data->cur_value.usd_state)
+#define eur_State               (main_data->cur_value.eur_state)
+
 /*for weather_data item*/
 #define weather_PIC             (main_data->weather_data.weather_pic)
 #define sunrise_HOUR            (main_data->weather_data.sunrise_hour)
@@ -133,15 +141,15 @@
 /*CHECK VALUE*/
 #define IS_DAY_WEEK(day_week)       ((day_week) >= 0 && (day_week) < SIZE_WEEK)
 
-#define IS_MIN_OR_SEC(val)          ((val) >=0 && (val) <= MAX_MIN_SEC)
+#define IS_MIN_OR_SEC(val)          ((val) <= MAX_MIN_SEC)
 
 #define IS_MONTH(val)               ((val)>0 && (val) <= MAX_MONTH)
 
-#define IS_HOUR(val)                ((val) >= 0 && (val) <= MAX_HOUR)
+#define IS_HOUR(val)                ((val) <= MAX_HOUR)
 
-#define IS_DAY(val)                 ((val) >= 0 && (val) <= MAX_DAY)
+#define IS_DAY(val)                 ((val) <= MAX_DAY)
 
-#define IS_YEAR(val)                ((val) >= 0 && (val) <= MAX_YEAR)
+#define IS_YEAR(val)                ((val) <= MAX_YEAR)
 
 /* CHECK INPUT KEY*/
 #define KEY_IS_CHAR(key_from_dwin)            (((key_from_dwin) >= 'A' && (key_from_dwin) <= 'Z') \

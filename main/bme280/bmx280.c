@@ -245,7 +245,7 @@ static esp_err_t bmx280_probe(bmx280_t *bmx280)
     #endif
 }
 
-static esp_err_t bmx280_reset(bmx280_t *bmx280)
+esp_err_t bmx280_reset(bmx280_t *bmx280)
 {
     const static uint8_t din[] = { BMX280_RESET_VEC };
     return bmx280_write(bmx280, BMX280_REG_RESET, din, sizeof din);
@@ -321,6 +321,7 @@ bmx280_t* bmx280_create(i2c_port_t port)
 void bmx280_close(bmx280_t *bmx280)
 {
     free(bmx280);
+    bmx280 = NULL;
 }
 
 esp_err_t bmx280_init(bmx280_t* bmx280)
@@ -484,7 +485,15 @@ uint32_t bme280_compensate_H_int32(bmx280_t *bmx280, int32_t adc_H)
 
 #endif
 
-// END OF DRAGONS
+
+esp_err_t bmx280_readTemp(bmx280_t *bmx280, float *temperature)
+{
+    int32_t t;
+    esp_err_t r = bmx280_readout(bmx280, &t, 0, 0);
+    if(r != ESP_OK)return r;
+    *temperature = t/100.0;
+    return ESP_OK;
+}
 
 esp_err_t bmx280_readout(bmx280_t *bmx280, int32_t *temperature, uint32_t *pressure, uint32_t *humidity)
 {

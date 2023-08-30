@@ -21,12 +21,15 @@ extern "C" {
 
 #define BMXAPI extern
 
+
 /**
  * Anonymous structure to driver settings.
  */
 typedef struct bmx280_t bmx280_t;
 
 #include "bmx280_bits.h"
+
+esp_err_t bmx280_readTemp(bmx280_t *bmx280, float *temperature);
 
 /**
  * Create an instance of the BMX280 driver.

@@ -5,5 +5,6 @@
 
 #define SIZE_SERVICE_TASK 4
 
+
 void esp_init(void);
 void wifi_init(void);

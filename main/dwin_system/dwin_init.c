@@ -38,6 +38,9 @@ QueueHandle_t
           queue_service = NULL, 
           queue_show = NULL;
 
+
+
+
 void esp_init(void)
 {
     dwin_data_t *main_data = (dwin_data_t *) calloc(1, sizeof(dwin_data_t));
@@ -80,6 +83,8 @@ void esp_init(void)
             esp_restart();
         };
     }
+    temp_BM280 = DWIN_NO_DATA;
+    init_currency_val(main_data);
     vTaskDelay(1000);
     set_new_command(START_STA);
     EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
@@ -100,7 +105,7 @@ void esp_init(void)
         vTaskDelay(1000);
         dwin_clock_get();
     }
-    temp_BM280 = NO_TEMP;
+
     set_new_command(MAIN_SCREEN);
     vTaskDelay(200);
     if(init_bmp280() == ESP_OK){
@@ -108,6 +113,7 @@ void esp_init(void)
         set_new_command(GET_TEMPERATURE);
         set_periodic_event(GET_TEMPERATURE, 35, RELOAD_COUNT);
     }
+    set_new_command(UPDATE_CURRENCY);
 }
 
 void wifi_init(void)

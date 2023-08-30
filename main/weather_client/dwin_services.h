@@ -16,4 +16,7 @@
 #include "esp_http_client.h"
 #include "dwin_common.h"
 
+
+
+void get_currency(dwin_data_t *main_data);
 void get_weather(dwin_data_t *main_data, uint8_t key);

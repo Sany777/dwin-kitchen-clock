@@ -472,6 +472,12 @@ void show_clock_handler(const dwin_data_t * main_data,
 }
 
 
+static char get_currency_wave(currency_state_t state)
+{
+    if(GO_DOWN) return '-';
+    if(GO_UP) return '+';
+    return ' ';
+}
 
 
 void show_main_handler(const dwin_data_t * main_data,
@@ -510,7 +516,7 @@ void show_main_handler(const dwin_data_t * main_data,
         print_start(5, 0, 
                         get_color_temp(temp_FEELS_LIKE[0]),
                         FONT_INFO);
-        send_str( "Temp t*C  %+3d   %+3d   %+3d   %+3d   %+3d",
+        send_str( "T *C  %+2.1f  %+2.1f  %+2.1f  %+2.1f  %+2.1f",
                         temp_FEELS_LIKE[0],
                         temp_FEELS_LIKE[1],
                         temp_FEELS_LIKE[2],
@@ -550,7 +556,7 @@ void show_main_handler(const dwin_data_t * main_data,
                 }
                 if(weather_PIC != NO_WEATHER_PIC){
                     print_start(1, 0, get_color_temp(temp_OUTDOOR), FONT_INFO);
-                    send_str("   Outdoor          t*C %d\n\r   Feels like       t*C %d\n\r   Chance of rain       %d%%", 
+                    send_str("   Outdoor          t*C %+2.1f\n\r   Feels like       t*C %+2.1f\n\r   Chance of rain       %d%%", 
                                     temp_OUTDOOR, 
                                     temp_FEELS_LIKE[0],
                                     PoP[0]);
@@ -565,6 +571,22 @@ void show_main_handler(const dwin_data_t * main_data,
                 break;
             }
             case 4:
+            {
+                if(usd_Bay != DWIN_NO_DATA){
+                    print_start(19, 0, color_INFO, FONT_SECOND_INFO);
+                    send_str(
+                    "  USD: %c %3.2f  %3.2f\n\r"
+                    "  EUR: %c %3.2f  %3.2f", 
+                     get_currency_wave(usd_State),
+                     usd_Sale, 
+                     usd_Bay,
+                     get_currency_wave(eur_State),
+                     eur_Sale,
+                     eur_Bay );
+                }
+                break;
+            }
+            case 5:
             {
                 if(weather_PIC == NO_WEATHER_PIC)return;
                 print_start(23, 17, color_INFO, FONT_SECOND_INFO);

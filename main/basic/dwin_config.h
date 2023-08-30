@@ -11,7 +11,7 @@
 #define NO_CLEAR_ENTRY      (0UL)
 #define CLEAR_EXIT          (ULONG_MAX)
 
-#define NO_main_data        0
+#define DWIN_NO_DATA        (-100)
 #define myEOF               '\r'
 /****************************/
 
@@ -105,25 +105,17 @@
 #define MAX_NAME_DEVICE         15
 
 #define MY_DEVICE_TYPE          DWIN_SCREEN_DEVICE
-// #define CONFIG_MY_DEVICE_NAME "dwinScreen"
+
 #define NUMBER_SENSOR           2
 
 #define VARIABLE_VALUE          0
 
-/* weather service*/
-#define NUMBER_DATA_WEATHER     5
-#define MAX_LEN_DESCRIPTION     20
-#define LEN_BUF_DESCRIPTION     (MAX_LEN_DESCRIPTION+1)
-#define NUMBER_ITEM_WEATHER     5
-#define FIRST_URL               "https://api.openweathermap.org/data/2.5/forecast?q="
-#define SECOND_URL              "&units=metric&cnt=5&appid="
-#define SIZE_URL_BUF            (sizeof(FIRST_URL)+sizeof(SECOND_URL)+MAX_STR_LEN+MAX_STR_LEN+1)
 
-#define INITIAL_SIZE_LIST_KEYS  10
-#define SHIFT_DT_TX             12
-#define STEP_DT_TX              3
-#define WAIT_PROCEES            (pdMS_TO_TICKS(5000))
-#define FIRST_WAIT_WIFI_BIT     (pdMS_TO_TICKS(1000))
+#define RESIZE_KEYS_STEP            5
+#define SHIFT_DT_TX                 12
+#define STEP_DT_TX                  3
+#define WAIT_PROCEES                (pdMS_TO_TICKS(5000))
+#define FIRST_WAIT_WIFI_BIT         (pdMS_TO_TICKS(1000))
 #define DELAI_UPDATE_WEATHER        900
 #define DELAI_FIRST_UPDATE_WEATHER  10
 #define DELAI_UPDATE_WEATHER_FAIL   600
@@ -141,7 +133,7 @@
 /* events timer */
 #define DELAY_AUTOCLOSE         120
 #define WAIT_SHOW               100
-#define WAIT_set_new_command      100
+#define WAIT_set_new_command    100
 #define MAX_AP_PER_PAGE         9
 
 #define SIZE_QUEUE_DIRECT       10
@@ -152,3 +144,17 @@ static const uint8_t MONTH_DAY[] = {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 
 #define NO_TEMP -100
 #define SDA_PIN             4
 #define SCL_PIN             5
+
+/* weather service*/
+#define NUMBER_DATA_WEATHER     5
+#define MAX_LEN_DESCRIPTION     20
+#define NUMBER_ITEM_WEATHER     5
+#define LEN_BUF_DESCRIPTION     (MAX_LEN_DESCRIPTION+1)
+#define FIRST_URL               "https://api.openweathermap.org/data/2.5/forecast?q="
+#define SECOND_URL              "&units=metric&cnt=5&appid="
+#define SIZE_URL_BUF            (sizeof(FIRST_URL)+sizeof(SECOND_URL)+MAX_STR_LEN+MAX_STR_LEN+1)
+
+
+#define SIMPLE_PRIVAT_API              "https://api.privatbank.ua/p24api/pubinfo?exchange&coursid=5"
+#define SIZE_SIMPLE_PRIVAT_API          sizeof(SIMPLE_PRIVAT_API)
+#define GET_CURRENCY_HOUR               9
