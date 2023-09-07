@@ -1,3 +1,5 @@
+## My portfolio
+
 # Multifunction clock
 This project aims to create multifunction clock that can be part of ESPNOW's network. The device is based on a Dwin screen  and an ESP32 module. The project includes the firmware for the screen, which is located in the "dwin" folder, and the source code for creating a firmware for an ESP32. The project structure is standard for espressif projects. In this case VS code with an extension from Espressif was used. The screens firmware consists of a binary file and images. For flashing a dwin screen you can use UART interface or over air with ESP32. The first flash of the esp32 is done via uart, then it can be flashed over the air (via a configuration server after connecting to special AP).
 
