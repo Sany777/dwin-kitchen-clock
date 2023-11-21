@@ -54,6 +54,7 @@ esp_err_t read_sensor_handler(dwin_data_t* main_data)
     esp_err_t r = bmx280_readTemp(bmx280, &temp_BM280);
     if(r != ESP_OK){
         deinit_bmp280();
+        initBMX = false;
         temp_BM280 = NO_TEMP;
     }
     return r;

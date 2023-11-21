@@ -529,7 +529,7 @@ void show_main_handler(const dwin_data_t * main_data,
         print_end();
         vTaskDelay(DELAY_SHOW_ITEM*2);
         set_color(get_color_temp(temp_FEELS_LIKE[0]), WHITE);
-        print_lines(get_y_points(temp_FEELS_LIKE, NUMBER_ITEM_WEATHER, 80), NUMBER_ITEM_WEATHER, 70, 470, 250);
+        print_lines(get_y_points(temp_FEELS_LIKE, NUMBER_ITEM_WEATHER, 80), NUMBER_ITEM_WEATHER, 60, 470, 200);
         if(usd_Bay && usd_Sale){
                     print_start(10, 0, CAEN, FONT_INFO);
                     send_str(
@@ -558,7 +558,7 @@ void show_main_handler(const dwin_data_t * main_data,
             {
                 print_start(8, 11, color_CLOCK, 2);
                 send_str("%s %d\r\n     %s", 
-                            WEEK_DAY[cur_time->tm_wday], 
+                            WEEK_DAY[cur_time->tm_wday%7], 
                             cur_time->tm_mday,
                             (uint8_t)id == IS_NOTIFICATION
                                 ? "[!]"

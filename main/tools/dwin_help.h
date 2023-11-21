@@ -2,7 +2,7 @@
 #include "dwin_common.h"
 
 void show_screen(int32_t key, const void *data_send, const size_t size_data);
-const uint16_t *get_y_points( float *points, 
+const uint16_t *get_y_points( const float *points, 
                             const uint16_t number,
                             const uint16_t height);
 const char *get_data_from_uri( const char *uri_str, 

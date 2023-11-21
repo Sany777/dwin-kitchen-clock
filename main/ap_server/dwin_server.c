@@ -1,5 +1,5 @@
 #include "dwin_server.h"
-#include "stdlib.h"
+// #include "stdlib.h"
 
 #define LEN_DATA_SEND_NOTIF (SIZE_NOTIFICATION*2+1)
 #define BASE_RESPONSE_SAVE "Save image to position"

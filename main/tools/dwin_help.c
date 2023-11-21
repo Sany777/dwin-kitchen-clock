@@ -83,13 +83,13 @@ void set_timezone(int offset)
 }
 
 
-const uint16_t *get_y_points( float *points, 
+const uint16_t *get_y_points( const float *points, 
                                 const uint16_t number,
                                 const uint16_t height)
 {
     float max = 0, min_val = 0;
     uint16_t *buf_out  = NULL;
-    if(number){
+
         for(uint16_t i=0; i<number; i++){
             if(points[i] > max){
                 max = points[i];
@@ -98,19 +98,17 @@ const uint16_t *get_y_points( float *points,
                 min_val = points[i];
             }
         }
+        float corection = 0;
         if( min_val<0 ){
-            for(uint16_t i=0; i<number; i++){
-                points[i] -= min_val;
-            } 
-            max -= min_val;
-            min_val = 0;
+            corection = -min_val;
         }
         buf_out = (uint16_t *)(send_buf + MAX_DATA_LEN - number*sizeof(uint16_t));
-        const float k_h = height/(max-min_val);
+        float diapazon = max-min_val;
+        if( diapazon < 1)diapazon = 1;
+        const float k_h = height/(diapazon);
         for(uint16_t i=0; i<number; i++){
-            buf_out[i] = points[i] * k_h;
+            buf_out[i] = (points[i]+corection) * k_h;
         }
-    }
     return buf_out;
 }
 
