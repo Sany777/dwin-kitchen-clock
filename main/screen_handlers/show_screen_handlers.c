@@ -1,5 +1,8 @@
 #include "show_screen_handlers.h"
 
+#define WIDTH_SYMB 24
+#define HEIGHT_SYMB 10
+
 static const int NORMAL_FONT = 2, FONT_INFO = 2, FONT_SECOND_INFO = 1, FONT_BUTTON = 3;
 
 static const char *MES_ON = "[ON]";
@@ -480,6 +483,7 @@ static char get_currency_wave(currency_state_t state)
 }
 
 
+
 void show_main_handler(const dwin_data_t * main_data,
                                 int32_t id, 
                                 void* time_pv) 
@@ -579,9 +583,10 @@ void show_main_handler(const dwin_data_t * main_data,
             }
             case 3:
             {
+                uint16_t pos = WIDTH_SYMB/2 - strnlen(description_WEATHER, LEN_BUF_DESCRIPTION)/2;
                 if(weather_PIC == NO_WEATHER_PIC) return;
-                print_start(4, 2, LEMON, FONT_BUTTON);
-                send_str("%15.15s", description_WEATHER);
+                print_start(4, pos, LEMON, FONT_BUTTON);
+                send_str("%s",description_WEATHER);
                 break;
             }
             case 4:
@@ -643,11 +648,9 @@ void show_timer_handler(const dwin_data_t *main_data,
 
 void welcome()
 {
-    const int H = 10;
-    const int W = 24;
-    for (int h_count = 1; h_count < H; h_count++) {
+    for (int h_count = 1; h_count < HEIGHT_SYMB; h_count++) {
         vTaskDelay(DELAY_SHOW_ITEM);
-        for (int w_count = h_count % 2 == 0 ? 5 : 3, countView = 0; w_count < W; countView++) {
+        for (int w_count = h_count % 2 == 0 ? 5 : 3, countView = 0; w_count < WIDTH_SYMB; countView++) {
             if (countView % 1000 == 0) {
                 w_count++;
                 if (w_count % (h_count % 2 == 0 ? 2 : 3) == 0) {
