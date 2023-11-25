@@ -80,13 +80,19 @@ void ap_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
 {
     if(command == KEY_INIT) {
         dwin_set_pic(INFO_PIC);
-        set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
-        show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
         xEventGroupSetBits(dwin_event_group, BIT_DENIED_STA);
-        set_new_command(INIT_AP);
+        if( start_server(main_data) == ESP_OK ){
+            set_periodic_event(MAIN_SCREEN, DELAY_AUTOCLOSE, ONLY_ONCE);
+            show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
+            set_new_command(INIT_AP);
+        } else {
+            stop_server();
+            set_periodic_event(MAIN_SCREEN, 1, ONLY_ONCE);
+        }
     } else if(command == KEY_CLOSE) {
+        stop_server();
+        set_new_command(START_STA);
         xEventGroupClearBits(dwin_event_group, BIT_DENIED_STA);
-        esp_wifi_stop();
     } else if(command == STATION_JOINE){
         remove_periodic_event(MAIN_SCREEN);
     } else if(KEY_IS_AREA_TOGGLE(command)){

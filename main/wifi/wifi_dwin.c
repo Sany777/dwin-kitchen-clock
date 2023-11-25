@@ -179,26 +179,24 @@ switch(action){
 void ap_handler(void* main_data, esp_event_base_t event_base,
                             int32_t event_id, void* event_data)
 {      
-    if(event_id == WIFI_EVENT_AP_START){
-        start_server(main_data);
-    } else if (event_id == WIFI_EVENT_AP_STOP){
-        stop_server();
+    if (event_id == WIFI_EVENT_AP_STOP){
+        set_new_command(MAIN_SCREEN);
     } else if(event_id == WIFI_EVENT_AP_STACONNECTED){
         wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
         show_screen(STATION_JOINE, event->mac, SIZE_MAC);
         set_new_command(STATION_JOINE);
     } else if(event_id == WIFI_EVENT_AP_STADISCONNECTED){
-        stop_server();
         set_new_command(MAIN_SCREEN);
     }
 }
-
+#include "freertos/event_groups.h"
 
 void wifi_sta_handler(void* data, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
 {
     static int retry_num;
-    EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
+    EventBits_t xEventGroup = xEventGroupGetBitsFromISR(dwin_event_group);
+    BaseType_t pxHigherPriorityTaskWoken;
     if(!(xEventGroup&BIT_DENIED_STA)){
         if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
             retry_num = 0;
@@ -207,29 +205,30 @@ void wifi_sta_handler(void* data, esp_event_base_t event_base,
             retry_num = RETRY_CONNECT_APSTA;
         } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED && retry_num < RETRY_CONNECT_APSTA) {
             if(esp_wifi_connect() != ESP_OK){
-                retry_num++;
                 if(retry_num == RETRY_CONNECT_APSTA){
                     if(xEventGroup&BIT_CON_STA_OK) {
-                        xEventGroupClearBits(dwin_event_group, BIT_CON_STA_OK);
+                        xEventGroupClearBitsFromISR(dwin_event_group, BIT_CON_STA_OK);
                     }
                     wifi_event_sta_disconnected_t *event_sta_disconnected = (wifi_event_sta_disconnected_t *) event_data;
                     if(event_sta_disconnected->reason == WIFI_REASON_NO_AP_FOUND
                         || event_sta_disconnected->reason == WIFI_REASON_HANDSHAKE_TIMEOUT)
                     {
                         if(xEventGroup&BIT_SSID_FOUND){
-                            xEventGroupClearBits(dwin_event_group, BIT_SSID_FOUND);
+                            xEventGroupClearBitsFromISR(dwin_event_group, BIT_SSID_FOUND);
                         }
                     } else {
-                        xEventGroupSetBits(dwin_event_group, BIT_SSID_FOUND);
+                        xEventGroupSetBitsFromISR(dwin_event_group, BIT_SSID_FOUND, &pxHigherPriorityTaskWoken);
                     }
-                    xEventGroupClearBits(dwin_event_group, BIT_PROCESS);
+                    xEventGroupClearBitsFromISR(dwin_event_group, BIT_PROCESS);
                 }
+                retry_num++;
             }
         } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
             dwin_data_t*main_data = (dwin_data_t*) data;
             retry_num = 0;
-            xEventGroupSetBits(dwin_event_group, BIT_CON_STA_OK|BIT_SSID_FOUND);
-            xEventGroupClearBits(dwin_event_group, BIT_PROCESS);
+            xEventGroupSetBitsFromISR(dwin_event_group, BIT_CON_STA_OK|BIT_SSID_FOUND, 
+            &pxHigherPriorityTaskWoken);
+            xEventGroupClearBitsFromISR(dwin_event_group, BIT_PROCESS);
             if(!(xEventGroup&BIT_WEATHER_OK)){
                 set_new_command(GET_WEATHER);
             }
@@ -239,7 +238,7 @@ void wifi_sta_handler(void* data, esp_event_base_t event_base,
             }
         }
     } else {
-        xEventGroupClearBits(dwin_event_group, BIT_CON_STA_OK);
+        xEventGroupClearBitsFromISR(dwin_event_group, BIT_CON_STA_OK);
     }
 }
 

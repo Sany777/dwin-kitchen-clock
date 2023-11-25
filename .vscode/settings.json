@@ -150,7 +150,8 @@
     "stdbool.h": "c",
     "inttypes.h": "c",
     "esp_http_client.h": "c",
-    "cjson.h": "c"
+    "cjson.h": "c",
+    "event_groups.h": "c"
   },
   "idf.port": "/dev/ttyACM0",
   "idf.flashType": "UART",

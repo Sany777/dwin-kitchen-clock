@@ -130,7 +130,8 @@ void show_ap_handler(const dwin_data_t * main_data,
     print_start(2, 2, WHITE, FONT_INFO);
     if(event_data == NULL){
         send_str(
-                "Connect to the AP \n\r with the name \"%s\"\r\n and paswword: \"%s\".\r\n and go to the address %s",
+                "Connect to the AP \n\r with the name \"%s\"\r\n"
+                " and paswword: \"%s\".\r\n and go to the address \r\n %s",
                     CONFIG_AP_WIFI_SSID,
                     CONFIG_AP_WIFI_PWD,
                     CONFIG_MY_IP
@@ -475,7 +476,7 @@ void show_clock_handler(const dwin_data_t * main_data,
 }
 
 
-static char get_currency_wave(currency_state_t state)
+static char get_currency_sign(currency_state_t state)
 {
     if(state == GO_DOWN) return '-';
     if(state == GO_UP) return '+';
@@ -529,16 +530,16 @@ void show_main_handler(const dwin_data_t * main_data,
         print_end();
         vTaskDelay(DELAY_SHOW_ITEM*2);
         set_color(get_color_temp(temp_FEELS_LIKE[0]), WHITE);
-        print_lines(get_y_points(temp_FEELS_LIKE, NUMBER_ITEM_WEATHER, 80), NUMBER_ITEM_WEATHER, 60, 470, 200);
-        if(usd_Bay && usd_Sale){
+        print_lines(get_y_points(temp_FEELS_LIKE, NUMBER_ITEM_WEATHER, 50), NUMBER_ITEM_WEATHER, 60, 470, 200);
+        if(usd_Bay>0 && usd_Sale>0){
                     print_start(10, 0, CAEN, FONT_INFO);
                     send_str(
                     " USD: %c %3.2f   %3.2f\n\r"
                     " EUR: %c %3.2f   %3.2f", 
-                     get_currency_wave(usd_State),
+                     get_currency_sign(usd_State),
                      usd_Sale, 
                      usd_Bay,
-                     get_currency_wave(eur_State),
+                     get_currency_sign(eur_State),
                      eur_Sale,
                      eur_Bay );
             print_end();

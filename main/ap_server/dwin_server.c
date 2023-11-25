@@ -621,6 +621,7 @@ esp_err_t stop_server()
     }
     if(server){
         err = httpd_stop(server);
+        server = NULL;
     }
     return err;
 }
@@ -628,8 +629,8 @@ esp_err_t stop_server()
 
 esp_err_t start_server(dwin_data_t *main_data)
 {
-    if(main_data == NULL || server || server_buf != NULL) return ESP_FAIL;
-    server_buf = malloc(SCRATCH_SIZE);
+    if(main_data == NULL || server) return ESP_FAIL;
+    if(server_buf == NULL)server_buf = malloc(SCRATCH_SIZE);
     if(!server_buf) return ESP_ERR_NO_MEM;
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.max_uri_handlers = 29;
