@@ -64,8 +64,8 @@
 
 /* buzzer */
 #define NUMBER_SIG_BUZ       10
-#define LOUD_BUZZER          70
-#define NORMAL_BUZZER        50
+#define LOUD_BUZZER          80
+#define NORMAL_BUZZER        60
 
 /* delays show data */
 #define DELAY_SHOW_ITEM          (25/portTICK_PERIOD_MS)

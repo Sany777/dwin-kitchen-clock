@@ -33,7 +33,7 @@ bool notification_alarm(const dwin_data_t *main_data,
         }
     }
     if(alarm 
-        && cur_hour > 6 
+        && cur_hour >= 6 
         && cur_hour <= 23 
         && (signal || cur_min == 0))
     {
@@ -104,8 +104,8 @@ const uint16_t *get_y_points( const float *points,
         }
         buf_out = (uint16_t *)(send_buf + MAX_DATA_LEN - number*sizeof(uint16_t));
         float diapazon = max-min_val;
-        if( diapazon < 1)diapazon = 1;
-        const float k_h = height/(diapazon);
+        if( diapazon < 10)diapazon = 10;
+        const float k_h = (height)/(diapazon);
         for(uint16_t i=0; i<number; i++){
             buf_out[i] = (points[i]+corection) * k_h;
         }
