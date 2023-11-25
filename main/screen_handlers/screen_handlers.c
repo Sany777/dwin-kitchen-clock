@@ -96,7 +96,7 @@ void ap_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
     } else if(command == STATION_JOINE){
         remove_periodic_event(MAIN_SCREEN);
     } else if(KEY_IS_AREA_TOGGLE(command)){
-        show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
+        // show_screen(UPDATE_DATA_COMPLETE, NULL, 0);
     }
 }
 
@@ -177,7 +177,7 @@ void main_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
 {
     static bool menu_active, details, is_notify;
     static size_t atempt;
-    static struct tm *cur_time;
+    struct tm *cur_time = get_time_tm();
     switch(command){
         case KEY_INIT :
         {
@@ -191,7 +191,6 @@ void main_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
                                 DELAI_FIRST_UPDATE_WEATHER, 
                                 ONLY_ONCE);
             remove_periodic_event(MAIN_SCREEN);
-            cur_time = get_time_tm();
             break;
         }
         case KEY_CLOSE :
@@ -210,18 +209,16 @@ void main_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
                                         DELAI_FIRST_UPDATE_WEATHER*atempt*atempt, 
                                         ONLY_ONCE);
                 } else {
-                   atempt = 0; 
                    set_periodic_event(GET_WEATHER, 
                                         DELAI_UPDATE_WEATHER_FAIL, 
                                         ONLY_ONCE);
                 }
             } else {
+                if(atempt)atempt = 0;
                 set_periodic_event(GET_WEATHER, 
                                     DELAI_UPDATE_WEATHER, 
-                                    RELOAD_COUNT);
-                if(atempt)atempt = 0;
+                                    ONLY_ONCE);
             }
-            cur_time = get_time_tm();
             break;
         }
         case KEY_DETAILS_SCREEN :
@@ -232,7 +229,7 @@ void main_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
                                     DELAI_UPDATE_TIME_ON_SCREEN,
                                     RELOAD_COUNT);
                 remove_periodic_event(KEY_DETAILS_SCREEN);
-                cur_time = get_time_tm();
+                
             } else  if(weather_PIC != NO_WEATHER_PIC){
                 details = true;
                 remove_periodic_event(UPDATE_TIME_COMPLETE);
@@ -252,7 +249,7 @@ void main_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
                                     DELAI_UPDATE_TIME_ON_SCREEN,
                                     RELOAD_COUNT);
                 remove_periodic_event(KEY_MENU_SCREEN);
-                cur_time = get_time_tm();
+                
             } else {
                 menu_active = true;
                 remove_periodic_event(UPDATE_TIME_COMPLETE);
@@ -264,14 +261,15 @@ void main_screen_handler(dwin_data_t* main_data, uint8_t command, char symbol)
         }
         case UPDATE_TIME_COMPLETE:
         {
-            cur_time = get_time_tm();
+            
             is_notify = notification_alarm(main_data, cur_time, true);
             break;
         }
-            default : break;
+            default : return;
     }
     if(details){
         dwin_set_pic(NO_WEATHER_PIC);
+        vTaskDelay(DELAY_CHANGE_PIC);
         show_screen(DETAILS_SCREEN, NULL, 0);
     } else if(menu_active){
         dwin_set_pic(MENU_PIC);
@@ -394,7 +392,7 @@ void clock_handler(dwin_data_t* main_data, uint8_t command, char symbol)
             if(!dwin_time)return;
             read_offset(&offset);
         }
-        struct tm* cur_time = get_time_tm();
+        struct tm *cur_time = get_time_tm();
         memcpy(dwin_time, cur_time, sizeof(struct tm));
         dwin_time->tm_year %= 100;
         dwin_time->tm_mon++;
