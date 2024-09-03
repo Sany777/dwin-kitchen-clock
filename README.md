@@ -1,6 +1,6 @@
 ## clock based on ESP32 and HMI
 
-This project aims to create multifunction clock that can be part of ESPNOW's network.  The project includes the firmware for the screen, which is located in the "dwin" folder, and the source code for creating a firmware for an ESP32. The screens firmware consists of a binary file and images. The first flash of the esp32 is done via wires, then it can be flashed over the air (via a configuration server after connecting to special AP).
+This project aims to create multifunction clock that can be part of ESPNOW's network.  The project includes the firmware for the screen, which is located in the "dwin" folder, and the source code for creating a firmware for the ESP32 MCU. The screens firmware consists of a binary file and images. The first flash of the esp32 is done via wires, then it can be flashed over the air (via a configuration server after connecting to special AP).
 
 ## Pages (device modes)
 
