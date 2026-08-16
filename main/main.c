@@ -1,7 +1,7 @@
 #include "dwin_common.h"
 
-
-void app_main()
+void
+app_main()
 {
-    esp_init();
+    kitchen_clock_init();
 }
