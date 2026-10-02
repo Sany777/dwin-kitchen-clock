@@ -1,4 +1,4 @@
-#include "dwin_common.h"
+#include "dwin_init.h"
 
 void
 app_main()

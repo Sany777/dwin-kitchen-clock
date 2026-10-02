@@ -1,9 +1,9 @@
 # ESP32 & HMI Multifunction Clock
 
-A multifunction clock capable of joining an ESP-NOW network. 
-- **Hardware:** ESP32 MCU + DWIN HMI display + BMP280 sensor.
+A multifunction clock built around an ESP32 MCU and a DWIN HMI display.
+- **Hardware:** ESP32 MCU + DWIN HMI display.
 - **Firmware:** ESP-IDF C code (MCU) and DWIN binary/images (Display).
-- **Features:** Time (NTP/RTC), Weather (OpenWeather API), Notifications, ESP-NOW sync, OTA updates via AP mode.
+- **Features:** Time (SNTP/RTC), Weather (OpenWeather API), Notifications, OTA updates via AP mode.
 
 ---
 
@@ -14,7 +14,7 @@ A multifunction clock capable of joining an ESP-NOW network.
 
 Displays current time and weather. 
 - Requires internet access and OpenWeather API key.
-- Temperature is read from the local BMP280 sensor.
+- Temperature and forecast data come from the configured weather service.
 - Tap the top right corner for a daily weather forecast.
 
 ![Weather Details](https://github.com/Sany777/dwin-kitchen-clock/raw/main/src_help/weather_details_screen.jpg)
@@ -26,7 +26,7 @@ Configure time manually or via SNTP.
 - Tap the top of the screen to toggle time synchronization mode.
 - In manual mode, time is saved to the RTC.
 - In SNTP mode, configure your time zone offset.
-- Fallback time sources: Display's internal RTC or other ESP-NOW devices.
+- Fallback time source: display's internal RTC.
 - Includes a built-in timer with an audible alarm.
 
 ### 3. Notifications
@@ -54,7 +54,6 @@ Customize text colors across the interface.
 ![Status Screen](https://github.com/Sany777/dwin-kitchen-clock/raw/main/src_help/state_screen.jpg)
 
 Manage global device states:
-- **ESPNOW:** Toggle ESP-NOW network synchronization.
 - **SECURITY:** Hide or clear saved Wi-Fi passwords.
 - **SOUND:** Toggle all device sounds.
 - **SNTP:** Toggle network time synchronization.
@@ -69,11 +68,6 @@ Activate the built-in Access Point for remote configuration.
 ![ESP32 Settings](https://github.com/Sany777/dwin-kitchen-clock/raw/main/src_help/setting_esp_page.jpg)
 ![DWIN Settings](https://github.com/Sany777/dwin-kitchen-clock/raw/main/src_help/dwin_img.jpg)
 
-### 8. ESP-NOW Linked Devices
-![Linked Devices](https://github.com/Sany777/dwin-kitchen-clock/raw/main/src_help/espnow_device_screen.jpg)
-
-ESP-NOW automatically synchronizes time, weather, and sensor data between nearby Espressif devices without needing a router. Communication is AES-128 encrypted (configure key via `menuconfig`).
-
 ---
 
 ## Use Cases
@@ -82,7 +76,6 @@ ESP-NOW automatically synchronizes time, weather, and sensor data between nearby
 flowchart LR
     %% Actors
     User((User))
-    OtherDev((Other ESP32))
     Browser((Browser Client))
 
     %% Use Cases
@@ -93,14 +86,9 @@ flowchart LR
 
     Weather(Use as Meteostation)
     OWM(OpenWeather API)
-    BMP(Internal BMP280)
-    ESPNOW_W(ESP-NOW Sensors)
 
     Timer(Use as Timer)
     
-    DataSource(Act as Data Source)
-    ESPNOW_C(ESP-NOW Connection)
-
     Remote(Remote Control)
     AP(Activate AP Mode)
 
@@ -114,12 +102,6 @@ flowchart LR
     Time -. "«extend»" .-> RTC
 
     Weather -. "«extend»" .-> OWM
-    Weather -. "«extend»" .-> BMP
-    Weather -. "«extend»" .-> ESPNOW_W
-
-    OtherDev --- DataSource
-    DataSource -. "«include»" .-> ESPNOW_C
-
     Browser --- Remote
     Remote -. "«include»" .-> AP
 ```

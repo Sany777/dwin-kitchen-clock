@@ -1,5 +1,5 @@
 #include "wifi_dwin.h"
-#include "espnow_dwin.h"
+#include "string_utils.h"
 #include "dwin_timer.h"
 #include "dwin_drivers.h"
 #include "dwin_help.h"
@@ -7,84 +7,15 @@
 void
 set_wifi(dwin_data_t *main_data, uint8_t action)
 {
-    static bool init_espnow;
-    static bool run_espnow;
     static wifi_config_t wifi_config;
     static esp_netif_t *netif = NULL;
     static wifi_mode_t mode   = WIFI_MODE_NULL;
     static bool init_sta;
     EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
     switch (action) {
-    case START_ESPNOW: {
-        if (!init_espnow) {
-            if (xEventGroup & BIT_DENIED_STA)
-                return;
-            wifi_mode_t mode;
-            esp_wifi_get_mode(&mode);
-            if (!rx_espnow)
-                xTaskCreate(espnow_task_rx, "espnow_task_rx", 4096, main_data, 5, &rx_espnow);
-            if (!tx_espnow)
-                xTaskCreate(espnow_task_tx, "espnow_task_tx", 4096, main_data, 5, &tx_espnow);
-            if (!rx_espnow || !tx_espnow)
-                return;
-            ESP_ERROR_CHECK(esp_now_init());
-            ESP_ERROR_CHECK(esp_now_set_pmk((uint8_t *)CONFIG_ESPNOW_PMK));
-            ESP_ERROR_CHECK(esp_now_register_send_cb(espnow_send_cb));
-            ESP_ERROR_CHECK(esp_now_register_recv_cb(espnow_rx_cb));
-#if CONFIG_ESP_WIFI_STA_DISCONNECTED_PM_ENABLE
-            ESP_ERROR_CHECK(esp_now_set_wake_window(WINDOW_ESPNOW_MS));
-#endif
-            init_espnow = true;
-            run_espnow  = true;
-        } else if (!run_espnow) {
-            run_espnow = true;
-            vTaskResume(tx_espnow);
-            esp_now_register_recv_cb(espnow_rx_cb);
-        }
-        xEventGroupSetBits(dwin_event_group, BIT_ESPNOW_RUN);
-        break;
-    }
-    case PAUSE_ESPNOW: {
-        if (init_espnow && run_espnow) {
-            run_espnow = false;
-            vTaskSuspend(tx_espnow);
-            esp_now_unregister_recv_cb();
-        }
-        break;
-    }
-    case STOP_ESPNOW: {
-        if (init_espnow) {
-            run_espnow  = false;
-            init_espnow = false;
-            esp_now_unregister_recv_cb();
-            esp_now_unregister_send_cb();
-            vTaskDelay(1000);
-            vTaskDelete(rx_espnow);
-            rx_espnow = NULL;
-            espnow_rx_data_t data_rx;
-            while (xQueueReceive(espnow_rx_queue, &data_rx, 0) == pdTRUE) {
-            }
-            vQueueDelete(espnow_rx_queue);
-            espnow_rx_queue = NULL;
-            if (tx_espnow) {
-                vTaskDelete(tx_espnow);
-                tx_espnow = NULL;
-            }
-            if (espnow_tx_queue) {
-                vQueueDelete(espnow_tx_queue);
-                espnow_tx_queue = NULL;
-            }
-            esp_now_deinit();
-            xEventGroupClearBits(dwin_event_group, BIT_ESPNOW_RUN | BIT_ESPNOW_CONECT);
-        }
-        break;
-    }
     case INIT_AP: {
         if (mode != WIFI_MODE_AP) {
             if (mode != WIFI_MODE_NULL) {
-                if (xEventGroup & BIT_ESPNOW_RUN) {
-                    dwin_timer_set_new_command(STOP_ESPNOW);
-                }
                 esp_wifi_stop();
                 vTaskDelay(400);
             }
@@ -101,10 +32,15 @@ set_wifi(dwin_data_t *main_data, uint8_t action)
             memset(&wifi_config, 0, sizeof(wifi_config));
             wifi_config.ap.max_connection   = MAX_STA_CONN;
             wifi_config.ap.authmode         = WIFI_AUTH_WPA_WPA2_PSK;
-            wifi_config.ap.channel          = CONFIG_AP_WIFI_CHANNEL;
+            wifi_config.ap.channel          = DEVICE_AP_WIFI_CHANNEL;
             wifi_config.ap.pmf_cfg.required = false;
-            strcpy((char *)wifi_config.ap.ssid, CONFIG_AP_WIFI_SSID);
-            strcpy((char *)wifi_config.ap.password, CONFIG_AP_WIFI_PWD);
+            copy_text_field((char *)wifi_config.ap.ssid,
+                            sizeof(wifi_config.ap.ssid), DEVICE_AP_WIFI_SSID,
+                            sizeof(DEVICE_AP_WIFI_SSID));
+            copy_bounded_string((char *)wifi_config.ap.password,
+                                sizeof(wifi_config.ap.password),
+                                DEVICE_AP_WIFI_PASSWORD,
+                                sizeof(DEVICE_AP_WIFI_PASSWORD));
             esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &ap_handler, main_data);
             esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &ap_handler, main_data);
             esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_START, &ap_handler, main_data);
@@ -139,21 +75,18 @@ set_wifi(dwin_data_t *main_data, uint8_t action)
             netif = esp_netif_create_default_wifi_sta();
         assert(netif);
         memset(&wifi_config, 0, sizeof(wifi_config));
-        strncpy((char *)wifi_config.sta.ssid, name_SSID, MAX_STR_LEN);
-        strncpy((char *)wifi_config.sta.password, pwd_WIFI, MAX_STR_LEN);
+        copy_text_field((char *)wifi_config.sta.ssid,
+                        sizeof(wifi_config.sta.ssid), name_SSID,
+                        sizeof(name_SSID));
+        copy_bounded_string((char *)wifi_config.sta.password,
+                            sizeof(wifi_config.sta.password), pwd_WIFI,
+                            sizeof(pwd_WIFI));
         wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
         wifi_config.sta.sae_pwe_h2e        = WPA3_SAE_PWE_BOTH;
         mode                               = WIFI_MODE_STA;
         DWIN_SHOW_ERR(esp_wifi_set_mode(WIFI_MODE_STA));
-#if CONFIG_ESPNOW_ENABLE_LONG_RANGE
-        ESP_ERROR_CHECK(esp_wifi_set_protocol(ESP_IF_WIFI_STA, WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G |
-                                                                   WIFI_PROTOCOL_11N | WIFI_PROTOCOL_LR));
-#endif
         DWIN_SHOW_ERR(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
         DWIN_SHOW_ERR(esp_wifi_start());
-        if (xEventGroup & BIT_ESPNOW_ALLOW && !(xEventGroup & BIT_ESPNOW_RUN)) {
-            dwin_timer_set_periodic_event(INIT_ESPNOW, 30, ONLY_ONCE);
-        }
         break;
     }
     case CLOSE_CUR_CON: {
