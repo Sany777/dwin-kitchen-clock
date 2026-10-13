@@ -75,11 +75,17 @@ void dwin_clock_get()
         COMMAND_GET_TIME, 
         FRAME_END
     };
-    EventBits_t state_bits = xEventGroupClearBits(dwin_event_group,BIT_IS_TIME);
-    do{
+    EventBits_t state_bits;
+    for (uint8_t attempt = 0; attempt < 3; attempt++) {
+        xEventGroupClearBits(dwin_event_group, BIT_IS_TIME);
         dwin_uart_write(GET_TIME, sizeof(GET_TIME));
-        state_bits = xEventGroupWaitBits(dwin_event_group,BIT_IS_TIME, false, false, 1000);
-    }while(!(state_bits&BIT_IS_TIME));
+        state_bits = xEventGroupWaitBits(dwin_event_group, BIT_IS_TIME, false,
+                                         false, pdMS_TO_TICKS(1000));
+        if (state_bits & BIT_IS_TIME) {
+            return;
+        }
+    }
+    ESP_LOGW("DWIN", "No response to clock read; continuing without screen time sync");
 }
 
 void dwin_sound_buzzer(const uint8_t loud)

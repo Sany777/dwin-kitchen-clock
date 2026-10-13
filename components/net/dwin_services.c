@@ -5,10 +5,20 @@
 #include "math_utils.h"
 #include "string_utils.h"
 #include "esp_timer.h"
+#include "esp_crt_bundle.h"
 
 static char local_response_buffer[CLIENT_BUF_LEN];
 static char url_buf[SIZE_URL_BUF];
 static char backup_output_buffer[CLIENT_BUF_LEN];
+
+typedef struct {
+    int32_t day_key;
+    float usd_open;
+    float eur_open;
+} currency_day_baseline_t;
+
+static currency_day_baseline_t currency_day_baseline;
+static bool currency_day_baseline_loaded;
 
 static bool get_currency_rate(const cJSON *item, const char *key, float *value)
 {
@@ -67,8 +77,12 @@ weather_client_get_weather(dwin_data_t *main_data, uint8_t key)
 {
     EventBits_t xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_PROCESS, false, false, WAIT_PROCEES);
     xEventGroupClearBits(dwin_event_group, BIT_RESPONSE_400_SERVER);
-    DWIN_IF_FALSE_GOTO(!(xEventGroup & BIT_DENIED_STA), st_1);
+    if (xEventGroup & BIT_DENIED_STA) {
+        ESP_LOGW("Weather", "Skipping request: station mode is disabled");
+        goto st_1;
+    }
     if (strnlen(api_KEY, SIZE_BUF) != SIZE_API) {
+        ESP_LOGW("Weather", "API key is missing or has an invalid length");
         if (!(xEventGroup & BIT_WRONG_API_KEY)) {
             xEventGroupSetBits(dwin_event_group, BIT_WRONG_API_KEY);
         }
@@ -77,6 +91,7 @@ weather_client_get_weather(dwin_data_t *main_data, uint8_t key)
         xEventGroupClearBits(dwin_event_group, BIT_WRONG_API_KEY);
     }
     if (strnlen(name_CITY, SIZE_BUF) == 0) {
+        ESP_LOGW("Weather", "City is not configured");
         goto st_1;
     }
     if (!(xEventGroup & BIT_CON_STA_OK)) {
@@ -84,7 +99,10 @@ weather_client_get_weather(dwin_data_t *main_data, uint8_t key)
         vTaskDelay(100);
         xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_PROCESS, false, false, WAIT_PROCEES);
     }
-    DWIN_IF_FALSE_GOTO(xEventGroup & BIT_CON_STA_OK, st_1);
+    if (!(xEventGroup & BIT_CON_STA_OK)) {
+        ESP_LOGW("Weather", "Skipping request: Wi-Fi is not connected");
+        goto st_1;
+    }
     memset(url_buf, 0, SIZE_URL_BUF);
     memset(local_response_buffer, 0, CLIENT_BUF_LEN);
     snprintf(url_buf, SIZE_URL_BUF, "%s%s%s%s", FIRST_URL, name_CITY, SECOND_URL, api_KEY);
@@ -93,13 +111,31 @@ weather_client_get_weather(dwin_data_t *main_data, uint8_t key)
                                        .user_data     = (void *)local_response_buffer,
                                        .method        = HTTP_METHOD_GET,
                                        .buffer_size   = CLIENT_BUF_LEN,
-                                       .auth_type     = HTTP_AUTH_TYPE_NONE};
+                                       .auth_type     = HTTP_AUTH_TYPE_NONE,
+                                       .crt_bundle_attach = esp_crt_bundle_attach};
     esp_http_client_handle_t client = esp_http_client_init(&config);
-    DWIN_CHECK_AND_GO(esp_http_client_perform(client), st_3);
+    if (client == NULL) {
+        ESP_LOGE("Weather", "Could not create HTTP client");
+        goto st_1;
+    }
+    esp_err_t request_result = esp_http_client_perform(client);
+    if (request_result != ESP_OK) {
+        ESP_LOGW("Weather", "Request failed: %s", esp_err_to_name(request_result));
+        goto st_3;
+    }
+    const int status_code = esp_http_client_get_status_code(client);
+    if (status_code != 200) {
+        ESP_LOGW("Weather", "Server returned HTTP %d", status_code);
+        goto st_3;
+    }
     const size_t data_len = esp_http_client_get_content_length(client);
-    DWIN_IF_FALSE_GOTO(data_len != 0, st_3);
+    if (data_len == 0) {
+        ESP_LOGW("Weather", "Server returned an empty response");
+        goto st_3;
+    }
     cJSON *json = cJSON_Parse(local_response_buffer);
     if (json == NULL) {
+        ESP_LOGW("Weather", "Could not parse server response as JSON");
         xEventGroupSetBits(dwin_event_group, BIT_RESPONSE_400_SERVER);
         goto st_3;
     }
@@ -192,6 +228,8 @@ weather_client_get_weather(dwin_data_t *main_data, uint8_t key)
     if (has_weather_data) {
         main_data->weather_data.updated_at_us = esp_timer_get_time();
         xEventGroupSetBits(dwin_event_group, BIT_WEATHER_OK);
+    } else {
+        ESP_LOGW("Weather", "Response did not contain forecast data");
     }
     cJSON_Delete(json);
 
@@ -204,24 +242,60 @@ st_1:
 static void
 set_currency_state(dwin_data_t *main_data, float newUsd, float newEur)
 {
-    if (usd_Sale != DWIN_NO_DATA) {
-        if (newUsd > usd_Sale) {
-            usd_State = GO_UP;
-        } else if (newUsd < usd_Sale) {
-            usd_State = GO_DOWN;
-        } else {
-            usd_State = NO_CHANGE;
+    const EventBits_t bits = xEventGroupGetBits(dwin_event_group);
+    struct tm *local_time = wifi_dwin_get_time_tm();
+    if (!(bits & BIT_IS_TIME) || local_time->tm_year < 120) {
+        usd_State = NO_CHANGE;
+        eur_State = NO_CHANGE;
+        ESP_LOGI("Currency", "Valid local time unavailable; trend pending");
+        return;
+    }
+
+    const int32_t day_key = (local_time->tm_year + 1900) * 1000 + local_time->tm_yday;
+    if (!currency_day_baseline_loaded) {
+        currency_day_baseline_loaded = true;
+        nvs_handle_t handle;
+        if (nvs_open("nvs", NVS_READONLY, &handle) == ESP_OK) {
+            size_t size = sizeof(currency_day_baseline);
+            if (nvs_get_blob(handle, "fxday", &currency_day_baseline, &size) != ESP_OK ||
+                size != sizeof(currency_day_baseline)) {
+                memset(&currency_day_baseline, 0, sizeof(currency_day_baseline));
+            }
+            nvs_close(handle);
         }
     }
-    if (eur_Sale != DWIN_NO_DATA) {
-        if (newEur > eur_Sale) {
-            eur_State = GO_UP;
-        } else if (newEur < eur_Sale) {
-            eur_State = GO_DOWN;
-        } else {
-            eur_State = NO_CHANGE;
+
+    if (currency_day_baseline.day_key != day_key ||
+        currency_day_baseline.usd_open <= 0.0f ||
+        currency_day_baseline.eur_open <= 0.0f) {
+        currency_day_baseline = (currency_day_baseline_t){
+            .day_key = day_key,
+            .usd_open = newUsd,
+            .eur_open = newEur,
+        };
+        nvs_handle_t handle;
+        if (nvs_open("nvs", NVS_READWRITE, &handle) == ESP_OK) {
+            if (nvs_set_blob(handle, "fxday", &currency_day_baseline,
+                             sizeof(currency_day_baseline)) == ESP_OK) {
+                nvs_commit(handle);
+            }
+            nvs_close(handle);
         }
+        usd_State = NO_CHANGE;
+        eur_State = NO_CHANGE;
+        ESP_LOGI("Currency", "Daily baseline set: USD %.4f EUR %.4f",
+                 newUsd, newEur);
+        return;
     }
+
+    usd_State = newUsd > currency_day_baseline.usd_open ? GO_UP :
+                newUsd < currency_day_baseline.usd_open ? GO_DOWN : NO_CHANGE;
+    eur_State = newEur > currency_day_baseline.eur_open ? GO_UP :
+                newEur < currency_day_baseline.eur_open ? GO_DOWN : NO_CHANGE;
+    ESP_LOGI("Currency", "USD %.4f/%s EUR %.4f/%s (daily open %.4f/%.4f)",
+             newUsd, usd_State == GO_UP ? "up" : usd_State == GO_DOWN ? "down" : "same",
+             newEur, eur_State == GO_UP ? "up" : eur_State == GO_DOWN ? "down" : "same",
+             currency_day_baseline.usd_open, currency_day_baseline.eur_open);
 }
 
 void
@@ -236,7 +310,8 @@ weather_client_get_currency(dwin_data_t *main_data)
                                        .user_data     = (void *)local_response_buffer,
                                        .method        = HTTP_METHOD_GET,
                                        .buffer_size   = CLIENT_BUF_LEN,
-                                       .auth_type     = HTTP_AUTH_TYPE_NONE};
+                                       .auth_type     = HTTP_AUTH_TYPE_NONE,
+                                       .crt_bundle_attach = esp_crt_bundle_attach};
 
     esp_http_client_handle_t client = esp_http_client_init(&config);
 
@@ -269,6 +344,8 @@ weather_client_get_currency(dwin_data_t *main_data)
                     eur_Bay  = new_eur_bay;
                     eur_Sale = new_eur_sale;
                     main_data->cur_value.updated_at_us = esp_timer_get_time();
+                    dwin_timer_set_periodic_event(UPDATE_CURRENCY, 60 * 60,
+                                                  RELOAD_COUNT);
                 }
             }
             cJSON_Delete(json);

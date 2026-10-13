@@ -3,6 +3,7 @@
 #include "dwin_timer.h"
 #include "dwin_drivers.h"
 #include "dwin_help.h"
+#include "espnow_devices.h"
 
 void
 set_wifi(dwin_data_t *main_data, uint8_t action)
@@ -134,6 +135,7 @@ wifi_sta_handler(void *data, esp_event_base_t event_base, int32_t event_id, void
     if (!(xEventGroup & BIT_DENIED_STA)) {
         if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
             retry_num = 0;
+            espnow_devices_init();
             esp_wifi_connect();
         } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_STOP) {
             retry_num = RETRY_CONNECT_APSTA;

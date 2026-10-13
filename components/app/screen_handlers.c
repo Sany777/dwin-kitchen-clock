@@ -20,7 +20,7 @@ static void initialize_info_screen(uint8_t command) {
   }
 }
 
-static char *get_settings_buffer(uint8_t area) {
+static char *get_settings_buffer(dwin_data_t *main_data, uint8_t area) {
   switch (area) {
   case AREA_PASSWORD:
     return pwd_WIFI;
@@ -134,7 +134,7 @@ void screen_handler_settings(dwin_data_t *main_data, uint8_t command,
     return;
   } else if (KEY_IS_AREA_SETTING(command)) {
     area_SCREEN = GET_AREA_VALUE(command);
-    selected_buf = get_settings_buffer(area_SCREEN);
+    selected_buf = get_settings_buffer(main_data, area_SCREEN);
     pos = selected_buf ? strlen(selected_buf) : 0;
   } else if (command == KEY_SYNC) {
     xEventGroupSetBits(dwin_event_group, BIT_PROCESS);
@@ -185,6 +185,8 @@ void screen_handler_main(dwin_data_t *main_data, uint8_t command, char symbol) {
                          esp_timer_get_time(), CACHED_SCREEN_DATA_MAX_AGE_US);
   const bool has_recent_weather =
       weather_data_fresh && weather_PIC != NO_WEATHER_PIC;
+  const bool previous_details = details;
+  const bool previous_menu_active = menu_active;
   switch (command) {
   case KEY_INIT: {
     details = false;
@@ -256,6 +258,11 @@ void screen_handler_main(dwin_data_t *main_data, uint8_t command, char symbol) {
   }
   default:
     return;
+  }
+  if (details != previous_details || menu_active != previous_menu_active) {
+    cur_view_generation++;
+    xQueueReset(show_queue);
+    dwin_clear_screen();
   }
   if (details) {
     dwin_set_picture(NO_WEATHER_PIC);
@@ -388,6 +395,7 @@ void screen_handler_clock(dwin_data_t *main_data, uint8_t command, char symbol) 
 
 void handle_state_screen(dwin_data_t *main_data, uint8_t command, char symbol) {
   if (command == KEY_CLOSE) {
+    dwin_timer_remove_periodic_event(UPDATE_DATA_COMPLETE);
     return;
   }
   EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
@@ -399,6 +407,7 @@ void handle_state_screen(dwin_data_t *main_data, uint8_t command, char symbol) {
     }
   } else if (command == KEY_INIT) {
     dwin_set_picture(INFO_PIC);
+    dwin_timer_set_periodic_event(UPDATE_DATA_COMPLETE, 5, RELOAD_COUNT);
   } else if (command == KEY_SNTP_TOGGLE) {
     if (xEventGroup & BIT_SNTP_ALLOW) {
       xEventGroupClearBits(dwin_event_group, BIT_SNTP_ALLOW);
@@ -442,53 +451,77 @@ void handle_color_settings_screen(dwin_data_t *main_data, uint8_t command,
 void screen_handler_notifications(dwin_data_t *main_data, uint8_t command,
                                  char symbol) {
   static uint8_t cur_day, cur_notif, cur_type_data;
+  static uint8_t entered_digits, entered_value;
+  bool schedule_changed = false;
   if (command == KEY_CLOSE) {
     return;
   }
   if (command == KEY_INIT) {
     struct tm *cut_time = wifi_dwin_get_time_tm();
-    cur_day = cut_time->tm_wday;
+    cur_day = (uint8_t)cut_time->tm_wday;
     cur_notif = 0;
     cur_type_data = AREA_HOUR;
+    entered_digits = 0;
+    entered_value = 0;
   } else if (KEY_IS_AREA_NOTIF(command)) {
     area_SCREEN = GET_AREA_VALUE(command);
     cur_notif = GET_NOTIF_NUMBER(area_SCREEN);
     cur_type_data = GET_NOTIF_TYPE_DATA(area_SCREEN);
+    entered_digits = 0;
+    entered_value = 0;
   } else if (KEY_IS_DAY(command)) {
     cur_day = GET_DAY(command);
+    entered_digits = 0;
+    entered_value = 0;
   } else if (KEY_IS_AREA_TOGGLE_DAY(command)) {
-    TOOGLE_DAY_NOTIF(GET_DAY_TOGGLE(command));
-  } else if (KEY_IS_NUMBER(symbol)) {
-    uint8_t number = GET_NUMBER(symbol);
+    cur_day = GET_DAY_TOGGLE(command);
+    TOOGLE_DAY_NOTIF(cur_day);
+    schedule_changed = true;
+    entered_digits = 0;
+    entered_value = 0;
+  } else if (KEY_IS_NUMBER(command) || KEY_IS_NUMBER(symbol)) {
+    uint8_t number = GET_NUMBER(KEY_IS_NUMBER(command) ? command : symbol);
+    entered_value = (uint8_t)(entered_value * 10 + number);
+    if (++entered_digits < 2) {
+      show_screen(cur_day, &cur_day, sizeof(cur_day));
+      return;
+    }
     switch (cur_type_data) {
     case AREA_HOUR: {
-      uint8_t new_hour = VALUE_NOTIF_HOUR(cur_notif, cur_day);
-      new_hour = GET_NEW_HOUR_VALUE(new_hour, number);
-      if (!IS_HOUR(new_hour))
-        new_hour = 0;
-      SET_NOTIF_HOUR(cur_notif, cur_day, new_hour);
+      if (IS_HOUR(entered_value)) {
+        SET_NOTIF_HOUR(cur_notif, cur_day, entered_value);
+        schedule_changed = true;
+      }
       break;
     }
     case AREA_MIN: {
-      uint8_t new_min = VALUE_NOTIF_MIN(cur_notif, cur_day);
-      new_min = GET_NEW_MIN_SEC_VALUE(new_min, number);
-      if (!IS_MIN_OR_SEC(new_min))
-        new_min = 0;
-      SET_NOTIF_MIN(cur_notif, cur_day, new_min);
+      if (IS_MIN_OR_SEC(entered_value)) {
+        SET_NOTIF_MIN(cur_notif, cur_day, entered_value);
+        schedule_changed = true;
+      }
       break;
     }
     default:
       break;
     }
+    entered_digits = 0;
+    entered_value = 0;
   } else if (command == KEY_ENTER) {
     dwin_memory_write(main_data, DATA_NOTIF);
   } else if (KEY_IS_AREA_TOGGLE(command)) {
     uint8_t area = GET_VALUE_TOGGLE(command);
     if (area < NOTIF_PER_DAY) {
       TOOGLE_NOTIF(area, cur_day);
+      schedule_changed = true;
     } else {
       TOOGLE_DAY_NOTIF(cur_day);
+      schedule_changed = true;
     }
+  }
+  if (schedule_changed) {
+    dwin_memory_write(main_data, DATA_NOTIF);
+    entered_digits = 0;
+    entered_value = 0;
   }
   show_screen(cur_day, &cur_day, sizeof(cur_day));
 }
@@ -500,7 +533,7 @@ void screen_handler_timer(dwin_data_t *main_data, uint8_t command, char symbol) 
   if (command == KEY_CLOSE) {
     dwin_timer_remove_periodic_event(KEY_DECREMENT);
     dwin_print_end();
-    vTaskDelay(200);
+    vTaskDelay(pdMS_TO_TICKS(200));
     dwin_clock_off();
     if (timer_run) {
       timer_run = false;

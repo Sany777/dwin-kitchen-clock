@@ -7,6 +7,8 @@
 #include "wifi_dwin.h"
 #include "freshness_utils.h"
 #include "esp_timer.h"
+#include "esp_app_desc.h"
+#include "espnow_devices.h"
 
 #define WIDTH_SYMB 24
 #define HEIGHT_SYMB 10
@@ -34,6 +36,28 @@ static const char *ITEM_COLOR_NAME[] = {
     "Desc",
     "Info",
 };
+
+static const char *currency_trend_arrow(currency_state_t state) {
+  switch (state) {
+  case GO_UP:
+    return "^";
+  case GO_DOWN:
+    return "v";
+  default:
+    return "=";
+  }
+}
+
+static uint16_t currency_trend_color(currency_state_t state) {
+  switch (state) {
+  case GO_UP:
+    return GREEN;
+  case GO_DOWN:
+    return RED;
+  default:
+    return GREY;
+  }
+}
 
 void show_info_handler(const dwin_data_t *main_data, int32_t state,
                        void *event_data) {
@@ -69,6 +93,14 @@ void show_info_handler(const dwin_data_t *main_data, int32_t state,
              esp_get_minimum_free_heap_size());
   }
   dwin_print_end();
+
+  const esp_app_desc_t *app_desc = esp_app_get_description();
+  if (app_desc != NULL) {
+    dwin_set_cursor(20, 1, WHITE, FONT_SECOND_INFO);
+    show_data_send_str("Firmware: %s\n\rBuilt: %s %s", app_desc->version,
+                       app_desc->date, app_desc->time);
+    dwin_print_end();
+  }
 }
 
 void show_screen_ap(const dwin_data_t *main_data, int32_t state,
@@ -250,6 +282,32 @@ void show_color_screen_handler(const dwin_data_t *main_data, int32_t id,
 void show_screen_state(const dwin_data_t *main_data, int32_t id,
                         void *event_data) {
   EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
+  espnow_device_info_t devices[MAX_SLAVE_DEVICES] = {0};
+  const size_t device_count =
+      espnow_devices_snapshot(devices, MAX_SLAVE_DEVICES);
+  const int64_t now_us = esp_timer_get_time();
+
+  dwin_set_cursor(1, 2, WHITE, FONT_SECOND_INFO);
+  show_data_send_str("ESP-NOW devices (last seen)");
+  dwin_print_end();
+  for (size_t i = 0; i < MAX_SLAVE_DEVICES; i++) {
+    dwin_set_cursor(3 + (uint16_t)i * 2, 1, WHITE, FONT_SECOND_INFO);
+    if (i < device_count) {
+      const int64_t age_sec =
+          (now_us - devices[i].last_seen_us) / 1000000;
+      show_data_send_str("%02X:%02X:%02X:%02X:%02X:%02X RSSI %d dBm %llds",
+                         devices[i].mac[0], devices[i].mac[1],
+                         devices[i].mac[2], devices[i].mac[3],
+                         devices[i].mac[4], devices[i].mac[5],
+                         devices[i].rssi, (long long)age_sec);
+    } else if (device_count == 0 && i == 0) {
+      show_data_send_str("No ESP-NOW packets received yet");
+    } else {
+      show_data_send_str("                                        ");
+    }
+    dwin_print_end();
+  }
+
   show_data_send_in_frame(5, 45, 1,
                 xEventGroup & BIT_SECURITY ? COLOR_ENABLE : COLOR_DISABLE,
                 xEventGroup & BIT_SECURITY ? "Security ON" : "Security OFF");
@@ -262,9 +320,8 @@ void show_screen_state(const dwin_data_t *main_data, int32_t id,
                 xEventGroup & BIT_SNTP_ALLOW ? COLOR_ENABLE : COLOR_DISABLE,
                 xEventGroup & BIT_SNTP_ALLOW ? "SNTP ON" : "STNP OFF");
   vTaskDelay(DELAY_SHOW_ITEM);
-  dwin_set_cursor(1, 7, COLOR_DISABLE, 1);
-  show_data_send_str("Device state\n\n\r WiFi: %s.\n\r "
-           "openweather.com: %s.\n\r SNTP: %s.",
+  dwin_set_cursor(14, 1, COLOR_DISABLE, FONT_SECOND_INFO);
+  show_data_send_str("WiFi: %s.\n\r Weather: %s.\n\r SNTP: %s.",
            xEventGroup & BIT_CON_STA_OK   ? "connect"
            : xEventGroup & BIT_SSID_FOUND ? "disconnect\t-\twrong\tpassword"
                                           : "disconnect\t-\tSSID\tnot\tfound",
@@ -286,7 +343,6 @@ void show_clock_handler(const dwin_data_t *main_data, int32_t offset_time,
   EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
   struct tm *cur_time = (struct tm *)event_data;
   for (uint8_t i = 0; i < 8; i++) {
-    vTaskDelay(DELAY_SHOW_ITEM);
     switch (i) {
     case 0:
       dwin_set_cursor(3, 1, GET_COLOR_AREA(i), NORMAL_FONT);
@@ -367,9 +423,17 @@ void show_screen_main(const dwin_data_t *main_data, int32_t id,
                            esp_timer_get_time(), CACHED_SCREEN_DATA_MAX_AGE_US);
     if (currency_rates_fresh && usd_Bay > 0 && usd_Sale > 0 && eur_Bay > 0 &&
         eur_Sale > 0) {
-      dwin_set_cursor(10, 0, CAEN, FONT_INFO);
-      show_data_send_str("USD: %.2f / %.2f UAH\n\rEUR: %.2f / %.2f UAH",
-                         usd_Bay, usd_Sale, eur_Bay, eur_Sale);
+      dwin_set_cursor(10, 0, currency_trend_color(usd_State), FONT_INFO);
+      show_data_send_str("%s", currency_trend_arrow(usd_State));
+      dwin_print_end();
+      dwin_set_cursor(10, 2, CAEN, FONT_INFO);
+      show_data_send_str("USD: %.2f / %.2f UAH", usd_Bay, usd_Sale);
+      dwin_print_end();
+      dwin_set_cursor(11, 0, currency_trend_color(eur_State), FONT_INFO);
+      show_data_send_str("%s", currency_trend_arrow(eur_State));
+      dwin_print_end();
+      dwin_set_cursor(11, 2, CAEN, FONT_INFO);
+      show_data_send_str("EUR: %.2f / %.2f UAH", eur_Bay, eur_Sale);
       dwin_print_end();
     }
 

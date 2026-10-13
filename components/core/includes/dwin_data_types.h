@@ -10,6 +10,9 @@
 
 typedef struct {
     int32_t command;
+    uint8_t screen_id;
+    uint32_t view_generation;
+    int64_t queued_at_us;
     uint8_t data[64];
 } show_queue_data_t;
 

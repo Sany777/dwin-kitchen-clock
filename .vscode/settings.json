@@ -160,12 +160,17 @@
     "board/esp32c3-bridge.cfg"
   ],
   "idf.portWin": "COM20",
-  "idf.currentSetup": "C:\\esp\\v5.3.5\\esp-idf",
-  "idf.customExtraVars": {},
-  "clangd.path": "C:\\Espressif\\tools\\esp-clang\\esp-20.1.1_20250829\\esp-clang\\bin\\clangd.exe",
+  "idf.currentSetup": "/home/ss/.espressif/v5.4.4/esp-idf",
+  "idf.customExtraVars": {
+    "OPENOCD_SCRIPTS": "c:\\Espressif\\tools\\openocd-esp32\\v0.12.0-esp32-20240318/openocd-esp32/share/openocd/scripts",
+    "IDF_CCACHE_ENABLE": "1",
+    "ESP_ROM_ELF_DIR": "c:\\Espressif\\tools\\esp-rom-elfs\\20240305/",
+    "IDF_TARGET": "esp32c3"
+  },
+  "clangd.path": "/home/ss/.espressif/tools/esp-clang/esp-18.1.2_20240912/esp-clang/bin/clangd",
   "clangd.arguments": [
     "--background-index",
     "--query-driver=**",
-    "--compile-commands-dir=e:\\dwin-kitchen-clock\\build"
+    "--compile-commands-dir=/home/ss/Documents/PET/dwin-kitchen-clock/build"
   ]
 }

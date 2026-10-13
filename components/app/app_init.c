@@ -22,6 +22,7 @@ const task_dwin_t service_tasks[SIZE_SERVICE_TASK] = {
 EventGroupHandle_t dwin_event_group;
 QueueHandle_t dwin_uart_events_queue = NULL, direct_queue = NULL,
               service_queue = NULL, show_queue = NULL;
+SemaphoreHandle_t dwin_display_mutex = NULL;
 
 void
 kitchen_clock_init(void)
@@ -32,8 +33,10 @@ kitchen_clock_init(void)
     dwin_event_group = xEventGroupCreate();
     direct_queue     = xQueueCreate(SIZE_QUEUE_DIRECT, sizeof(uint16_t));
     show_queue       = xQueueCreate(3, sizeof(show_queue_data_t));
+    dwin_display_mutex = xSemaphoreCreateMutex();
     service_queue    = xQueueCreate(SIZE_QUEUE_DIRECT, sizeof(uint8_t));
     assert(show_queue);
+    assert(dwin_display_mutex);
     assert(service_queue);
     assert(dwin_event_group);
     assert(direct_queue);
@@ -63,12 +66,23 @@ kitchen_clock_init(void)
     dwin_timer_set_new_command(START_STA);
     EventBits_t xEventGroup = xEventGroupGetBits(dwin_event_group);
     xEventGroupSetBits(dwin_event_group, BIT_PROCESS);
-    do {
-        dwin_send_hello();
-        xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_DWIN_RESPONSE_OK, false, false, 1000);
-    } while (!(xEventGroup & BIT_DWIN_RESPONSE_OK));
     dwin_set_picture(NO_WEATHER_PIC);
+    ESP_LOGI("DWIN", "Starting welcome screen");
     welcome();
+    ESP_LOGI("DWIN", "Welcome screen finished");
+
+    bool dwin_response_received = false;
+    for (uint8_t attempt = 0; attempt < 3 && !dwin_response_received; attempt++) {
+        xEventGroupClearBits(dwin_event_group, BIT_DWIN_RESPONSE_OK);
+        dwin_send_hello();
+        xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_DWIN_RESPONSE_OK,
+                                          false, false, pdMS_TO_TICKS(1000));
+        dwin_response_received = (xEventGroup & BIT_DWIN_RESPONSE_OK) != 0;
+    }
+    if (!dwin_response_received) {
+        ESP_LOGW("DWIN", "No response to startup handshake; continuing startup");
+    }
+    xEventGroup = xEventGroupGetBits(dwin_event_group);
     if (xEventGroup & BIT_SNTP_ALLOW) {
         dwin_timer_set_new_command(INIT_SNTP);
         xEventGroup = xEventGroupWaitBits(dwin_event_group, BIT_PROCESS, true, true, 3000);
@@ -80,5 +94,6 @@ kitchen_clock_init(void)
 
     dwin_timer_set_new_command(MAIN_SCREEN);
     vTaskDelay(200);
+    dwin_timer_set_periodic_event(UPDATE_CURRENCY, 60 * 60, RELOAD_COUNT);
     dwin_timer_set_new_command(UPDATE_CURRENCY);
 }

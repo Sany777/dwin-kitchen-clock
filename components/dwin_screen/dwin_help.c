@@ -2,6 +2,8 @@
 #include "dwin_drivers.h"
 #include "dwin_timer.h"
 #include "math_utils.h"
+#include "string_utils.h"
+#include "esp_timer.h"
 #include <sys/time.h>
 bool notification_alarm(const dwin_data_t *main_data, 
                             const struct tm* cur_time, 
@@ -56,6 +58,9 @@ void show_screen(int32_t key, const void *data_send, const size_t size_data)
 {                                     
     show_queue_data_t to_send = {        
         .command = key,  
+        .screen_id = cur_screen_id,
+        .view_generation = cur_view_generation,
+        .queued_at_us = esp_timer_get_time(),
     };      
     if(size_data && data_send && size_data <= sizeof(to_send.data)){
         memcpy(to_send.data, data_send, size_data);
@@ -104,9 +109,6 @@ static void performTimeAction(struct tm* cur)
     } else if(night){
         dwin_set_brightness(100);
         night = false;
-    }
-    if(cur->tm_hour == GET_CURRENCY_HOUR && cur->tm_min == 0){
-        dwin_timer_set_periodic_event(UPDATE_CURRENCY, 40, ONLY_ONCE);
     }
 }
 
